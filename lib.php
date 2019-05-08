@@ -34,5 +34,81 @@ require_once($CFG->dirroot. '/course/format/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_kickstart extends format_base {
+    /**
+     * Definitions of the additional options that this course format uses for course
+     *
+     * Kickstart format uses the following options:
+     * - userinstructions
+     * - userinstructions_format
+     *
+     * @param bool $foreditform
+     * @return array of options
+     */
+    public function course_format_options($foreditform = false) {
+        static $courseformatoptions = false;
+        if ($courseformatoptions === false) {
+            $courseformatoptions = [
+                'userinstructions' => [
+                    'label' => new lang_string('userinstructions', 'format_kickstart'),
+                    'help' => 'userinstructions',
+                    'help_component' => 'format_kickstart',
+                    'default' => [
+                        'text' => get_config('format_kickstart', 'defaultuserinstructions'),
+                        'format' => FORMAT_HTML
+                    ],
+                    'type' => PARAM_RAW,
+                    'element_type' => 'editor',
+                ],
+                'userinstructions_format' => [
+                    'element_type' => 'hidden',
+                    'type' => PARAM_INT,
+                    'label' => ''
+                ]
+            ];
+        }
 
+        return $courseformatoptions;
+    }
+
+    /**
+     * Updates format options for a course
+     *
+     * In case if course format was changed to 'topics', we try to copy options
+     * 'coursedisplay' and 'hiddensections' from the previous format.
+     *
+     * @param stdClass|array $data return value from {@link moodleform::get_data()} or array with data
+     * @param stdClass $oldcourse if this function is called from {@link update_course()}
+     *     this object contains information about the course before update
+     * @return bool whether there were any changes to the options values
+     */
+    public function update_course_format_options($data, $oldcourse = null) {
+        $data = (array)$data;
+
+        if (isset($data['userinstructions'])) {
+            $data['userinstructions_format'] = $data['userinstructions']['format'];
+            $data['userinstructions'] = $data['userinstructions']['text'];
+        }
+
+        return $this->update_format_options($data);
+    }
+
+    /**
+     * Returns a record from course database table plus additional fields
+     * that course format defines
+     *
+     * @return stdClass
+     */
+    public function get_course()
+    {
+        $course = parent::get_course();
+
+        if (is_string($course->userinstructions)) {
+            $course->userinstructions = [
+                'text' => $course->userinstructions,
+                'format' => $course->userinstructions_format
+            ];
+        }
+
+        return $course;
+    }
 }

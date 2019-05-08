@@ -23,5 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['defaultuserinstructions'] = 'Default teacher instructions';
+$string['defaultuserinstructions_desc'] = 'Instructions used for new courses using the kickstart format.';
 $string['pluginname'] = 'Kickstart format';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
+$string['userinstructions'] = 'Teacher instructions';
+$string['userinstructions_help'] = 'Content displayed to users with course editing capabilities.';

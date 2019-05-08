@@ -15,30 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Kickstart course format.
- * https://hosting.nyiaj.io/#
+ * Settings for format_kickstart
+ *
  * @package    format_kickstart
  * @copyright  2018 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->libdir.'/filelib.php');
-require_once($CFG->libdir.'/completionlib.php');
-
-$context = context_course::instance($course->id);
-// Retrieve course format option fields and add them to the $course object.
-$course = course_get_format($course)->get_course();
-
-if (($marker >=0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
-    $course->marker = $marker;
-    course_set_marker($course->id, $marker);
+if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
+            get_string('defaultuserinstructions', 'format_kickstart'),
+            get_string('defaultuserinstructions_desc', 'format_kickstart'), ''));
 }
-
-// Make sure section 0 is created.
-course_create_sections_if_missing($course, 0);
-
-$instructions = format_text($course->userinstructions['text'], $course->userinstructions['format']);
-
-echo $instructions;
