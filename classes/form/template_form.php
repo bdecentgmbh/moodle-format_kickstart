@@ -42,6 +42,14 @@ class template_form extends \moodleform
 
         $mform->addElement('tags', 'tags', get_string('tags'), ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
 
+        $mform->addElement('filemanager', 'course_backup', get_string('course_backup', 'format_kickstart'), null, [
+            'subdirs' => 0,
+            'maxfiles' => 1,
+            'accepted_types' => ['.mbz'],
+            'return_types'=> FILE_INTERNAL | FILE_EXTERNAL
+        ]);
+        $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
+
         $this->add_action_buttons();
     }
 }

@@ -57,5 +57,20 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019050800, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2019050900) {
+
+        // Define field description_format to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('description_format', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
+
+        // Conditionally launch add field description_format.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2019050900, 'format', 'kickstart');
+    }
+
     return true;
 }

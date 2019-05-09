@@ -42,20 +42,37 @@ class template_table extends \table_sql
         $columns = [];
 
         $headers[] = get_string('title', 'format_kickstart');
-        $columns[] = 'title';
         $headers[] = get_string('description', 'format_kickstart');
-        $columns[] = 'description';
+        $headers[] = get_string('tags');
         $headers[] = get_string('actions');
+        $columns[] = 'title';
+        $columns[] = 'description';
+        $columns[] = 'tags';
         $columns[] = 'actions';
+
+        $this->no_sorting('tags');
+        $this->no_sorting('actions');
 
         $this->define_columns($columns);
         $this->define_headers($headers);
     }
 
+    public function col_tags($data)
+    {
+        global $OUTPUT;
+        return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $data->id), null, 'template-tags');
+    }
+
     public function col_actions($data)
     {
         global $OUTPUT;
-        return $OUTPUT->single_button(new \moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]), get_string('edit', 'format_kickstart'));
+
+        return $OUTPUT->single_button(
+            new \moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]),
+            get_string('edit', 'format_kickstart'), 'get') .
+            $OUTPUT->single_button(
+                new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
+                get_string('delete', 'format_kickstart'), 'get');
     }
 
     /**

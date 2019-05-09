@@ -31,6 +31,7 @@ $context = context_system::instance();
 
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/template.php', ['action' => $action]));
+$PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'), new moodle_url('/course/format/kickstart/templates.php'));
 
 require_login();
 require_capability('format/kickstart:manage_templates', $context);
@@ -39,13 +40,21 @@ switch ($action) {
     case 'create':
         $PAGE->set_title(get_string('create_template', 'format_kickstart'));
         $PAGE->set_heading(get_string('create_template', 'format_kickstart'));
+        $PAGE->navbar->add(get_string('create_template', 'format_kickstart'));
 
         $form = new \format_kickstart\form\template_form($PAGE->url);
 
         if ($data = $form->get_data()) {
+            $data->description_format = $data->description['format'];
+            $data->description = $data->description['text'];
             $id = $DB->insert_record('kickstart_template', $data);
 
             core_tag_tag::set_item_tags('format_kickstart', 'kickstart_template', $id, context_system::instance(), $data->tags);
+            file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
+                $id, ['subdirs' => 0, 'maxfiles' => 1]);
+
+            \core\notification::success(get_string('template_created', 'format_kickstart'));
+            redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else if ($form->is_cancelled()) {
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         }
@@ -55,6 +64,7 @@ switch ($action) {
     case 'edit':
         $PAGE->set_title(get_string('edit_template', 'format_kickstart'));
         $PAGE->set_heading(get_string('edit_template', 'format_kickstart'));
+        $PAGE->navbar->add(get_string('edit_template', 'format_kickstart'));
 
         $id = required_param('id', PARAM_INT);
 
@@ -63,7 +73,56 @@ switch ($action) {
 
         $form = new \format_kickstart\form\template_form($PAGE->url);
 
-        $form->set_data($template);
+        if ($data = $form->get_data()) {
+            $data->description_format = $data->description['format'];
+            $data->description = $data->description['text'];
+            $DB->update_record('kickstart_template', $data);
+
+            core_tag_tag::set_item_tags('format_kickstart', 'kickstart_template', $id, context_system::instance(), $data->tags);
+            file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
+                $data->id, ['subdirs' => 0, 'maxfiles' => 1]);
+
+            \core\notification::success(get_string('template_edited', 'format_kickstart'));
+            redirect(new moodle_url('/course/format/kickstart/templates.php'));
+        } else if ($form->is_cancelled()) {
+            redirect(new moodle_url('/course/format/kickstart/templates.php'));
+        } else {
+
+            $draftitemid = file_get_submitted_draft_itemid('course_backup');
+
+            file_prepare_draft_area($draftitemid, $context->id, 'format_kickstart', 'course_backups', $id,
+                ['subdirs' => 0, 'maxfiles' => 1]);
+
+            $template->course_backup = $draftitemid;
+            $template->description = [
+                'text' => $template->description,
+                'format' => $template->description_format
+            ];
+
+            $form->set_data($template);
+        }
+
+        break;
+
+    case 'delete':
+        $PAGE->set_title(get_string('delete_template', 'format_kickstart'));
+        $PAGE->set_heading(get_string('delete_template', 'format_kickstart'));
+        $PAGE->navbar->add(get_string('delete_template', 'format_kickstart'));
+
+        $id = required_param('id', PARAM_INT);
+
+        $template = $DB->get_record('kickstart_template', ['id' => $id], '*', MUST_EXIST);
+
+        $form = new \format_kickstart\form\template_delete_form($PAGE->url);
+
+        if ($data = $form->get_data()) {
+            $DB->delete_records('kickstart_template', ['id' => $data->id]);
+        } else if ($form->is_cancelled()) {
+            \core\notification::success(get_string('template_deleted', 'format_kickstart'));
+            redirect(new moodle_url('/course/format/kickstart/templates.php'));
+        } else {
+            $form->set_data($template);
+        }
 
         break;
 }

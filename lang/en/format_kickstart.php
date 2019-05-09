@@ -23,18 +23,26 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['course_backup'] = 'Course backup file (.mbz)';
+$string['course_backup_help'] = 'When a user selects this template from within a course, this .mbz course backup will be imported into the course.';
 $string['create_template'] = 'Create template';
 $string['defaultuserinstructions'] = 'Default teacher instructions';
 $string['defaultuserinstructions_desc'] = 'Instructions used for new courses using the kickstart format.';
+$string['delete'] = 'Delete';
+$string['delete_template'] = 'Delete template';
 $string['description'] = 'Description';
 $string['edit'] = 'Edit';
 $string['edit_template'] = 'Edit template';
+$string['general_settings'] = 'General settings';
 $string['kickstart:manage_templates'] = 'Manage templates';
 $string['manage_templates'] = 'Manage templates';
 $string['pluginname'] = 'Kickstart format';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
 $string['sectionname'] = 'section';
 $string['tagarea_kickstart_template'] = 'Kickstart templates';
+$string['template_created'] = 'Template successfully created';
+$string['template_deleted'] = 'Template successfully deleted';
+$string['template_edited'] = 'Template successfully edited';
 $string['title'] = 'Title';
 $string['userinstructions'] = 'Teacher instructions';
 $string['userinstructions_help'] = 'Content displayed to users with course editing capabilities.';
