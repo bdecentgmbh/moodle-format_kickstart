@@ -15,15 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
- *
  * @package    format_kickstart
  * @copyright  2018 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace format_kickstart\form;
 
-$plugin->version   = 2019050802;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2018112800;        // Requires this Moodle version
-$plugin->component = 'format_kickstart';   // Full name of the plugin (used for diagnostics)
+require_once("$CFG->libdir/formslib.php");
+
+class template_form extends \moodleform
+{
+    public function definition()
+    {
+        $mform = $this->_form;
+
+        $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
+
+        $mform->addElement('text', 'title', get_string('title', 'format_kickstart'));
+        $mform->setType('title', PARAM_TEXT);
+        $mform->addRule('title', get_string('required'), 'required');
+
+        $mform->addElement('editor', 'description', get_string('description','format_kickstart'));
+        $mform->setType('description', PARAM_RAW);
+
+        $mform->addElement('tags', 'tags', get_string('tags'), ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
+
+        $this->add_action_buttons();
+    }
+}

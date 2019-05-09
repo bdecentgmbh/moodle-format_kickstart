@@ -62,7 +62,7 @@ class format_kickstart extends format_base {
                 'userinstructions_format' => [
                     'element_type' => 'hidden',
                     'type' => PARAM_INT,
-                    'label' => ''
+                    'label' => 'hidden'
                 ]
             ];
         }

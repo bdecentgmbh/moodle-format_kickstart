@@ -15,15 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
- *
  * @package    format_kickstart
  * @copyright  2018 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace format_kickstart\form;
 
-$plugin->version   = 2019050802;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2018112800;        // Requires this Moodle version
-$plugin->component = 'format_kickstart';   // Full name of the plugin (used for diagnostics)
+require_once("$CFG->libdir/formslib.php");
+
+class template_table_settings_form extends \moodleform
+{
+    public function definition()
+    {
+        $mform =& $this->_form;
+
+        $mform->addElement('header', 'preferencesuser', get_string('preferencesuser', 'scorm'));
+
+        $mform->addElement('select', 'pagesize', get_string('pagesize', 'scorm'), [
+            -1 => get_string('all'),
+            25 => '25',
+            50 => '50',
+            100 => '100'
+        ]);
+        $mform->setType('pagesize', PARAM_INT);
+        $mform->setDefault('pagesize', 25);
+
+        $mform->addElement('submit', 'submitbutton', get_string('savepreferences'));
+    }
+}
