@@ -112,3 +112,17 @@ class format_kickstart extends format_base {
         return $course;
     }
 }
+
+/**
+ * Check if Kickstart Pro is installed.
+ *
+ * @return bool
+ */
+function format_kickstart_has_pro() {
+    global $CFG;
+
+    if (isset($CFG->disable_kickstart_pro) && $CFG->disable_kickstart_pro) {
+        return false;
+    }
+    return array_key_exists('pro', core_component::get_plugin_list('kickstartplugin'));
+}

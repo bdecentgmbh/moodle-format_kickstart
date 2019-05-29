@@ -37,7 +37,6 @@ $PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstar
 $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'));
 
 require_login();
-
 require_capability('format/kickstart:manage_templates', $context);
 
 $table = new \format_kickstart\template_table();
