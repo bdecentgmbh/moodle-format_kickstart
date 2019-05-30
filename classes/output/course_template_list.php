@@ -28,7 +28,7 @@ class course_template_list implements \templatable, \renderable
 {
     public function export_for_template(renderer_base $output)
     {
-        global $DB;
+        global $DB, $COURSE;
 
         $templates = $DB->get_records('kickstart_template');
 
@@ -39,6 +39,7 @@ class course_template_list implements \templatable, \renderable
                 $tags[] = '#' . $tag->get_display_name(false);
             }
             $template->hashtags = implode($tags, ' ');
+            $template->link = new \moodle_url('/course/format/kickstart/merge.php', ['template_id' => $template->id, 'course_id' => $COURSE->id]);
         }
 
         if (!format_kickstart_has_pro()) {

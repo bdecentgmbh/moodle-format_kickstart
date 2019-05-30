@@ -26,27 +26,47 @@
     -
 
     Context variables required for this template:
-    * statusicon
-    * statustext
-    * actions
-        - url
-        - data
-        - text
-        - title
+    * has_pro
+    * templates
+        - groups
+            - templates
+                - id
+                - title
+                - description
+                - description_format
+                - description_formatted
+                - hashtags
+                - isplaceholder
+                - link
 
     Example context (json):
     {
-        "statusicon": "accepted",
-        "statustext": "Accepted",
-        "actions": {
-            "url": "/admin/tool/policy/accept.php?param=value",
-            "data": "acceptmodal",
-            "text": "Withdraw",
-            "title": "Withdraw acceptance of Site policy"
-        }
+        "has_pro": true,
+        "templates": [
+            {
+                "groups": [
+                    {
+                        "templates": [
+                             {
+                                "id": "2",
+                                "title": "Test",
+                                "description": "This is a test template",
+                                "description_format": "1",
+                                "description_formatted": "This is a test template",
+                                "hashtags": "#tag1 #tag2",
+                                // If placeholder no ID is available.
+                                "isplaceholder": false,
+                                "link": "https://example.com/test/"
+                             }
+                        ]
+                    }
+                ]
+            }
+        ]
     }
 }}
 
+<h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
 {{#templates}}
     {{#groups}}
         <div class="card-deck mb-2">
@@ -60,7 +80,7 @@
                             <small class="text-muted">{{hashtags}}</small>
                         </div>
                         <div class="card-footer">
-                            <a href="#" class="btn btn-primary">{{#str}}usetemplate, format_kickstart{{/str}}</a>
+                            <a href="{{{link}}}" class="btn btn-primary">{{#str}}usetemplate, format_kickstart{{/str}}</a>
                         </div>
                     </div>
                 {{/isplaceholder}}

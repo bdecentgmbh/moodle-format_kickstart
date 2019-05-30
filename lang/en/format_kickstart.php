@@ -25,7 +25,9 @@
 
 $string['course_backup'] = 'Course backup file (.mbz)';
 $string['course_backup_help'] = 'When a user selects this template from within a course, this .mbz course backup will be imported into the course.';
+$string['course_templates'] = 'Course templates';
 $string['create_template'] = 'Create template';
+$string['coursebackupnotset'] = 'Template has no course backup set.';
 $string['defaultuserinstructions'] = 'Default teacher instructions';
 $string['defaultuserinstructions_desc'] = 'Instructions used for new courses using the kickstart format.';
 $string['delete'] = 'Delete';
