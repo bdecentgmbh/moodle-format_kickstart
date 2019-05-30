@@ -33,6 +33,14 @@ $course = $DB->get_record('course', ['id' => $course_id]);
 
 $template = $DB->get_record('kickstart_template', ['id' => $template_id], '*', MUST_EXIST);
 
+$PAGE->set_context(\context_course::instance($course_id));
+
+require_login();
+
+if (!$PAGE->user_allowed_editing()) {
+    throw new moodle_exception('notallowed', 'format_kickstart');
+}
+
 $fs = get_file_storage();
 $files = $fs->get_area_files(\context_system::instance()->id, 'format_kickstart', 'course_backups', $template->id, '', false);
 $files = array_values($files);

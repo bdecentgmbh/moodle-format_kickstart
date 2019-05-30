@@ -40,6 +40,7 @@ $string['getpro'] = 'Get more templates with Kickstart Pro';
 $string['kickstart:manage_templates'] = 'Manage templates';
 $string['learnmore'] = 'Learn more';
 $string['manage_templates'] = 'Manage templates';
+$string['notallowed'] = 'You are not allowed to do this.';
 $string['pluginname'] = 'Kickstart format';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
 $string['sectionname'] = 'section';
