@@ -16,7 +16,7 @@
 
 /**
  * Kickstart course format.
- * https://hosting.nyiaj.io/#
+ *
  * @package    format_kickstart
  * @copyright  2018 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -45,7 +45,12 @@ if ($PAGE->user_allowed_editing()) {
     $instructions = format_text($course->userinstructions['text'], $course->userinstructions['format']);
 
     echo $instructions;
+    echo \html_writer::empty_tag('hr');
     echo $output->render(new \format_kickstart\output\course_template_list());
+    if (has_capability('moodle/restore:restoretargetimport', $context)) {
+        echo \html_writer::empty_tag('hr');
+        echo $output->render(new \format_kickstart\output\import_course_list());
+    }
 } else {
     echo get_string('studentinstructions', 'format_kickstart');
 }

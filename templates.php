@@ -39,6 +39,10 @@ $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'));
 require_login();
 require_capability('format/kickstart:manage_templates', $context);
 
+if (!format_kickstart_has_pro() && $DB->count_records('kickstart_template') >= 3) {
+    \core\notification::warning(get_string('buypromaxtemplates', 'format_kickstart'));
+}
+
 $table = new \format_kickstart\template_table();
 $table->define_baseurl($PAGE->url);
 $table->is_downloadable(true);

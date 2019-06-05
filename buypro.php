@@ -15,15 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Kickstart course format.
  *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require(__DIR__.'/../../../config.php');
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019053102;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2018112800;        // Requires this Moodle version
-$plugin->component = 'format_kickstart';   // Full name of the plugin (used for diagnostics)
+$PAGE->set_context(context_system::instance());
+$PAGE->set_title(get_string('buypro', 'format_kickstart'));
+$PAGE->set_heading(get_string('buypro', 'format_kickstart'));
+$PAGE->set_url(new moodle_url('/course/format/kickstart/buypro.php'));
+
+echo $OUTPUT->header();
+echo get_string('buyprosummary', 'format_kickstart');
+echo $OUTPUT->footer();

@@ -1,0 +1,118 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_kickstart/course_template_list
+
+    Template for the course template list displayed to teachers.
+
+    Classes required for JS:
+    -
+
+    Data attributes required for JS:
+    -
+
+    Context variables required for this template:
+    * has_pro
+    * templates
+        - groups
+            - templates
+                - id
+                - title
+                - description
+                - description_format
+                - description_formatted
+                - hashtags
+                - isplaceholder
+                - link
+
+    Example context (json):
+    {
+        "has_pro": true,
+        "templates": [
+            {
+                "groups": [
+                    {
+                        "templates": [
+                             {
+                                "id": "2",
+                                "title": "Test",
+                                "description": "This is a test template",
+                                "description_format": "1",
+                                "description_formatted": "This is a test template",
+                                "hashtags": "#tag1 #tag2",
+                                // If placeholder no ID is available.
+                                "isplaceholder": false,
+                                "link": "https://example.com/test/"
+                             }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}}
+
+<div class="clearfix mb-2">
+    {{^haspro}}
+        <a href="{{prourl}}" target="_blank" class="btn btn-dark pull-right">{{#str}}goprotoenable, format_kickstart{{/str}}</a>
+    {{/haspro}}
+    <h4 class="text-muted">{{#str}}migratefromcourses, format_kickstart{{/str}}</h4>
+</div>
+{{^haspro}}
+    <form method="post" action="#" style="max-width: 300px">
+        <div class="input-group mb-3">
+            <input disabled type="text" name="search" class="form-control" placeholder="{{#str}}search{{/str}} {{coursecount}} {{coursecountlabel}}" aria-label="{{#str}}search{{/str}} {{coursecount}} {{coursecountlabel}}" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary disabled" type="submit" disabled>{{#pix}}i/search, core{{/pix}}</button>
+            </div>
+        </div>
+    </form>
+    <div style="opacity: 0.7">
+        {{#courses}}
+            <div class="card mb-2 text-muted">
+                <div class="card-body">
+                    <a href="#" class="btn btn-dark disabled pull-right">{{#str}}importcourse, format_kickstart{{/str}}</a>
+                    <a href="#" class="btn btn-outline-dark disabled pull-right mr-2">{{#str}}gotocourse, format_kickstart{{/str}}</a>
+                    <h5 class="card-title">{{fullname}}</h5>
+                </div>
+            </div>
+        {{/courses}}
+
+        {{{html}}}
+    </div>
+{{/haspro}}
+{{#haspro}}
+    <form method="post" action="{{{searchurl}}}" style="max-width: 300px">
+        <div class="input-group mb-3">
+            <input type="text" name="search" class="form-control" placeholder="{{#str}}search{{/str}} {{coursecount}} {{coursecountlabel}}" aria-label="{{#str}}search{{/str}} {{coursecount}} {{coursecountlabel}}" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">{{#pix}}i/search, core{{/pix}}</button>
+            </div>
+        </div>
+    </form>
+    {{#courses}}
+        <div class="card mb-2">
+            <div class="card-body">
+                <a href="{{{importurl}}}" class="btn btn-dark pull-right">{{#str}}importcourse, format_kickstart{{/str}}</a>
+                <a href="{{{url}}}" class="btn btn-outline-dark pull-right mr-2">{{#str}}gotocourse, format_kickstart{{/str}}</a>
+                <h5 class="card-title {{^visible}}text-muted font-italic{{/visible}}">{{fullname}}</h5>
+            </div>
+        </div>
+    {{/courses}}
+
+    {{{html}}}
+{{/haspro}}
