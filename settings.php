@@ -27,7 +27,8 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
             get_string('defaultuserinstructions', 'format_kickstart'),
-            get_string('defaultuserinstructions_desc', 'format_kickstart'), ''));
+            get_string('defaultuserinstructions_desc', 'format_kickstart'),
+            get_string('defaultuserinstructions_default', 'format_kickstart')));
 }
 $settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));

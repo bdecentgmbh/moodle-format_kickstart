@@ -52,6 +52,7 @@ class course_template_list implements \templatable, \renderable
 
         return [
             'templates' => ['groups' => $this->get_groups($templates)],
+            'link' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
             'has_pro' => format_kickstart_has_pro()
         ];
     }

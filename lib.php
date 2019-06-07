@@ -121,8 +121,8 @@ class format_kickstart extends format_base {
 function format_kickstart_has_pro() {
     global $CFG;
 
-    if (isset($CFG->kickstart_pro) && $CFG->kickstart_pro) {
+    if (isset($CFG->kickstart_pro)) {
         return $CFG->kickstart_pro;
     }
-    return array_key_exists('pro', core_component::get_plugin_list('kickstartplugin'));
+    return array_key_exists('kickstart_pro', core_component::get_plugin_list('local'));
 }

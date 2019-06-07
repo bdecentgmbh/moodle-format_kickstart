@@ -42,9 +42,6 @@ course_create_sections_if_missing($course, 0);
 $output = $PAGE->get_renderer('format_kickstart');
 
 if ($PAGE->user_allowed_editing()) {
-    $instructions = format_text($course->userinstructions['text'], $course->userinstructions['format']);
-
-    echo $instructions;
     echo \html_writer::empty_tag('hr');
     echo $output->render(new \format_kickstart\output\course_template_list());
     if (has_capability('moodle/restore:restoretargetimport', $context)) {
@@ -52,5 +49,11 @@ if ($PAGE->user_allowed_editing()) {
         echo $output->render(new \format_kickstart\output\import_course_list());
     }
 } else {
-    echo get_string('studentinstructions', 'format_kickstart');
+    if (format_kickstart_has_pro()) {
+        $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
+
+        echo $prorenderer->render(new \local_kickstart_pro\output\default_view($course));
+    } else {
+        echo format_text($course->userinstructions['text'], $course->userinstructions['format']);
+    }
 }

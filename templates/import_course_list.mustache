@@ -96,23 +96,5 @@
     </div>
 {{/haspro}}
 {{#haspro}}
-    <form method="post" action="{{{searchurl}}}" style="max-width: 300px">
-        <div class="input-group mb-3">
-            <input type="text" name="search" class="form-control" placeholder="{{#str}}search{{/str}} {{coursecount}} {{coursecountlabel}}" aria-label="{{#str}}search{{/str}} {{coursecount}} {{coursecountlabel}}" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-                <button class="btn btn-outline-secondary" type="submit">{{#pix}}i/search, core{{/pix}}</button>
-            </div>
-        </div>
-    </form>
-    {{#courses}}
-        <div class="card mb-2">
-            <div class="card-body">
-                <a href="{{{importurl}}}" class="btn btn-dark pull-right">{{#str}}importcourse, format_kickstart{{/str}}</a>
-                <a href="{{{url}}}" class="btn btn-outline-dark pull-right mr-2">{{#str}}gotocourse, format_kickstart{{/str}}</a>
-                <h5 class="card-title {{^visible}}text-muted font-italic{{/visible}}">{{fullname}}</h5>
-            </div>
-        </div>
-    {{/courses}}
-
-    {{{html}}}
+    {{> local_kickstart_pro/import_course_list }}
 {{/haspro}}
