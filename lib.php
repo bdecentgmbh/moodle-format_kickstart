@@ -40,6 +40,8 @@ class format_kickstart extends format_base {
      * Kickstart format uses the following options:
      * - userinstructions
      * - userinstructions_format
+     * - teacherinstructions
+     * - teacherinstructions_format
      *
      * @param bool $foreditform
      * @return array of options
@@ -60,6 +62,22 @@ class format_kickstart extends format_base {
                     'element_type' => 'editor',
                 ],
                 'userinstructions_format' => [
+                    'element_type' => 'hidden',
+                    'type' => PARAM_INT,
+                    'label' => 'hidden'
+                ],
+                'teacherinstructions' => [
+                    'label' => new lang_string('teacherinstructions', 'format_kickstart'),
+                    'help' => 'teacherinstructions',
+                    'help_component' => 'format_kickstart',
+                    'default' => [
+                        'text' => get_config('format_kickstart', 'defaultteacherinstructions'),
+                        'format' => FORMAT_HTML
+                    ],
+                    'type' => PARAM_RAW,
+                    'element_type' => 'editor',
+                ],
+                'teacherinstructions_format' => [
                     'element_type' => 'hidden',
                     'type' => PARAM_INT,
                     'label' => 'hidden'
@@ -88,6 +106,10 @@ class format_kickstart extends format_base {
             $data['userinstructions_format'] = $data['userinstructions']['format'];
             $data['userinstructions'] = $data['userinstructions']['text'];
         }
+        if (isset($data['teacherinstructions']) && is_array($data['teacherinstructions'])) {
+            $data['teacherinstructions_format'] = $data['teacherinstructions']['format'];
+            $data['teacherinstructions'] = $data['teacherinstructions']['text'];
+        }
 
         return $this->update_format_options($data);
     }
@@ -106,6 +128,12 @@ class format_kickstart extends format_base {
             $course->userinstructions = [
                 'text' => $course->userinstructions,
                 'format' => $course->userinstructions_format
+            ];
+        }
+        if (is_string($course->teacherinstructions)) {
+            $course->teacherinstructions = [
+                'text' => $course->teacherinstructions,
+                'format' => $course->teacherinstructions_format
             ];
         }
 

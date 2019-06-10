@@ -26,6 +26,13 @@ use renderer_base;
 
 class course_template_list implements \templatable, \renderable
 {
+    private $course;
+
+    public function __construct(\stdClass $course)
+    {
+        $this->course = course_get_format($course)->get_course();;
+    }
+
     public function export_for_template(renderer_base $output)
     {
         global $DB, $COURSE;
@@ -39,7 +46,7 @@ class course_template_list implements \templatable, \renderable
                 $tags[] = '#' . $tag->get_display_name(false);
             }
             $template->hashtags = implode($tags, ' ');
-            $template->link = new \moodle_url('/course/format/kickstart/import.php', ['template_id' => $template->id, 'course_id' => $COURSE->id]);
+            $template->link = new \moodle_url('/course/format/kickstart/confirm.php', ['template_id' => $template->id, 'course_id' => $COURSE->id]);
         }
 
         if (!format_kickstart_has_pro()) {
@@ -53,7 +60,8 @@ class course_template_list implements \templatable, \renderable
         return [
             'templates' => ['groups' => $this->get_groups($templates)],
             'link' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
-            'has_pro' => format_kickstart_has_pro()
+            'has_pro' => format_kickstart_has_pro(),
+            'teacherinstructions' => format_text($this->course->teacherinstructions['text'], $this->course->teacherinstructions['format'])
         ];
     }
 

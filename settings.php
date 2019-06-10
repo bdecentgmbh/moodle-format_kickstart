@@ -29,6 +29,11 @@ if ($ADMIN->fulltree) {
             get_string('defaultuserinstructions', 'format_kickstart'),
             get_string('defaultuserinstructions_desc', 'format_kickstart'),
             get_string('defaultuserinstructions_default', 'format_kickstart')));
+
+    $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultteacherinstructions',
+            get_string('defaultteacherinstructions', 'format_kickstart'),
+            get_string('defaultteacherinstructions_desc', 'format_kickstart'),
+            get_string('defaultteacherinstructions_default', 'format_kickstart')));
 }
 $settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));

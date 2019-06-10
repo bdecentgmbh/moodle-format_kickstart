@@ -66,6 +66,11 @@
     }
 }}
 
+<h3>{{#str}}welcometoyourcourse, format_kickstart{{/str}}</h3>
+{{{teacherinstructions}}}
+
+<hr>
+
 <h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
 {{#templates}}
     {{#groups}}
@@ -73,7 +78,6 @@
             {{#templates}}
                 {{^isplaceholder}}
                     <div class="card">
-
                         <div class="card-body">
                             <h5 class="card-title">{{title}}</h5>
                             <p class="card-text">{{{description_formatted}}}</p>

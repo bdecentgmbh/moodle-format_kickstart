@@ -42,8 +42,7 @@ course_create_sections_if_missing($course, 0);
 $output = $PAGE->get_renderer('format_kickstart');
 
 if ($PAGE->user_allowed_editing()) {
-    echo \html_writer::empty_tag('hr');
-    echo $output->render(new \format_kickstart\output\course_template_list());
+    echo $output->render(new \format_kickstart\output\course_template_list($course));
     if (has_capability('moodle/restore:restoretargetimport', $context)) {
         echo \html_writer::empty_tag('hr');
         echo $output->render(new \format_kickstart\output\import_course_list());
