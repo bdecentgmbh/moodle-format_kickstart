@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Renderer for Kickstart format.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +32,7 @@ use renderable;
 /**
  * Renderer for the kickstart format.
  *
- * @copyright 2018 bdecent gmbh <https://bdecent.de>
+ * @copyright 2019 bdecent gmbh <https://bdecent.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends plugin_renderer_base {

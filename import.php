@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Redirect users to purchase Kickstart Pro.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,10 +28,10 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 
 global $USER, $DB;
 
-$course_id = required_param('course_id', PARAM_INT);
-$template_id = required_param('template_id', PARAM_INT);
+$courseid = required_param('course_id', PARAM_INT);
+$templateid = required_param('template_id', PARAM_INT);
 
-$PAGE->set_context(\context_course::instance($course_id));
+$PAGE->set_context(\context_course::instance($courseid));
 
 require_login();
 
@@ -37,6 +39,6 @@ if (!$PAGE->user_allowed_editing()) {
     throw new moodle_exception('notallowed', 'format_kickstart');
 }
 
-\format_kickstart\course_importer::import($template_id, $course_id);
+\format_kickstart\course_importer::import($templateid, $courseid);
 
-redirect(new moodle_url('/course/view.php', ['id' => $course_id]));
+redirect(new moodle_url('/course/view.php', ['id' => $courseid]));

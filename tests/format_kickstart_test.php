@@ -22,8 +22,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
+ * Test course importing.
+ *
  * @group format_kickstart_test
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_kickstart_test extends advanced_testcase {
     public function test_importing() {
@@ -79,8 +85,11 @@ class format_kickstart_test extends advanced_testcase {
         ];
 
         foreach ($course as $field => $value) {
-            if (in_array($field, $excludefield)) continue;
-            $this->assertEquals($course->$field, $updatecourse->$field, 'Ensure course setting was not changed after import: ' . $field);
+            if (in_array($field, $excludefield)) {
+                continue;
+            }
+            $this->assertEquals($course->$field, $updatecourse->$field,
+                'Ensure course setting was not changed after import: ' . $field);
         }
     }
 }

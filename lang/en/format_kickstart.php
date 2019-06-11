@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -19,13 +18,13 @@
  * Strings for component format_kickstart.
  *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['buypro'] = 'Buy Kickstart Pro';
 $string['buypromaxtemplates'] = 'You are using the maximum number (<b>3</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/">Kickstart Pro</a>.';
-$string['buyprosummary'] = '';
+$string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';
 $string['confirmtemplate'] = 'Are you sure you want to use this template?';
 $string['course_backup'] = 'Course backup file (.mbz)';
 $string['course_backup_help'] = 'When a user selects this template from within a course, this .mbz course backup will be imported into the course.';
@@ -53,6 +52,7 @@ $string['learnmore'] = 'Learn more';
 $string['manage_templates'] = 'Manage templates';
 $string['migratefromcourses'] = 'Migrate content from other courses';
 $string['notallowed'] = 'You are not allowed to do this.';
+$string['notemplates'] = 'No templates have been created yet.';
 $string['pluginname'] = 'Kickstart format';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
 $string['sectionname'] = 'section';

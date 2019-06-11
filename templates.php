@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * List of templates.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,7 +35,8 @@ $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
 $PAGE->set_title(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_heading(get_string('manage_templates', 'format_kickstart'));
-$PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']), get_string('create_template', 'format_kickstart')));
+$PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
+    get_string('create_template', 'format_kickstart')));
 $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'));
 
 require_login();

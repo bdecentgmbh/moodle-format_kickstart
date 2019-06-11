@@ -18,7 +18,7 @@
  * Settings for format_kickstart
  *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -42,4 +42,5 @@ $ADMIN->add('format_kickstart', $settings);
 // Tell core we already added the settings structure.
 $settings = null;
 
-$ADMIN->add('format_kickstart', new admin_externalpage('templates', get_string('manage_templates', 'format_kickstart'), new moodle_url('/course/format/kickstart/templates.php')));
+$ADMIN->add('format_kickstart', new admin_externalpage('templates', get_string('manage_templates', 'format_kickstart'),
+    new moodle_url('/course/format/kickstart/templates.php')));

@@ -15,19 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Form for editing/creating a template.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace format_kickstart\form;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once("$CFG->libdir/formslib.php");
 
-class template_form extends \moodleform
-{
-    public function definition()
-    {
+/**
+ * Form for editing/creating a template.
+ *
+ * @package format_kickstart
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class template_form extends \moodleform {
+
+    /**
+     * Define form elements.
+     *
+     * @throws \coding_exception
+     */
+    public function definition() {
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'id');
@@ -37,17 +52,19 @@ class template_form extends \moodleform
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', get_string('required'), 'required');
 
-        $mform->addElement('editor', 'description', get_string('description','format_kickstart'));
+        $mform->addElement('editor', 'description', get_string('description', 'format_kickstart'));
         $mform->setType('description', PARAM_RAW);
 
-        $mform->addElement('tags', 'tags', get_string('tags'), ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
+        $mform->addElement('tags', 'tags', get_string('tags'),
+            ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
 
-        $mform->addElement('filemanager', 'course_backup', get_string('course_backup', 'format_kickstart'), null, [
+        $mform->addElement('filemanager', 'course_backup',
+            get_string('course_backup', 'format_kickstart'), null, [
             'subdirs' => 0,
             'maxfiles' => 1,
             'accepted_types' => ['.mbz'],
-            'return_types'=> FILE_INTERNAL | FILE_EXTERNAL
-        ]);
+            'return_types' => FILE_INTERNAL | FILE_EXTERNAL
+            ]);
         $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
 
         $this->add_action_buttons();

@@ -103,3 +103,6 @@
         </div>
     {{/groups}}
 {{/templates}}
+{{^templates.groups}}
+    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
+{{/templates.groups}}

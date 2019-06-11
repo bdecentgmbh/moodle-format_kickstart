@@ -18,7 +18,7 @@
  * Kickstart course format.
  *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ $context = context_course::instance($course->id);
 // Retrieve course format option fields and add them to the $course object.
 $course = course_get_format($course)->get_course();
 
-if (($marker >=0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
+if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
     $course->marker = $marker;
     course_set_marker($course->id, $marker);
 }
@@ -43,7 +43,7 @@ $output = $PAGE->get_renderer('format_kickstart');
 
 if ($PAGE->user_allowed_editing()) {
     echo $output->render(new \format_kickstart\output\course_template_list($course));
-    if (has_capability('moodle/restore:restoretargetimport', $context)) {
+    if (has_capability('moodle/restore:restoretargetimport', $context) && (format_kickstart_has_pro() || is_siteadmin())) {
         echo \html_writer::empty_tag('hr');
         echo $output->render(new \format_kickstart\output\import_course_list());
     }

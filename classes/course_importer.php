@@ -15,28 +15,51 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Import course mbz into existing course.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace format_kickstart;
 
-class course_importer
-{
-    public static function import($template_id, $course_id)
-    {
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Import course mbz into existing course.
+ *
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package format_kickstart
+ */
+class course_importer {
+
+    /**
+     * Import template into course.
+     *
+     * @param int $templateid
+     * @param int $courseid
+     * @throws \base_plan_exception
+     * @throws \base_setting_exception
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     * @throws \restore_controller_exception
+     */
+    public static function import($templateid, $courseid) {
         global $CFG, $USER, $DB;
 
         require_once($CFG->dirroot.'/course/format/kickstart/lib.php');
         require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 
-        $course = $DB->get_record('course', ['id' => $course_id]);
+        $course = $DB->get_record('course', ['id' => $courseid]);
 
-        $template = $DB->get_record('kickstart_template', ['id' => $template_id], '*', MUST_EXIST);
+        $template = $DB->get_record('kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files(\context_system::instance()->id, 'format_kickstart', 'course_backups', $template->id, '', false);
+        $files = $fs->get_area_files(\context_system::instance()->id, 'format_kickstart', 'course_backups',
+            $template->id, '', false);
         $files = array_values($files);
 
         if (!isset($files[0])) {
@@ -48,7 +71,7 @@ class course_importer
         $files[0]->extract_to_pathname($fp, $filepath);
 
         // Now restore the course.
-        $rc = new \restore_controller('test-restore-course', $course_id, \backup::INTERACTIVE_NO,
+        $rc = new \restore_controller('test-restore-course', $courseid, \backup::INTERACTIVE_NO,
             \backup::MODE_GENERAL, $USER->id, \backup::TARGET_EXISTING_DELETING);
         $rc->get_plan()->get_setting('overwrite_conf')->set_value(true);
         $rc->get_plan()->get_setting('users')->set_value(false);
@@ -67,7 +90,7 @@ class course_importer
         $enddate = $course->enddate;
         $timecreated = $course->timecreated;
         // Reload course.
-        $course = $DB->get_record('course', ['id' => $course_id]);
+        $course = $DB->get_record('course', ['id' => $courseid]);
         $course->summary = $summary;
         $course->summaryformat = $summaryformat;
         $course->enddate = $enddate;

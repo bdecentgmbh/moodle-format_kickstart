@@ -18,7 +18,7 @@
  * This file contains main class for the course format Kickstart
  *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,10 +30,11 @@ require_once($CFG->dirroot. '/course/format/lib.php');
  * Main class for the Kickstart course format
  *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_kickstart extends format_base {
+
     /**
      * Definitions of the additional options that this course format uses for course
      *
@@ -120,8 +121,7 @@ class format_kickstart extends format_base {
      *
      * @return stdClass
      */
-    public function get_course()
-    {
+    public function get_course() {
         $course = parent::get_course();
 
         if (is_string($course->userinstructions)) {

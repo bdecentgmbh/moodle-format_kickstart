@@ -15,39 +15,50 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Widget that displays courses to import inside course.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace format_kickstart\output;
 
+defined('MOODLE_INTERNAL') || die();
+
 use renderer_base;
 
-class import_course_list implements \templatable, \renderable
-{
-    public function export_for_template(renderer_base $output)
-    {
+/**
+ * Widget that displays courses to import inside course.
+ *
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package format_kickstart
+ */
+class import_course_list implements \templatable, \renderable {
+
+    /**
+     * Get variables for template.
+     *
+     * @param renderer_base $output
+     * @return array|\stdClass
+     * @throws \coding_exception
+     * @throws \moodle_exception
+     */
+    public function export_for_template(renderer_base $output) {
         global $CFG, $COURSE, $PAGE, $OUTPUT;
 
-        // Require both the backup and restore libs
+        // Require both the backup and restore libs.
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
         require_once($CFG->dirroot . '/backup/moodle2/backup_plan_builder.class.php');
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
         require_once($CFG->dirroot . '/backup/util/ui/import_extensions.php');
 
-
-        // Prepare the backup renderer
-        $renderer = $PAGE->get_renderer('core','backup');
-
-        // Obviously not... show the selector so one can be chosen
-        $url = new \moodle_url('/backup/import.php', array('id'=>$COURSE->id));
-        $component = new \import_course_search(array('url'=>$url));
+        // Obviously not... show the selector so one can be chosen.
+        $url = new \moodle_url('/backup/import.php', ['id' => $COURSE->id]);
+        $component = new \import_course_search(['url' => $url]);
 
         $courses = [];
-
-        $url = $component->get_url();
-
         $html = '';
 
         if ($component->get_count() === 0) {
@@ -55,8 +66,14 @@ class import_course_list implements \templatable, \renderable
         } else {
             foreach ($component->get_results() as $course) {
                 $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
-                $course->fullname = format_string($course->fullname, true, array('context' => \context_course::instance($course->id)));
-                $course->importurl = new \moodle_url('/backup/import.php', ['id' => $COURSE->id, 'target' => $course->id, 'importid' => $COURSE->id]);;
+                $course->fullname = format_string($course->fullname, true, [
+                    'context' => \context_course::instance($course->id)
+                ]);
+                $course->importurl = new \moodle_url('/backup/import.php', [
+                    'id' => $COURSE->id,
+                    'target' => $course->id,
+                    'importid' => $COURSE->id
+                ]);
                 $courses[] = $course;
             }
             if ($component->has_more_results()) {

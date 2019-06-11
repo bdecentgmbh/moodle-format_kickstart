@@ -15,23 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Template list table.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace format_kickstart;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir . '/tablelib.php');
 
 /**
- * List of templates
+ * List of templates.
  *
  * @package format_kickstart
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class template_table extends \table_sql
-{
+class template_table extends \table_sql {
+
     /**
+     * Setup table.
+     *
      * @throws \coding_exception
      */
     public function __construct() {
@@ -57,14 +65,27 @@ class template_table extends \table_sql
         $this->define_headers($headers);
     }
 
-    public function col_tags($data)
-    {
+    /**
+     * Generate tag list.
+     *
+     * @param \stdClass $data
+     * @return mixed
+     */
+    public function col_tags($data) {
         global $OUTPUT;
-        return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $data->id), null, 'template-tags');
+        return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $data->id),
+            null, 'template-tags');
     }
 
-    public function col_actions($data)
-    {
+    /**
+     * Actions for tags.
+     *
+     * @param \stdClass $data
+     * @return string
+     * @throws \coding_exception
+     * @throws \moodle_exception
+     */
+    public function col_actions($data) {
         global $OUTPUT;
 
         return $OUTPUT->single_button(
@@ -76,12 +97,13 @@ class template_table extends \table_sql
     }
 
     /**
+     * Get the templates.
+     *
      * @param int $pagesize
      * @param bool $useinitialsbar
      * @throws \dml_exception
      */
-    public function query_db($pagesize, $useinitialsbar = true)
-    {
+    public function query_db($pagesize, $useinitialsbar = true) {
         global $DB;
 
         list($wsql, $params) = $this->get_sql_where();
@@ -103,7 +125,6 @@ class template_table extends \table_sql
         } else {
             $this->pageable(false);
         }
-
 
         if ($useinitialsbar && !$this->is_downloading()) {
             $this->initialbars(true);

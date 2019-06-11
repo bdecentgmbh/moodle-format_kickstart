@@ -15,19 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Template delete form.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace format_kickstart\form;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once("$CFG->libdir/formslib.php");
 
-class template_delete_form extends \moodleform
-{
-    public function definition()
-    {
+/**
+ * Template delete form.
+ *
+ * @package format_kickstart
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class template_delete_form extends \moodleform {
+
+    /**
+     * Define form elements.
+     *
+     * @throws \coding_exception
+     */
+    public function definition() {
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'id');

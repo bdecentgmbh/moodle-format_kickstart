@@ -15,19 +15,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Preferences form for templates.
+ *
  * @package    format_kickstart
- * @copyright  2018 bdecent gmbh <https://bdecent.de>
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace format_kickstart\form;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once("$CFG->libdir/formslib.php");
 
-class template_table_settings_form extends \moodleform
-{
-    public function definition()
-    {
+/**
+ * Preferences form for templates.
+ *
+ * @package format_kickstart
+ * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class template_table_settings_form extends \moodleform {
+
+    /**
+     * Define form elements.
+     *
+     * @throws \coding_exception
+     */
+    public function definition() {
         $mform =& $this->_form;
 
         $mform->addElement('header', 'preferencesuser', get_string('preferencesuser', 'scorm'));

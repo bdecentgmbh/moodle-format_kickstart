@@ -31,6 +31,12 @@ $PAGE->set_title(get_string('buypro', 'format_kickstart'));
 $PAGE->set_heading(get_string('buypro', 'format_kickstart'));
 $PAGE->set_url(new moodle_url('/course/format/kickstart/buypro.php'));
 
+$PAGE->navbar->add(get_string('buypro', 'format_kickstart'));
+
+require_login();
+
 echo $OUTPUT->header();
-echo get_string('buyprosummary', 'format_kickstart');
+echo \html_writer::div(get_string('buyprosummary', 'format_kickstart'), 'mb-2');
+echo $OUTPUT->single_button('https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
+    get_string('learnmore', 'format_kickstart'));
 echo $OUTPUT->footer();
