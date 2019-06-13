@@ -76,9 +76,6 @@ class import_course_list implements \templatable, \renderable {
                 ]);
                 $courses[] = $course;
             }
-            if ($component->has_more_results()) {
-                $html .= $OUTPUT->notification(get_string('moreresults', 'backup'), 'info');
-            }
         }
 
         return [
@@ -88,6 +85,7 @@ class import_course_list implements \templatable, \renderable {
             'haspro' => format_kickstart_has_pro(),
             'coursecount' => $component->get_count(),
             'coursecountlabel' => $component->get_count() == 1 ? get_string('course') : get_string('courses'),
+            'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/'
         ];
     }
