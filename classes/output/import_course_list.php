@@ -78,13 +78,14 @@ class import_course_list implements \templatable, \renderable {
             }
         }
 
+
+
         return [
             'searchurl' => $PAGE->url,
             'html' => $html,
             'courses' => $courses,
             'haspro' => format_kickstart_has_pro(),
-            'coursecount' => $component->get_count(),
-            'coursecountlabel' => $component->get_count() == 1 ? get_string('course') : get_string('courses'),
+            'searchlabel' => get_string('showing', 'local_kickstart_pro', ['count' => $component->get_count()]),
             'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/'
         ];
