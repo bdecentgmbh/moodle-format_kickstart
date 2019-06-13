@@ -37,6 +37,6 @@ require_login();
 
 echo $OUTPUT->header();
 echo \html_writer::div(get_string('buyprosummary', 'format_kickstart'), 'mb-2');
-echo $OUTPUT->single_button('https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
-    get_string('learnmore', 'format_kickstart'));
+echo \html_writer::link('https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
+    get_string('learnmore', 'format_kickstart'), ['target' => '_blank', 'class' => 'btn btn-primary']);
 echo $OUTPUT->footer();
