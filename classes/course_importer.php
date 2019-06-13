@@ -70,16 +70,26 @@ class course_importer {
         $filepath = $CFG->dataroot . '/temp/backup/test-restore-course';
         $files[0]->extract_to_pathname($fp, $filepath);
 
+        $settings = [
+            'overwrite_conf' => true,
+            'users' => false,
+            'course_shortname' => $course->shortname,
+            'course_fullname' => $course->fullname,
+            'course_startdate' => $course->startdate,
+            'keep_roles_and_enrolments' => false,
+            'keep_groups_and_groupings' => false,
+        ];
+
         // Now restore the course.
         $rc = new \restore_controller('test-restore-course', $courseid, \backup::INTERACTIVE_NO,
             \backup::MODE_GENERAL, $USER->id, \backup::TARGET_EXISTING_DELETING);
-        $rc->get_plan()->get_setting('overwrite_conf')->set_value(true);
-        $rc->get_plan()->get_setting('users')->set_value(false);
-        $rc->get_plan()->get_setting('course_shortname')->set_value($course->shortname);
-        $rc->get_plan()->get_setting('course_fullname')->set_value($course->fullname);
-        $rc->get_plan()->get_setting('course_startdate')->set_value($course->startdate);
-        $rc->get_plan()->get_setting('keep_roles_and_enrolments')->set_value(false);
-        $rc->get_plan()->get_setting('keep_groups_and_groupings')->set_value(false);
+
+        foreach ($settings as $settingname => $value) {
+            $setting = $rc->get_plan()->get_setting($settingname);
+            if ($setting->get_status() == \base_setting::NOT_LOCKED) {
+                $rc->get_plan()->get_setting($settingname)->set_value($value);
+            }
+        }
         $rc->execute_precheck();
         $rc->execute_plan();
         $rc->destroy();
