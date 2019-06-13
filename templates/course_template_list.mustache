@@ -72,6 +72,9 @@
 <hr>
 
 <h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
+{{#notemplates}}
+    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}} {{#canmanage}}<a href="{{createtemplateurl}}">{{#str}}create_template, format_kickstart{{/str}}</a>.{{/canmanage}}</p>
+{{/notemplates}}
 {{#templates}}
     {{#groups}}
         <div class="card-deck mb-2">
@@ -103,6 +106,3 @@
         </div>
     {{/groups}}
 {{/templates}}
-{{^templates.groups}}
-    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
-{{/templates.groups}}

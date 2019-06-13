@@ -66,6 +66,7 @@ class course_template_list implements \templatable, \renderable {
         $limit = format_kickstart_has_pro() ? 0 : 3;
 
         $templates = $DB->get_records('kickstart_template', null, '', '*', 0, $limit);
+        $notemplates = empty($templates);
 
         foreach ($templates as $template) {
             $template->description_formatted = format_text($template->description, $template->description_format);
@@ -92,7 +93,10 @@ class course_template_list implements \templatable, \renderable {
             'templates' => ['groups' => $this->get_groups($templates)],
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
-                $this->course->teacherinstructions['format'])
+                $this->course->teacherinstructions['format']),
+            'notemplates' => $notemplates,
+            'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
+            'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create'])
         ];
     }
 
