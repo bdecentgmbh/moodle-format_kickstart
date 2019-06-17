@@ -82,13 +82,15 @@ class import_course_list implements \templatable, \renderable {
         }
 
         return [
+            'searchterm' => $component->get_search() ? get_string('searchterm', 'format_kickstart', ['term' => $component->get_search()]) : null,
             'searchurl' => $PAGE->url,
             'html' => $html,
             'courses' => $courses,
             'haspro' => format_kickstart_has_pro(),
             'searchlabel' => get_string('showing', 'local_kickstart_pro', ['count' => $component->get_count()]),
             'moreresults' => $component->has_more_results(),
-            'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/'
+            'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
+            'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id])
         ];
     }
 }
