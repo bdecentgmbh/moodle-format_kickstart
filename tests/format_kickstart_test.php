@@ -69,7 +69,7 @@ class format_kickstart_test extends advanced_testcase {
 
         $fs->create_file_from_pathname($fileinfo, $CFG->dirroot . '/course/format/kickstart/tests/course.mbz');
 
-        \format_kickstart\course_importer::import($template->id, $course->id);
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
 
         $updatecourse = $DB->get_record('course', ['id' => $course->id]);
 

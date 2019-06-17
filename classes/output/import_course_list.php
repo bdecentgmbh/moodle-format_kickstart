@@ -55,7 +55,7 @@ class import_course_list implements \templatable, \renderable {
         require_once($CFG->dirroot . '/backup/util/ui/import_extensions.php');
 
         // Obviously not... show the selector so one can be chosen.
-        $url = new \moodle_url('/backup/import.php', ['id' => $COURSE->id]);
+        $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
         $component = new \import_course_search(['url' => $url]);
 
         $courses = [];
@@ -69,16 +69,14 @@ class import_course_list implements \templatable, \renderable {
                 $course->fullname = format_string($course->fullname, true, [
                     'context' => \context_course::instance($course->id)
                 ]);
-                $course->importurl = new \moodle_url('/backup/import.php', [
+                $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
                     'id' => $COURSE->id,
-                    'target' => $course->id,
-                    'importid' => $COURSE->id
+                    'importid' => $course->id,
+                    'target' => \backup::TARGET_EXISTING_DELETING
                 ]);
                 $courses[] = $course;
             }
         }
-
-
 
         return [
             'searchurl' => $PAGE->url,

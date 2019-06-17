@@ -39,6 +39,6 @@ if (!$PAGE->user_allowed_editing()) {
     throw new moodle_exception('notallowed', 'format_kickstart');
 }
 
-\format_kickstart\course_importer::import($templateid, $courseid);
+\format_kickstart\course_importer::import_from_template($templateid, $courseid);
 
 redirect(new moodle_url('/course/view.php', ['id' => $courseid]));

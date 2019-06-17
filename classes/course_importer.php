@@ -26,6 +26,9 @@ namespace format_kickstart;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/course/format/kickstart/lib.php');
+require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
+
 /**
  * Import course mbz into existing course.
  *
@@ -47,13 +50,8 @@ class course_importer {
      * @throws \moodle_exception
      * @throws \restore_controller_exception
      */
-    public static function import($templateid, $courseid) {
-        global $CFG, $USER, $DB;
-
-        require_once($CFG->dirroot.'/course/format/kickstart/lib.php');
-        require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
-
-        $course = $DB->get_record('course', ['id' => $courseid]);
+    public static function import_from_template($templateid, $courseid) {
+        global $CFG, $DB;
 
         $template = $DB->get_record('kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
@@ -67,8 +65,17 @@ class course_importer {
         }
 
         $fp = get_file_packer('application/vnd.moodle.backup');
-        $filepath = $CFG->dataroot . '/temp/backup/test-restore-course';
+        $filepath = $CFG->dataroot . '/temp/backup/template' . $templateid;
         $files[0]->extract_to_pathname($fp, $filepath);
+
+        self::import('template' . $templateid, $courseid);
+    }
+
+    public static function import($backuptempdir, $courseid)
+    {
+        global $USER, $DB;
+
+        $course = $DB->get_record('course', ['id' => $courseid]);
 
         $settings = [
             'overwrite_conf' => true,
@@ -81,7 +88,7 @@ class course_importer {
         ];
 
         // Now restore the course.
-        $rc = new \restore_controller('test-restore-course', $courseid, \backup::INTERACTIVE_NO,
+        $rc = new \restore_controller($backuptempdir, $course->id, \backup::INTERACTIVE_NO,
             \backup::MODE_GENERAL, $USER->id, \backup::TARGET_EXISTING_DELETING);
 
         foreach ($settings as $settingname => $value) {
