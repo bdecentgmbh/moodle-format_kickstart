@@ -46,7 +46,7 @@ class import_course_list implements \templatable, \renderable {
      * @throws \moodle_exception
      */
     public function export_for_template(renderer_base $output) {
-        global $CFG, $COURSE, $PAGE, $OUTPUT;
+        global $CFG, $COURSE, $PAGE, $OUTPUT, $SITE;
 
         // Require both the backup and restore libs.
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
@@ -65,6 +65,9 @@ class import_course_list implements \templatable, \renderable {
             $html .= $OUTPUT->notification(get_string('nomatchingcourses', 'backup'));
         } else {
             foreach ($component->get_results() as $course) {
+                if ($course->id == $SITE->id || $course->id == $COURSE->id) {
+                    continue;
+                }
                 $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
                 $course->fullname = format_string($course->fullname, true, [
                     'context' => \context_course::instance($course->id)
