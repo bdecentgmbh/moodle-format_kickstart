@@ -54,5 +54,5 @@ $confirmstr = \html_writer::tag('h4', $template->title);
 $confirmstr .= \html_writer::tag('p', get_string('confirmtemplate', 'format_kickstart'));
 
 echo $OUTPUT->header();
-echo $OUTPUT->confirm($confirmstr, $continuebutton, $continueurl);
+echo $OUTPUT->confirm($confirmstr, $continuebutton, new \moodle_url('/course/view.php', ['id' => $courseid]));
 echo $OUTPUT->footer();
