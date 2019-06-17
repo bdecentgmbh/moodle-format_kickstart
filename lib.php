@@ -139,6 +139,21 @@ class format_kickstart extends format_base {
 
         return $course;
     }
+
+    /**
+     * Returns the display name of the given section that the course prefers.
+     *
+     * @param int|stdClass $section Section object from database or just field course_sections.section
+     * @return string Display name that the course format prefers, e.g. "Topic 2"
+     * @throws \coding_exception
+     */
+    public function get_section_name($section) {
+        if (get_string_manager()->string_exists('sectionname', 'format_' . $this->format)) {
+            return get_string('sectionname', 'format_' . $this->format);
+        }
+
+        return '';
+    }
 }
 
 /**
