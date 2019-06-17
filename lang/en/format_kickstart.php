@@ -67,3 +67,4 @@ $string['userinstructions'] = 'Student instructions';
 $string['userinstructions_help'] = 'Content displayed to students before a template has been chosen by the teacher.';
 $string['usetemplate'] = 'Use template';
 $string['welcometoyourcourse'] = 'Welcome to your new course';
+$string['importexplanation'] = 'Here is a list of courses you are enrolled in as a teacher. You can import contents from these courses. Use the search box to narrow down the list of courses.';
