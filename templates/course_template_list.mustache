@@ -88,6 +88,9 @@
                         </div>
                         <div class="card-footer">
                             <a href="{{{link}}}" class="btn btn-primary">{{#str}}usetemplate, format_kickstart{{/str}}</a>
+                            {{#preview_url}}
+                                <a href="{{preview_url}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}preview{{/str}}</a>
+                            {{/preview_url}}
                         </div>
                     </div>
                 {{/isplaceholder}}

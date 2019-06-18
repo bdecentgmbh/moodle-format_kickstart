@@ -72,5 +72,20 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019050900, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2019061703) {
+
+        // Define field preview_url to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('preview_url', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'description_format');
+
+        // Conditionally launch add field preview_url.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2019061703, 'format', 'kickstart');
+    }
+
     return true;
 }

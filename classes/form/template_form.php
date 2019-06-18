@@ -67,6 +67,10 @@ class template_form extends \moodleform {
             ]);
         $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
 
+        $mform->addElement('text', 'preview_url', get_string('previewurl', 'format_kickstart'));
+        $mform->setType('preview_url', PARAM_URL);
+        $mform->addHelpButton('preview_url', 'previewurl', 'format_kickstart');
+
         $this->add_action_buttons();
     }
 }
