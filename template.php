@@ -123,8 +123,9 @@ switch ($action) {
 
         if ($data = $form->get_data()) {
             $DB->delete_records('kickstart_template', ['id' => $data->id]);
-        } else if ($form->is_cancelled()) {
             \core\notification::success(get_string('template_deleted', 'format_kickstart'));
+            redirect(new moodle_url('/course/format/kickstart/templates.php'));
+        } else if ($form->is_cancelled()) {
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else {
             $form->set_data($template);
