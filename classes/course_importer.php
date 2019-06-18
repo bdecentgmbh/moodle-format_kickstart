@@ -71,8 +71,17 @@ class course_importer {
         self::import('template' . $templateid, $courseid);
     }
 
-    public static function import($backuptempdir, $courseid)
-    {
+    /**
+     * Import course from backup directory.
+     *
+     * @param string $backuptempdir
+     * @param int $courseid
+     * @throws \base_plan_exception
+     * @throws \base_setting_exception
+     * @throws \dml_exception
+     * @throws \restore_controller_exception
+     */
+    public static function import($backuptempdir, $courseid) {
         global $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);

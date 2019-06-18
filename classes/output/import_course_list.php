@@ -82,7 +82,8 @@ class import_course_list implements \templatable, \renderable {
         }
 
         return [
-            'searchterm' => $component->get_search() ? get_string('searchterm', 'format_kickstart', ['term' => $component->get_search()]) : null,
+            'searchterm' => $component->get_search() ?
+                get_string('searchterm', 'format_kickstart', ['term' => $component->get_search()]) : null,
             'searchurl' => $PAGE->url,
             'html' => $html,
             'courses' => $courses,
