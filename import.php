@@ -35,9 +35,7 @@ $PAGE->set_context(\context_course::instance($courseid));
 
 require_login();
 
-if (!$PAGE->user_allowed_editing()) {
-    throw new moodle_exception('notallowed', 'format_kickstart');
-}
+require_capability('format/kickstart:import_from_template', $PAGE->context);
 
 \format_kickstart\course_importer::import_from_template($templateid, $courseid);
 

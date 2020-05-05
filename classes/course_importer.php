@@ -98,7 +98,7 @@ class course_importer {
 
         // Now restore the course.
         $rc = new \restore_controller($backuptempdir, $course->id, \backup::INTERACTIVE_NO,
-            \backup::MODE_GENERAL, $USER->id, \backup::TARGET_EXISTING_DELETING);
+            \backup::MODE_IMPORT, $USER->id, \backup::TARGET_EXISTING_DELETING);
 
         foreach ($settings as $settingname => $value) {
             $setting = $rc->get_plan()->get_setting($settingname);

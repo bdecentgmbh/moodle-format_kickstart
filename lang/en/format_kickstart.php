@@ -46,6 +46,7 @@ $string['general_settings'] = 'General settings';
 $string['getpro'] = 'Get more templates with Kickstart Pro';
 $string['goprotoenable'] = 'Go Pro to enable';
 $string['gotocourse'] = 'Go to course';
+$string['import_from_template'] = 'Import from templates';
 $string['importcourse'] = 'Import course';
 $string['importexplanation'] = 'Here is a list of courses you are enrolled in as a teacher. You can import contents from these courses. Use the search box to narrow down the list of courses.';
 $string['kickstart:manage_templates'] = 'Manage templates';
