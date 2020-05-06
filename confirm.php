@@ -35,9 +35,7 @@ $PAGE->set_url(new moodle_url('/course/format/confirm.php', ['template_id' => $t
 
 require_login();
 
-if (!$PAGE->user_allowed_editing()) {
-    throw new moodle_exception('notallowed', 'format_kickstart');
-}
+require_capability('format/kickstart:import_from_template', $PAGE->context);
 
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 $template = $DB->get_record('kickstart_template', ['id' => $templateid], '*', MUST_EXIST);

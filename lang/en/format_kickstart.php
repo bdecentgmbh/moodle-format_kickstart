@@ -53,7 +53,6 @@ $string['kickstart:manage_templates'] = 'Manage templates';
 $string['learnmore'] = 'Learn more';
 $string['manage_templates'] = 'Manage templates';
 $string['migratefromcourses'] = 'Migrate content from other courses';
-$string['notallowed'] = 'You are not allowed to do this.';
 $string['notemplates'] = 'No templates have been created yet.';
 $string['pluginname'] = 'Kickstart format';
 $string['previewurl'] = 'Preview URL';
