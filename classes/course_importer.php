@@ -96,31 +96,36 @@ class course_importer {
             'keep_groups_and_groupings' => false,
         ];
 
-        // Now restore the course.
-        $rc = new \restore_controller($backuptempdir, $course->id, \backup::INTERACTIVE_NO,
-            \backup::MODE_IMPORT, $USER->id, \backup::TARGET_EXISTING_DELETING);
+        try {
+            // Now restore the course.
+            $rc = new \restore_controller($backuptempdir, $course->id, \backup::INTERACTIVE_NO,
+                \backup::MODE_IMPORT, $USER->id, \backup::TARGET_EXISTING_DELETING);
 
-        foreach ($settings as $settingname => $value) {
-            $setting = $rc->get_plan()->get_setting($settingname);
-            if ($setting->get_status() == \base_setting::NOT_LOCKED) {
-                $rc->get_plan()->get_setting($settingname)->set_value($value);
+            foreach ($settings as $settingname => $value) {
+                $setting = $rc->get_plan()->get_setting($settingname);
+                if ($setting->get_status() == \base_setting::NOT_LOCKED) {
+                    $rc->get_plan()->get_setting($settingname)->set_value($value);
+                }
             }
+            $rc->execute_precheck();
+            $rc->execute_plan();
+            $rc->destroy();
+        } catch (\Exception $e) {
+            \core\notification::error('Restore failed with status: ' . $rc->get_status());
+            throw $e;
+        } finally {
+            // Reset some settings.
+            $summary = $course->summary;
+            $summaryformat = $course->summaryformat;
+            $enddate = $course->enddate;
+            $timecreated = $course->timecreated;
+            // Reload course.
+            $course = $DB->get_record('course', ['id' => $courseid]);
+            $course->summary = $summary;
+            $course->summaryformat = $summaryformat;
+            $course->enddate = $enddate;
+            $course->timecreated = $timecreated;
+            $DB->update_record('course', $course);
         }
-        $rc->execute_precheck();
-        $rc->execute_plan();
-        $rc->destroy();
-
-        // Reset some settings.
-        $summary = $course->summary;
-        $summaryformat = $course->summaryformat;
-        $enddate = $course->enddate;
-        $timecreated = $course->timecreated;
-        // Reload course.
-        $course = $DB->get_record('course', ['id' => $courseid]);
-        $course->summary = $summary;
-        $course->summaryformat = $summaryformat;
-        $course->enddate = $enddate;
-        $course->timecreated = $timecreated;
-        $DB->update_record('course', $course);
     }
 }
