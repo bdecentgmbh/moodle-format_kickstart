@@ -43,12 +43,19 @@ class course_template_list implements \templatable, \renderable {
     private $course;
 
     /**
+     * @var int
+     */
+    private $userid;
+
+    /**
      * Constructor.
      *
      * @param \stdClass $course
+     * @param int $userid
      */
-    public function __construct(\stdClass $course) {
-        $this->course = course_get_format($course)->get_course();;
+    public function __construct(\stdClass $course, $userid) {
+        $this->course = course_get_format($course)->get_course();
+        $this->userid = $userid;
     }
 
     /**
@@ -65,10 +72,27 @@ class course_template_list implements \templatable, \renderable {
 
         $limit = format_kickstart_has_pro() ? 0 : 3;
 
-        $templates = $DB->get_records('kickstart_template', null, '', '*', 0, $limit);
-        $notemplates = empty($templates);
+        $cohortids = [];
+        foreach (cohort_get_user_cohorts($this->userid) as $cohort) {
+            $cohortids[] = $cohort->id;
+        }
 
-        foreach ($templates as $template) {
+        $roleids = [];
+        foreach (get_user_roles(\context_course::instance($this->course->id)) as $role) {
+            $roleids[] = $role->roleid;
+        }
+
+        $templates = [];
+
+        foreach ($DB->get_records('kickstart_template') as $template) {
+            if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
+                if (($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
+                    ($template->restrictcategory && !in_array($this->course->category, json_decode($template->categoryids, true))) ||
+                    ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))) {
+                    continue;
+                }
+            }
+
             $template->description_formatted = format_text($template->description, $template->description_format);
             $tags = [];
             foreach (\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $template->id) as $tag) {
@@ -79,6 +103,12 @@ class course_template_list implements \templatable, \renderable {
                 'template_id' => $template->id,
                 'course_id' => $COURSE->id
             ]);
+
+            if ($limit > 0 && count($templates) >= $limit) {
+                break;
+            }
+
+            $templates[] = $template;
         }
 
         if (!format_kickstart_has_pro() && is_siteadmin()) {
@@ -94,7 +124,7 @@ class course_template_list implements \templatable, \renderable {
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
                 $this->course->teacherinstructions['format']),
-            'notemplates' => $notemplates,
+            'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create'])
         ];
