@@ -111,7 +111,9 @@ class course_importer {
             $rc->execute_plan();
             $rc->destroy();
         } catch (\Exception $e) {
-            \core\notification::error('Restore failed with status: ' . $rc->get_status());
+            if ($rc) {
+                \core\notification::error('Restore failed with status: ' . $rc->get_status());
+            }
             throw $e;
         } finally {
             // Reset some settings.

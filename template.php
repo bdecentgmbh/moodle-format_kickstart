@@ -53,6 +53,9 @@ switch ($action) {
         if ($data = $form->get_data()) {
             $data->description_format = $data->description['format'];
             $data->description = $data->description['text'];
+            $data->cohortids = json_encode($data->cohortids);
+            $data->categoryids = json_encode($data->categoryids);
+            $data->roleids = json_encode($data->roleids);
             $id = $DB->insert_record('kickstart_template', $data);
 
             core_tag_tag::set_item_tags('format_kickstart', 'kickstart_template', $id, context_system::instance(), $data->tags);
@@ -82,6 +85,9 @@ switch ($action) {
         if ($data = $form->get_data()) {
             $data->description_format = $data->description['format'];
             $data->description = $data->description['text'];
+            $data->cohortids = json_encode($data->cohortids);
+            $data->categoryids = json_encode($data->categoryids);
+            $data->roleids = json_encode($data->roleids);
             $DB->update_record('kickstart_template', $data);
 
             core_tag_tag::set_item_tags('format_kickstart', 'kickstart_template', $id, context_system::instance(), $data->tags);
@@ -104,6 +110,9 @@ switch ($action) {
                 'text' => $template->description,
                 'format' => $template->description_format
             ];
+            $template->cohortids = json_decode($template->cohortids, true);
+            $template->categoryids = json_decode($template->categoryids, true);
+            $template->roleids = json_decode($template->roleids, true);
 
             $form->set_data($template);
         }

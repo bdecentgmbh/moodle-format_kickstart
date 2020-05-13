@@ -87,5 +87,65 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2019061703, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2020051200) {
+
+        // Define field restrictcohort to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('restrictcohort', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'preview_url');
+
+        // Conditionally launch add field restrictcohort.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field restrictcategory to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('restrictcategory', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'restrictcohort');
+
+        // Conditionally launch add field restrictcategory.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field restrictrole to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('restrictrole', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'restrictcategory');
+
+        // Conditionally launch add field restrictrole.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field cohortids to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('cohortids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'restrictrole');
+
+        // Conditionally launch add field cohortids.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field categoryids to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('categoryids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'cohortids');
+
+        // Conditionally launch add field categoryids.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field roleids to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('roleids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'categoryids');
+
+        // Conditionally launch add field roleids.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2020051200, 'format', 'kickstart');
+    }
+
     return true;
 }
