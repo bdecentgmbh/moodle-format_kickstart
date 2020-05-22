@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['automatictemplate'] = 'Automatic template';
+$string['automatictemplate_desc'] = 'If only one template is available to the user it will automatically be imported. The user will be notified on the page when this happens.';
+$string['automatictemplate_help'] = 'The course template was automatically applied. If you require a different template, please contact the system administrator.';
 $string['buypro'] = 'Buy Kickstart Pro';
 $string['buypromaxtemplates'] = 'You are using the maximum number (<b>3</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';

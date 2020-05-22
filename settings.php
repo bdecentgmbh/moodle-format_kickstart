@@ -25,15 +25,19 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_configcheckbox('format_kickstart/automatictemplate',
+        get_string('automatictemplate', 'format_kickstart'),
+        get_string('automatictemplate_desc', 'format_kickstart'),
+        1));
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
-            get_string('defaultuserinstructions', 'format_kickstart'),
-            get_string('defaultuserinstructions_desc', 'format_kickstart'),
-            get_string('defaultuserinstructions_default', 'format_kickstart')));
+        get_string('defaultuserinstructions', 'format_kickstart'),
+        get_string('defaultuserinstructions_desc', 'format_kickstart'),
+        get_string('defaultuserinstructions_default', 'format_kickstart')));
 
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultteacherinstructions',
-            get_string('defaultteacherinstructions', 'format_kickstart'),
-            get_string('defaultteacherinstructions_desc', 'format_kickstart'),
-            get_string('defaultteacherinstructions_default', 'format_kickstart')));
+        get_string('defaultteacherinstructions', 'format_kickstart'),
+        get_string('defaultteacherinstructions_desc', 'format_kickstart'),
+        get_string('defaultteacherinstructions_default', 'format_kickstart')));
 }
 $settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));

@@ -59,15 +59,14 @@ class course_template_list implements \templatable, \renderable {
     }
 
     /**
-     * Get variables for template.
+     * Get templates available to user.
      *
-     * @param renderer_base $output
-     * @return array|\stdClass
      * @throws \coding_exception
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public function export_for_template(renderer_base $output) {
+    public function get_templates()
+    {
         global $DB, $COURSE;
 
         $limit = format_kickstart_has_pro() ? 0 : 3;
@@ -111,6 +110,20 @@ class course_template_list implements \templatable, \renderable {
             $templates[] = $template;
         }
 
+        return $templates;
+    }
+
+    /**
+     * Get variables for template.
+     *
+     * @param renderer_base $output
+     * @return array|\stdClass
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
+    public function export_for_template(renderer_base $output) {
+
         if (!format_kickstart_has_pro() && is_siteadmin()) {
             $template = new \stdClass();
             $template->isplaceholder = true;
@@ -120,7 +133,7 @@ class course_template_list implements \templatable, \renderable {
         }
 
         return [
-            'templates' => ['groups' => $this->get_groups($templates)],
+            'templates' => ['groups' => $this->get_groups($this->get_templates())],
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
                 $this->course->teacherinstructions['format']),
