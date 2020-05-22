@@ -90,6 +90,90 @@ class format_kickstart extends format_base {
     }
 
     /**
+     * Override: Allow editor element types to be saved properly.
+     *
+     * Updates format options for a course or section
+     *
+     * If $data does not contain property with the option name, the option will not be updated
+     *
+     * @param stdClass|array $data return value from {@link moodleform::get_data()} or array with data
+     * @param null|int null if these are options for course or section id (course_sections.id)
+     *     if these are options for section
+     * @return bool whether there were any changes to the options values
+     * @throws dml_exception
+     */
+    protected function update_format_options($data, $sectionid = null) {
+        global $DB;
+        $data = $this->validate_format_options((array)$data, $sectionid);
+        if (!$sectionid) {
+            $allformatoptions = $this->course_format_options();
+            $sectionid = 0;
+        } else {
+            $allformatoptions = $this->section_format_options();
+        }
+        if (empty($allformatoptions)) {
+            // nothing to update anyway
+            return false;
+        }
+        $defaultoptions = array();
+        $cached = array();
+        foreach ($allformatoptions as $key => $option) {
+            $defaultoptions[$key] = null;
+            if (array_key_exists('default', $option)) {
+                $defaultoptions[$key] = $option['default'];
+            }
+            $cached[$key] = ($sectionid === 0 || !empty($option['cache']));
+        }
+        $records = $DB->get_records('course_format_options',
+            array('courseid' => $this->courseid,
+                'format' => $this->format,
+                'sectionid' => $sectionid
+            ), '', 'name,id,value');
+        $changed = $needrebuild = false;
+        foreach ($defaultoptions as $key => $value) {
+            if (isset($records[$key])) {
+                if (array_key_exists($key, $data) && $records[$key]->value !== $data[$key]) {
+                    $DB->set_field('course_format_options', 'value',
+                        $data[$key], array('id' => $records[$key]->id));
+                    $changed = true;
+                    $needrebuild = $needrebuild || $cached[$key];
+                }
+            } else {
+                if (array_key_exists($key, $data) && $data[$key] !== $value) {
+                    $newvalue = $data[$key];
+                    $changed = true;
+                    $needrebuild = $needrebuild || $cached[$key];
+                } else {
+                    $newvalue = $value;
+                    // we still insert entry in DB but there are no changes from user point of
+                    // view and no need to call rebuild_course_cache()
+                }
+
+                $newvalue = !is_array($newvalue) ? $newvalue : $newvalue['text'];
+
+                $DB->insert_record('course_format_options', array(
+                    'courseid' => $this->courseid,
+                    'format' => $this->format,
+                    'sectionid' => $sectionid,
+                    'name' => $key,
+                    'value' => $newvalue
+                ));
+            }
+        }
+        if ($needrebuild) {
+            rebuild_course_cache($this->courseid, true);
+        }
+        if ($changed) {
+            // reset internal caches
+            if (!$sectionid) {
+                $this->course = false;
+            }
+            unset($this->formatoptions[$sectionid]);
+        }
+        return $changed;
+    }
+
+    /**
      * Updates format options for a course
      *
      * In case if course format was changed to 'topics', we try to copy options
