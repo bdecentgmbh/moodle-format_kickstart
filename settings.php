@@ -48,3 +48,6 @@ $settings = null;
 
 $ADMIN->add('format_kickstart', new admin_externalpage('kickstarttemplates', get_string('manage_templates', 'format_kickstart'),
     new moodle_url('/course/format/kickstart/templates.php')));
+
+$ADMIN->add('courses', new admin_externalpage('kickstartcreatecourse', get_string('createcoursefromtemplate', 'format_kickstart'),
+    new moodle_url('/course/format/kickstart/createcourse.php'), 'moodle/course:create'));
