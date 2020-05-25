@@ -50,6 +50,6 @@ class course_form extends \moodleform
 
 
 
-        $this->add_action_buttons();
+        $this->add_action_buttons(true, get_string('continue'));
     }
 }

@@ -24,23 +24,18 @@
 
 require(__DIR__.'/../../../config.php');
 require_once(__DIR__.'/lib.php');
+require_once("$CFG->libdir/adminlib.php");
 
 global $USER;
 
 $download = optional_param('download', '', PARAM_ALPHA);
 
-$context = context_system::instance();
+admin_externalpage_setup('kickstarttemplates');
 
-$PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
 $PAGE->set_title(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_heading(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
     get_string('create_template', 'format_kickstart')));
-$PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'));
-
-require_login();
-require_capability('format/kickstart:manage_templates', $context);
 
 if (!format_kickstart_has_pro() && $DB->count_records('kickstart_template') >= 3) {
     \core\notification::warning(get_string('buypromaxtemplates', 'format_kickstart'));

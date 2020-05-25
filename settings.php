@@ -46,8 +46,8 @@ $ADMIN->add('format_kickstart', $settings);
 // Tell core we already added the settings structure.
 $settings = null;
 
-$ADMIN->add('format_kickstart', new admin_externalpage('kickstarttemplates', get_string('manage_templates', 'format_kickstart'),
-    new moodle_url('/course/format/kickstart/templates.php')));
+$ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('course_templates', 'format_kickstart'),
+    new moodle_url('/course/format/kickstart/templates.php'), 'format/kickstart:manage_templates'));
 
 $ADMIN->add('courses', new admin_externalpage('kickstartcreatecourse', get_string('createcoursefromtemplate', 'format_kickstart'),
     new moodle_url('/course/format/kickstart/createcourse.php'), ['moodle/course:create', 'format/kickstart:import_from_template']));
