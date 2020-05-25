@@ -84,9 +84,18 @@ class course_template_list implements \templatable, \renderable {
         $templates = [];
 
         foreach ($DB->get_records('kickstart_template') as $template) {
+            $categoryids = [];
+            foreach (json_decode($template->categoryids, true) as $categoryid) {
+                if ($coursecat = \core_course_category::get($categoryid, IGNORE_MISSING)) {
+                    $categoryids[] = $categoryid;
+                    if ($template->includesubcategories) {
+                        $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                    }
+                }
+            }
             if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
                 if (($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
-                    ($template->restrictcategory && !in_array($this->course->category, json_decode($template->categoryids, true))) ||
+                    ($template->restrictcategory && !in_array($this->course->category, $categoryids)) ||
                     ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))) {
                     continue;
                 }

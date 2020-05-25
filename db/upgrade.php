@@ -147,5 +147,20 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020051200, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2020052502) {
+
+        // Define field includesubcategories to be added to kickstart_template.
+        $table = new xmldb_table('kickstart_template');
+        $field = new xmldb_field('includesubcategories', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'categoryids');
+
+        // Conditionally launch add field includesubcategories.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2020052502, 'format', 'kickstart');
+    }
+
     return true;
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="course/format/kickstart/db" VERSION="20200513" COMMENT="XMLDB file for Moodle course/format/kickstart"
+<XMLDB PATH="course/format/kickstart/db" VERSION="20200525" COMMENT="XMLDB file for Moodle course/format/kickstart"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
@@ -16,6 +16,7 @@
         <FIELD NAME="restrictrole" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="cohortids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="categoryids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="includesubcategories" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="If true, subcategories of chosen category will be included in access."/>
         <FIELD NAME="roleids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

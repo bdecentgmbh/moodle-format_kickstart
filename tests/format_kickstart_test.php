@@ -27,7 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Test course importing.
  *
- * @group format_kickstart_test
+ * @group      format_kickstart
+ * @group      format_kickstart_test
  * @copyright  2019 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

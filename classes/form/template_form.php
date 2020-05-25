@@ -88,12 +88,21 @@ class template_form extends \moodleform {
         ]);
         $mform->hideIf('cohortids', 'restrictcohort');
 
+        $mform->addElement('html', '<hr>');
+
         $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
         $mform->setType('restrictcategory', PARAM_BOOL);
 
         $mform->addElement('autocomplete', 'categoryids', get_string('categories'),
             \core_course_category::make_categories_list('moodle/course:create'), ['multiple' => true]);
         $mform->hideIf('categoryids', 'restrictcategory');
+
+        $mform->addElement('advcheckbox', 'includesubcategories', get_string('includesubcategories', 'format_kickstart'));
+        $mform->setType('includesubcategories', PARAM_BOOL);
+        $mform->addHelpButton('includesubcategories', 'includesubcategories', 'format_kickstart');
+        $mform->hideIf('includesubcategories', 'restrictcategory');
+
+        $mform->addElement('html', '<hr>');
 
         $mform->addElement('advcheckbox', 'restrictrole', get_string('restrictrole', 'format_kickstart'));
         $mform->setType('restrictcategory', PARAM_BOOL);
