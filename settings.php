@@ -50,4 +50,4 @@ $ADMIN->add('format_kickstart', new admin_externalpage('kickstarttemplates', get
     new moodle_url('/course/format/kickstart/templates.php')));
 
 $ADMIN->add('courses', new admin_externalpage('kickstartcreatecourse', get_string('createcoursefromtemplate', 'format_kickstart'),
-    new moodle_url('/course/format/kickstart/createcourse.php'), 'moodle/course:create'));
+    new moodle_url('/course/format/kickstart/createcourse.php'), ['moodle/course:create', 'format/kickstart:import_from_template']));
