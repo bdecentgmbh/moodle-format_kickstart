@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use format_kickstart\output\course_template_list;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot. '/course/format/lib.php');
@@ -252,4 +254,38 @@ function format_kickstart_has_pro() {
         return $CFG->kickstart_pro;
     }
     return array_key_exists('kickstart_pro', core_component::get_plugin_list('local'));
+}
+
+/**
+ * Give plugins an opportunity touch things before the http headers are sent
+ * such as adding additional headers. The return value is ignored.
+ *
+ * @throws coding_exception
+ * @throws dml_exception
+ * @throws moodle_exception
+ */
+function format_kickstart_before_http_headers()
+{
+    global $COURSE, $USER, $PAGE;
+
+    if (AJAX_SCRIPT ||
+        !get_config('format_kickstart', 'automatictemplate') ||
+        !$PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE) ||
+        is_siteadmin()) {
+        return;
+    }
+
+    if (course_get_format($COURSE)->get_format() == 'kickstart' &&
+        has_capability('format/kickstart:import_from_template', context_course::instance($COURSE->id))) {
+
+        $list = new course_template_list($COURSE, $USER->id);
+        // If automatic template is enabled, and only 1 template is available, import it now.
+        if (count($list->get_templates()) === 1) {
+            $template = $list->get_templates()[0];
+            redirect(new moodle_url('/course/format/kickstart/import.php', [
+                'template_id' => $template->id,
+                'course_id' => $COURSE->id]), get_string('automatictemplate_help', 'format_kickstart'), 5,
+                \core\output\notification::NOTIFY_INFO);
+        }
+    }
 }

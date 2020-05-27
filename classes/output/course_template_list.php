@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 use renderer_base;
 
+require_once("$CFG->dirroot/cohort/lib.php");
+
 /**
  * Widget that displays course templates inside a course.
  *
@@ -133,6 +135,8 @@ class course_template_list implements \templatable, \renderable {
      */
     public function export_for_template(renderer_base $output) {
 
+        $templates = $this->get_templates();
+
         if (!format_kickstart_has_pro() && is_siteadmin()) {
             $template = new \stdClass();
             $template->isplaceholder = true;
@@ -142,7 +146,7 @@ class course_template_list implements \templatable, \renderable {
         }
 
         return [
-            'templates' => ['groups' => $this->get_groups($this->get_templates())],
+            'templates' => ['groups' => $this->get_groups($templates)],
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
                 $this->course->teacherinstructions['format']),

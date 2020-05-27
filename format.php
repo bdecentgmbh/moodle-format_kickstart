@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use format_kickstart\output\course_template_list;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/filelib.php');
@@ -37,19 +39,7 @@ course_create_sections_if_missing($course, 0);
 $output = $PAGE->get_renderer('format_kickstart');
 
 if (has_capability('format/kickstart:import_from_template', $context)) {
-
-    $list = new \format_kickstart\output\course_template_list($course, $USER->id);
-
-    // If automatic template is enabled, and only 1 template is available, import it now.
-    if (count($list->get_templates()) === 1 && get_config('format_kickstart', 'automatictemplate') && !is_siteadmin()) {
-        $template = $list->get_templates()[0];
-        redirect(new moodle_url('/course/format/kickstart/import.php', [
-            'template_id' => $template->id,
-            'course_id' => $course->id]), get_string('automatictemplate_help', 'format_kickstart'), 5,
-            \core\output\notification::NOTIFY_INFO);
-    }
-
-    echo $output->render($list);
+    echo $output->render(new course_template_list($course, $USER->id));
 }
 if (has_capability('local/kickstart_pro:import_other_courses', $context) && (format_kickstart_has_pro() || is_siteadmin())) {
     echo \html_writer::empty_tag('hr');
