@@ -42,7 +42,9 @@ if (is_siteadmin()) {
     }
     $PAGE->set_url(new moodle_url('/course/format/kickstart/createcourse.php'));
     require_login();
-    require_capability('format/kickstart:import_from_template', $PAGE->context);
+    if (!has_any_capability(['format/kickstart:import_from_template', 'local/kickstart_pro:import_other_courses'], $PAGE->context)) {
+        throw new required_capability_exception($PAGE->context, 'format/kickstart:import_from_template', 'nopermissions', '');
+    }
     $PAGE->navbar->add(get_string('courses'), new moodle_url('/course'));
     $PAGE->navbar->add(get_string('createcoursefromtemplate', 'format_kickstart'));
 }

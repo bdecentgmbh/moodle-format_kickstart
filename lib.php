@@ -290,7 +290,9 @@ function format_kickstart_before_http_headers()
         }
     } else if ($PAGE->url->compare(new moodle_url('/course/edit.php'), URL_MATCH_BASE) &&
         get_config('format_kickstart', 'coursecreatorredirect')) {
-        redirect(new moodle_url('/course/format/kickstart/createcourse.php', $PAGE->url->params()));
+        if (has_any_capability(['format/kickstart:import_from_template', 'local/kickstart_pro:import_other_courses'], $PAGE->context)) {
+            redirect(new moodle_url('/course/format/kickstart/createcourse.php', $PAGE->url->params()));
+        }
     }
 
 }
