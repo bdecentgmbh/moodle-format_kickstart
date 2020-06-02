@@ -71,7 +71,7 @@ class course_template_list implements \templatable, \renderable {
     {
         global $DB, $COURSE;
 
-        $limit = format_kickstart_has_pro() ? 0 : 3;
+        $limit = format_kickstart_has_pro() ? 0 : 2*2;
 
         $cohortids = [];
         foreach (cohort_get_user_cohorts($this->userid) as $cohort) {
