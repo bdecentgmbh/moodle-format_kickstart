@@ -47,6 +47,9 @@ class course_form extends \moodleform
         $displaylist = \core_course_category::make_categories_list('moodle/course:create');
         $mform->addElement('select', 'category', get_string('coursecategory'), $displaylist);
         $mform->addHelpButton('category', 'coursecategory');
+        if (isset($this->_customdata['categoryid'])) {
+            $mform->setDefault('category', $this->_customdata['categoryid']);
+        }
 
         $this->add_action_buttons(true, get_string('continue'));
     }
