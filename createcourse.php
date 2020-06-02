@@ -30,7 +30,19 @@ require_once("$CFG->libdir/adminlib.php");
 
 global $USER, $PAGE, $OUTPUT;
 
-admin_externalpage_setup('kickstartcreatecourse');
+if (is_siteadmin()) {
+    admin_externalpage_setup('kickstartcreatecourse');
+} else {
+    if ($categoryid = optional_param('category', null, PARAM_INT)) {
+        $PAGE->set_context(context_coursecat::instance($categoryid));
+    } else {
+        $PAGE->set_context(context_system::instance());
+    }
+    $PAGE->set_url(new moodle_url('/course/format/kickstart/createcourse.php'));
+    require_login();
+    require_capability('format/kickstart:import_from_template', $PAGE->context);
+    $PAGE->navbar->add(get_string('createcoursefromtemplate', 'format_kickstart'));
+}
 $PAGE->set_title(get_string('createcoursefromtemplate', 'format_kickstart'));
 $PAGE->set_heading(get_string('createcoursefromtemplate', 'format_kickstart'));
 

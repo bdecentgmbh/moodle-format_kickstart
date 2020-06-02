@@ -48,8 +48,6 @@ class course_form extends \moodleform
         $mform->addElement('select', 'category', get_string('coursecategory'), $displaylist);
         $mform->addHelpButton('category', 'coursecategory');
 
-
-
         $this->add_action_buttons(true, get_string('continue'));
     }
 }
