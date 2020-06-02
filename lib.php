@@ -267,32 +267,35 @@ function format_kickstart_has_pro() {
 function format_kickstart_before_http_headers()
 {
     global $COURSE, $USER, $PAGE;
+    try {
 
-    // First rule out conditions where a redirect should never happen.
-    if (AJAX_SCRIPT || is_siteadmin()) {
-        return;
-    }
+        // First rule out conditions where a redirect should never happen.
+        if (AJAX_SCRIPT || is_siteadmin()) {
+            return;
+        }
 
-    if ($PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE) &&
-        get_config('format_kickstart', 'automatictemplate')) {
-        if (course_get_format($COURSE)->get_format() == 'kickstart' &&
-            has_capability('format/kickstart:import_from_template', context_course::instance($COURSE->id))) {
+        if ($PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE) &&
+            get_config('format_kickstart', 'automatictemplate')) {
+            if (course_get_format($COURSE)->get_format() == 'kickstart' &&
+                has_capability('format/kickstart:import_from_template', context_course::instance($COURSE->id))) {
 
-            $list = new course_template_list($COURSE, $USER->id);
-            // If automatic template is enabled, and only 1 template is available, import it now.
-            if (count($list->get_templates()) === 1) {
-                $template = $list->get_templates()[0];
-                redirect(new moodle_url('/course/format/kickstart/import.php', [
-                    'template_id' => $template->id,
-                    'course_id' => $COURSE->id]), get_string('automatictemplate_help', 'format_kickstart'), 5,
-                    \core\output\notification::NOTIFY_INFO);
+                $list = new course_template_list($COURSE, $USER->id);
+                // If automatic template is enabled, and only 1 template is available, import it now.
+                if (count($list->get_templates()) === 1) {
+                    $template = $list->get_templates()[0];
+                    redirect(new moodle_url('/course/format/kickstart/import.php', [
+                        'template_id' => $template->id,
+                        'course_id' => $COURSE->id]), get_string('automatictemplate_help', 'format_kickstart'), 5,
+                        \core\output\notification::NOTIFY_INFO);
+                }
+            }
+        } else if ($PAGE->url->compare(new moodle_url('/course/edit.php'), URL_MATCH_BASE) &&
+            get_config('format_kickstart', 'coursecreatorredirect')) {
+            if (has_any_capability(['format/kickstart:import_from_template', 'local/kickstart_pro:import_other_courses'], $PAGE->context)) {
+                redirect(new moodle_url('/course/format/kickstart/createcourse.php', $PAGE->url->params()));
             }
         }
-    } else if ($PAGE->url->compare(new moodle_url('/course/edit.php'), URL_MATCH_BASE) &&
-        get_config('format_kickstart', 'coursecreatorredirect')) {
-        if (has_any_capability(['format/kickstart:import_from_template', 'local/kickstart_pro:import_other_courses'], $PAGE->context)) {
-            redirect(new moodle_url('/course/format/kickstart/createcourse.php', $PAGE->url->params()));
-        }
+    } catch (Exception $e) {
+        debugging($e->getMessage()); // Prevent any issues from breaking entire site.
     }
-
 }
