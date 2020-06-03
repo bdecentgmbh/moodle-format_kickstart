@@ -104,7 +104,9 @@ class format_kickstart extends format_base {
      */
     protected function update_format_options($data, $sectionid = null) {
         global $DB;
-        $data = $this->validate_format_options((array)$data, $sectionid);
+        if (method_exists($this, 'validate_format_options')) {
+            $data = $this->validate_format_options((array)$data, $sectionid);
+        }
         if (!$sectionid) {
             $allformatoptions = $this->course_format_options();
             $sectionid = 0;
