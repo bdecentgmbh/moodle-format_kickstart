@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
 require_once("$CFG->dirroot/cohort/lib.php");
+require_once("$CFG->dirroot/course/format/kickstart/lib.php");
 
 /**
  * Form for editing/creating a template.
@@ -72,48 +73,50 @@ class template_form extends \moodleform {
         $mform->setType('preview_url', PARAM_URL);
         $mform->addHelpButton('preview_url', 'previewurl', 'format_kickstart');
 
-        $mform->addElement('header', 'templateaccess', get_string('templateaccess', 'format_kickstart'));
+        if (format_kickstart_has_pro()) {
+            $mform->addElement('header', 'templateaccess', get_string('templateaccess', 'format_kickstart'));
 
-        $mform->addElement('advcheckbox', 'restrictcohort', get_string('restrictcohort', 'format_kickstart'));
-        $mform->setType('restrictcohort', PARAM_BOOL);
+            $mform->addElement('advcheckbox', 'restrictcohort', get_string('restrictcohort', 'format_kickstart'));
+            $mform->setType('restrictcohort', PARAM_BOOL);
 
-        $cohortdata = cohort_get_all_cohorts(0, 0);
-        $options = [];
-        foreach ($cohortdata['cohorts'] as $cohort) {
-            $options[$cohort->id] = $cohort->name;
+            $cohortdata = cohort_get_all_cohorts(0, 0);
+            $options = [];
+            foreach ($cohortdata['cohorts'] as $cohort) {
+                $options[$cohort->id] = $cohort->name;
+            }
+
+            $mform->addElement('autocomplete', 'cohortids', get_string('cohorts', 'cohort'), $options, [
+                'multiple' => true
+            ]);
+            $mform->hideIf('cohortids', 'restrictcohort');
+
+            $mform->addElement('html', '<hr>');
+
+            $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
+            $mform->setType('restrictcategory', PARAM_BOOL);
+
+            $mform->addElement('autocomplete', 'categoryids', get_string('categories'),
+                \core_course_category::make_categories_list('moodle/course:create'), ['multiple' => true]);
+            $mform->hideIf('categoryids', 'restrictcategory');
+
+            $mform->addElement('advcheckbox', 'includesubcategories', get_string('includesubcategories', 'format_kickstart'));
+            $mform->setType('includesubcategories', PARAM_BOOL);
+            $mform->addHelpButton('includesubcategories', 'includesubcategories', 'format_kickstart');
+            $mform->hideIf('includesubcategories', 'restrictcategory');
+
+            $mform->addElement('html', '<hr>');
+
+            $mform->addElement('advcheckbox', 'restrictrole', get_string('restrictrole', 'format_kickstart'));
+            $mform->setType('restrictcategory', PARAM_BOOL);
+
+            $roleoptions = [];
+            foreach (role_get_names(\context_system::instance()) as $role) {
+                $roleoptions[$role->id] = $role->localname;
+            }
+
+            $mform->addElement('autocomplete', 'roleids', get_string('roles'), $roleoptions, ['multiple' => true]);
+            $mform->hideIf('roleids', 'restrictrole');
         }
-
-        $mform->addElement('autocomplete', 'cohortids', get_string('cohorts', 'cohort'), $options, [
-            'multiple' => true
-        ]);
-        $mform->hideIf('cohortids', 'restrictcohort');
-
-        $mform->addElement('html', '<hr>');
-
-        $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
-        $mform->setType('restrictcategory', PARAM_BOOL);
-
-        $mform->addElement('autocomplete', 'categoryids', get_string('categories'),
-            \core_course_category::make_categories_list('moodle/course:create'), ['multiple' => true]);
-        $mform->hideIf('categoryids', 'restrictcategory');
-
-        $mform->addElement('advcheckbox', 'includesubcategories', get_string('includesubcategories', 'format_kickstart'));
-        $mform->setType('includesubcategories', PARAM_BOOL);
-        $mform->addHelpButton('includesubcategories', 'includesubcategories', 'format_kickstart');
-        $mform->hideIf('includesubcategories', 'restrictcategory');
-
-        $mform->addElement('html', '<hr>');
-
-        $mform->addElement('advcheckbox', 'restrictrole', get_string('restrictrole', 'format_kickstart'));
-        $mform->setType('restrictcategory', PARAM_BOOL);
-
-        $roleoptions = [];
-        foreach (role_get_names(\context_system::instance()) as $role) {
-            $roleoptions[$role->id] = $role->localname;
-        }
-
-        $mform->addElement('autocomplete', 'roleids', get_string('roles'), $roleoptions, ['multiple' => true]);
-        $mform->hideIf('roleids', 'restrictrole');
 
         $this->add_action_buttons();
     }

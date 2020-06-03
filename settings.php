@@ -24,16 +24,22 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configcheckbox('format_kickstart/coursecreatorredirect',
-        get_string('coursecreatorredirect', 'format_kickstart'),
-        get_string('coursecreatorredirect_desc', 'format_kickstart'),
-        0));
+global $CFG;
 
-    $settings->add(new admin_setting_configcheckbox('format_kickstart/automatictemplate',
-        get_string('automatictemplate', 'format_kickstart'),
-        get_string('automatictemplate_desc', 'format_kickstart'),
-        1));
+require_once("$CFG->dirroot/course/format/kickstart/lib.php");
+
+if ($ADMIN->fulltree) {
+    if (format_kickstart_has_pro()) {
+        $settings->add(new admin_setting_configcheckbox('format_kickstart/coursecreatorredirect',
+            get_string('coursecreatorredirect', 'format_kickstart'),
+            get_string('coursecreatorredirect_desc', 'format_kickstart'),
+            0));
+
+        $settings->add(new admin_setting_configcheckbox('format_kickstart/automatictemplate',
+            get_string('automatictemplate', 'format_kickstart'),
+            get_string('automatictemplate_desc', 'format_kickstart'),
+            1));
+    }
 
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
         get_string('defaultuserinstructions', 'format_kickstart'),
@@ -54,6 +60,3 @@ $settings = null;
 
 $ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('course_templates', 'format_kickstart'),
     new moodle_url('/course/format/kickstart/templates.php'), 'format/kickstart:manage_templates'));
-
-$ADMIN->add('courses', new admin_externalpage('kickstartcreatecourse', get_string('createcoursefromtemplate', 'format_kickstart'),
-    new moodle_url('/course/format/kickstart/createcourse.php'), ['format/kickstart:import_from_template']));
