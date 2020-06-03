@@ -89,11 +89,14 @@ class course_template_list implements \templatable, \renderable {
             // Apply template access if pro is installed.
             if (format_kickstart_has_pro()) {
                 $categoryids = [];
-                foreach (json_decode($template->categoryids, true) as $categoryid) {
-                    if ($coursecat = \core_course_category::get($categoryid, IGNORE_MISSING)) {
-                        $categoryids[] = $categoryid;
-                        if ($template->includesubcategories) {
-                            $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                $rootcategoryids = json_decode($template->categoryids, true);
+                if (is_array($rootcategoryids)) {
+                    foreach ($rootcategoryids as $categoryid) {
+                        if ($coursecat = \core_course_category::get($categoryid, IGNORE_MISSING)) {
+                            $categoryids[] = $categoryid;
+                            if ($template->includesubcategories) {
+                                $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                            }
                         }
                     }
                 }
