@@ -41,12 +41,14 @@ $output = $PAGE->get_renderer('format_kickstart');
 if (has_capability('format/kickstart:import_from_template', $context)) {
     echo $output->render(new course_template_list($course, $USER->id));
 }
-if (has_capability('local/kickstart_pro:import_other_courses', $context) && (format_kickstart_has_pro() || is_siteadmin())) {
-    echo \html_writer::empty_tag('hr');
-    echo $output->render(new \format_kickstart\output\import_course_list());
+if (format_kickstart_has_pro()) {
+    if (has_capability('local/kickstart_pro:import_other_courses', $context)) {
+        echo \html_writer::empty_tag('hr');
+        echo $output->render(new \format_kickstart\output\import_course_list());
+    }
 }
-if (!has_any_capability(['format/kickstart:import_from_template', 'local/kickstart_pro:import_other_courses'], $context)) {
-    if (format_kickstart_has_pro()) {
+if (!has_capability('format/kickstart:import_from_template', $context)) {
+    if (format_kickstart_has_pro() && !has_capability('local/kickstart_pro:import_other_courses', $context)) {
         $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
 
         echo $prorenderer->render(new \local_kickstart_pro\output\default_view($course));
