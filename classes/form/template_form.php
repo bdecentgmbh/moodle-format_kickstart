@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
 require_once("$CFG->dirroot/cohort/lib.php");
+require_once("$CFG->dirroot/lib/coursecatlib.php");
 require_once("$CFG->dirroot/course/format/kickstart/lib.php");
 
 /**
@@ -95,8 +96,14 @@ class template_form extends \moodleform {
             $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
             $mform->setType('restrictcategory', PARAM_BOOL);
 
-            $mform->addElement('autocomplete', 'categoryids', get_string('categories'),
-                \core_course_category::make_categories_list('moodle/course:create'), ['multiple' => true]);
+            if (class_exists("\core_course_category")) {
+                $categories = \core_course_category::make_categories_list('moodle/course:create');
+            } else {
+                // Moodle 3.5 compatibility.
+                $categories = \coursecat::make_categories_list('moodle/course:create');
+            }
+            $mform->addElement('autocomplete', 'categoryids', get_string('categories'), $categories,
+                ['multiple' => true]);
             $mform->hideIf('categoryids', 'restrictcategory');
 
             $mform->addElement('advcheckbox', 'includesubcategories', get_string('includesubcategories', 'format_kickstart'));

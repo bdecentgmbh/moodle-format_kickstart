@@ -104,6 +104,7 @@ class format_kickstart extends format_base {
      */
     protected function update_format_options($data, $sectionid = null) {
         global $DB;
+        // Moodle 3.5 compatibility.
         if (method_exists($this, 'validate_format_options')) {
             $data = $this->validate_format_options((array)$data, $sectionid);
         }
