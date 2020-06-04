@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
 require_once("$CFG->dirroot/cohort/lib.php");
-require_once("$CFG->dirroot/lib/coursecatlib.php");
 require_once("$CFG->dirroot/course/format/kickstart/lib.php");
 
 /**
@@ -46,6 +45,8 @@ class template_form extends \moodleform {
      * @throws \coding_exception
      */
     public function definition() {
+        global $CFG;
+
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'id');
@@ -100,6 +101,7 @@ class template_form extends \moodleform {
                 $categories = \core_course_category::make_categories_list('moodle/course:create');
             } else {
                 // Moodle 3.5 compatibility.
+                require_once("$CFG->dirroot/lib/coursecatlib.php");
                 $categories = \coursecat::make_categories_list('moodle/course:create');
             }
             $mform->addElement('autocomplete', 'categoryids', get_string('categories'), $categories,

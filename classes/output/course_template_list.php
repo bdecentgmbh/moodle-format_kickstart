@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 use renderer_base;
 
 require_once("$CFG->dirroot/cohort/lib.php");
-require_once("$CFG->dirroot/lib/coursecatlib.php");
 
 /**
  * Widget that displays course templates inside a course.
@@ -70,7 +69,7 @@ class course_template_list implements \templatable, \renderable {
      */
     public function get_templates()
     {
-        global $DB, $COURSE;
+        global $DB, $COURSE, $CFG;
 
         $limit = format_kickstart_has_pro() ? 0 : 2*2;
 
@@ -97,6 +96,7 @@ class course_template_list implements \templatable, \renderable {
                             $coursecat = \core_course_category::get($categoryid, IGNORE_MISSING);
                         } else {
                             // Moodle 3.5 compatibility.
+                            require_once("$CFG->dirroot/lib/coursecatlib.php");
                             $coursecat = \coursecat::get($categoryid, IGNORE_MISSING);
                         }
                         if ($coursecat) {
