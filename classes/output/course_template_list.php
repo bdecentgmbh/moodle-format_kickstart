@@ -73,8 +73,14 @@ class course_template_list implements \templatable, \renderable {
 
         $limit = format_kickstart_has_pro() ? 0 : 2*2;
 
+        $cohorts = [];
+        if (function_exists('cohort_get_user_cohorts')) {
+            $cohorts = cohort_get_user_cohorts($this->userid);
+        } else if (function_exists('totara_cohort_get_user_cohorts')) {
+            $cohorts = totara_cohort_get_user_cohorts($this->userid);
+        }
         $cohortids = [];
-        foreach (cohort_get_user_cohorts($this->userid) as $cohort) {
+        foreach ($cohorts as $cohort) {
             $cohortids[] = $cohort->id;
         }
 
