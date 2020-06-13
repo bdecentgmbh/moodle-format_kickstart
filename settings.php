@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die;
 global $CFG;
 
 require_once("$CFG->dirroot/course/format/kickstart/lib.php");
+require_once("$CFG->dirroot/backup/util/includes/backup_includes.php");
 
 if ($ADMIN->fulltree) {
     if (format_kickstart_has_pro()) {
@@ -40,6 +41,14 @@ if ($ADMIN->fulltree) {
             get_string('automatictemplate_desc', 'format_kickstart'),
             1));
     }
+
+    $settings->add(new admin_setting_configselect('format_kickstart/importtarget',
+        get_string('importtarget', 'format_kickstart'),
+        get_string('importtarget_desc', 'format_kickstart'),
+        \backup::TARGET_EXISTING_DELETING, [
+            \backup::TARGET_EXISTING_DELETING => get_string('restoretoexistingcoursedeleting', 'format_kickstart'),
+            \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart')
+        ]));
 
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
         get_string('defaultuserinstructions', 'format_kickstart'),

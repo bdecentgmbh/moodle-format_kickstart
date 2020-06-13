@@ -98,8 +98,9 @@ class course_importer {
 
         try {
             // Now restore the course.
+            $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
             $rc = new \restore_controller($backuptempdir, $course->id, \backup::INTERACTIVE_NO,
-                \backup::MODE_IMPORT, $USER->id, \backup::TARGET_EXISTING_DELETING);
+                \backup::MODE_IMPORT, $USER->id, $target);
 
             foreach ($settings as $settingname => $value) {
                 $setting = $rc->get_plan()->get_setting($settingname);

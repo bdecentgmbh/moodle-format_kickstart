@@ -64,6 +64,7 @@ class import_course_list implements \templatable, \renderable {
         if ($component->get_count() === 0) {
             $html .= $OUTPUT->notification(get_string('nomatchingcourses', 'backup'));
         } else {
+            $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
             foreach ($component->get_results() as $course) {
                 if ($course->id == $SITE->id || $course->id == $COURSE->id) {
                     continue;
@@ -75,7 +76,7 @@ class import_course_list implements \templatable, \renderable {
                 $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
                     'id' => $COURSE->id,
                     'importid' => $course->id,
-                    'target' => \backup::TARGET_EXISTING_DELETING
+                    'target' => $target
                 ]);
                 $courses[] = $course;
             }
