@@ -65,8 +65,8 @@ class course_importer {
         }
 
         $fp = get_file_packer('application/vnd.moodle.backup');
-        $filepath = $CFG->dataroot . '/temp/backup/template' . $templateid;
-        $files[0]->extract_to_pathname($fp, $filepath);
+        $backuptempdir = make_backup_temp_directory('template' . $templateid);
+        $files[0]->extract_to_pathname($fp, $backuptempdir);
 
         self::import('template' . $templateid, $courseid);
     }
