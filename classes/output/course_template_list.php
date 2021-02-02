@@ -127,7 +127,7 @@ class course_template_list implements \templatable, \renderable {
             foreach (\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $template->id) as $tag) {
                 $tags[] = '#' . $tag->get_display_name(false);
             }
-            $template->hashtags = implode($tags, ' ');
+            $template->hashtags = implode(' ', $tags);
             $template->link = new \moodle_url('/course/format/kickstart/confirm.php', [
                 'template_id' => $template->id,
                 'course_id' => $COURSE->id
