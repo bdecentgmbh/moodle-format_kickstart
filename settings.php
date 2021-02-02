@@ -62,7 +62,8 @@ if ($ADMIN->fulltree) {
 
     $options = [
         0 => get_string('no'),
-        1 => get_string('usedefault', 'format_kickstart')
+        1 => get_string('yes'),
+        2 => get_string('usedefault', 'format_kickstart')
     ];
 
     $settings->add(new admin_setting_heading(

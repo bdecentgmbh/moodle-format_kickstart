@@ -93,16 +93,18 @@ class course_importer {
             'course_startdate' => $course->startdate,
         ];
 
-        if (!get_config('format_kickstart', 'restore_general_users')) {
-            $settings['users'] = false;
+        if (get_config('format_kickstart', 'restore_general_users') < 2) {
+            $settings['users'] = (bool)get_config('format_kickstart', 'restore_general_users');
         }
 
-        if (!get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments')) {
-            $settings['keep_roles_and_enrolments'] = false;
+        if (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') < 2) {
+            $settings['keep_roles_and_enrolments'] =
+                (bool)get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments');
         }
 
-        if (!get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings')) {
-            $settings['keep_groups_and_groupings'] = false;
+        if (get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings') < 2) {
+            $settings['keep_groups_and_groupings'] =
+                (bool)get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings');
         }
 
         try {
