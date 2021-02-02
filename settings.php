@@ -59,6 +59,41 @@ if ($ADMIN->fulltree) {
         get_string('defaultteacherinstructions', 'format_kickstart'),
         get_string('defaultteacherinstructions_desc', 'format_kickstart'),
         get_string('defaultteacherinstructions_default', 'format_kickstart')));
+
+    $options = [
+        0 => get_string('no'),
+        1 => get_string('usedefault', 'format_kickstart')
+    ];
+
+    $settings->add(new admin_setting_heading(
+        'restoresettings',
+        get_string('generalrestoresettings', 'backup'),
+        get_string('usedefault_help', 'format_kickstart')
+    ));
+
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/restore_general_users',
+        get_string('generalusers', 'backup'),
+        get_string('configrestoreusers', 'backup'),
+        0,
+        $options
+    ));
+
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/restore_replace_keep_roles_and_enrolments',
+        get_string('setting_keep_roles_and_enrolments', 'backup'),
+        get_string('config_keep_roles_and_enrolments', 'backup'),
+        0,
+        $options
+    ));
+
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/restore_replace_keep_groups_and_groupings',
+        get_string('setting_keep_groups_and_groupings', 'backup'),
+        get_string('config_keep_groups_and_groupings', 'backup'),
+        0,
+        $options
+    ));
 }
 $settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));

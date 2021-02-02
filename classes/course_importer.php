@@ -88,13 +88,22 @@ class course_importer {
 
         $settings = [
             'overwrite_conf' => true,
-            'users' => false,
             'course_shortname' => $course->shortname,
             'course_fullname' => $course->fullname,
             'course_startdate' => $course->startdate,
-            'keep_roles_and_enrolments' => false,
-            'keep_groups_and_groupings' => false,
         ];
+
+        if (!get_config('format_kickstart', 'restore_general_users')) {
+            $settings['users'] = false;
+        }
+
+        if (!get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments')) {
+            $settings['keep_roles_and_enrolments'] = false;
+        }
+
+        if (!get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings')) {
+            $settings['keep_groups_and_groupings'] = false;
+        }
 
         try {
             // Now restore the course.
