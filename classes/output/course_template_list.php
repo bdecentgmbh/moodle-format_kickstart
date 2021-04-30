@@ -170,7 +170,7 @@ class course_template_list implements \templatable, \renderable {
                 $this->course->teacherinstructions['format']),
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
-            'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create'])
+            'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
             'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php')
         ];
     }
