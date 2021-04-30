@@ -159,7 +159,7 @@ class course_template_list implements \templatable, \renderable {
             $template = new \stdClass();
             $template->isplaceholder = true;
             $template->title = get_string('getpro', 'format_kickstart');
-            $template->link = 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/';
+            $template->link = 'https://bdecent.de/kickstart/';
             $templates[] = $template;
         }
 
@@ -171,6 +171,7 @@ class course_template_list implements \templatable, \renderable {
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create'])
+            'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php')
         ];
     }
 
