@@ -115,7 +115,7 @@ class format_kickstart extends format_base {
             $allformatoptions = $this->section_format_options();
         }
         if (empty($allformatoptions)) {
-            // nothing to update anyway
+            // Nothing to update anyway.
             return false;
         }
         $defaultoptions = array();
@@ -148,8 +148,8 @@ class format_kickstart extends format_base {
                     $needrebuild = $needrebuild || $cached[$key];
                 } else {
                     $newvalue = $value;
-                    // we still insert entry in DB but there are no changes from user point of
-                    // view and no need to call rebuild_course_cache()
+                    // We still insert entry in DB, but there are no changes from user point of view.
+                    // No need to call rebuild_course_cache().
                 }
 
                 $newvalue = !is_array($newvalue) ? $newvalue : $newvalue['text'];
@@ -167,7 +167,7 @@ class format_kickstart extends format_base {
             rebuild_course_cache($this->courseid, true);
         }
         if ($changed) {
-            // reset internal caches
+            // Reset internal caches.
             if (!$sectionid) {
                 $this->course = false;
             }

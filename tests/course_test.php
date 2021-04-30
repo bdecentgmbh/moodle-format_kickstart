@@ -32,12 +32,9 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_kickstart_course_test extends advanced_testcase
-{
+class format_kickstart_course_test extends advanced_testcase{
 
-
-    public function test_course_template_list()
-    {
+    public function test_course_template_list(){
         $this->resetAfterTest();
 
         $teacher = $this->getDataGenerator()->create_user();

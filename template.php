@@ -44,7 +44,7 @@ switch ($action) {
         $PAGE->set_heading(get_string('create_template', 'format_kickstart'));
         $PAGE->navbar->add(get_string('create_template', 'format_kickstart'));
 
-        if (!format_kickstart_has_pro() && $DB->count_records('kickstart_template') >= 2*2) {
+        if (!format_kickstart_has_pro() && $DB->count_records('kickstart_template') >= 2 * 2) {
             redirect(new moodle_url('/course/format/kickstart/buypro.php'));
         }
 
