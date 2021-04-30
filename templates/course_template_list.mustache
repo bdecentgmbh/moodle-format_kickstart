@@ -65,7 +65,7 @@
         ]
     }
 }}
-
+{{#canmanage}}<a href="{{managetemplateurl}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}manage_templates, format_kickstart{{/str}}</a>{{/canmanage}}
 <h3>{{#str}}welcometoyourcourse, format_kickstart{{/str}}</h3>
 {{{teacherinstructions}}}
 
@@ -73,7 +73,7 @@
 
 <h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
 {{#notemplates}}
-    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}} {{#canmanage}}<a href="{{createtemplateurl}}">{{#str}}create_template, format_kickstart{{/str}}</a>.{{/canmanage}}</p>
+    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
 {{/notemplates}}
 {{#templates}}
     {{#groups}}

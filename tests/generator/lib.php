@@ -32,10 +32,9 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_kickstart_generator extends component_generator_base
-{
-    public function create_template($record = [])
-    {
+class format_kickstart_generator extends component_generator_base {
+
+    public function create_template($record = []) {
         global $DB;
 
         $record = $this->datagenerator->combine_defaults_and_record([
