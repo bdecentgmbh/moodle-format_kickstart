@@ -72,10 +72,10 @@
 <hr>
 
 <h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
+{{#canmanage}}<a href="{{managetemplateurl}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}manage_templates, format_kickstart{{/str}}</a>{{/canmanage}}
 {{#notemplates}}
     <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
 {{/notemplates}}
-{{#canmanage}}<a href="{{managetemplateurl}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}create_template, format_kickstart{{/str}}</a>.{{/canmanage}}
 {{#templates}}
     {{#groups}}
         <div class="card-deck mb-2">
