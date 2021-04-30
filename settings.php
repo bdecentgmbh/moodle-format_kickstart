@@ -106,5 +106,5 @@ $settings = null;
 $ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('course_templates', 'format_kickstart'),
     new moodle_url('/course/format/kickstart/templates.php'), 'format/kickstart:manage_templates'));
 
-$ADMIN->add('format_kickstart', new admin_externalpage('templates', get_string('manage_templates', 'format_kickstart'),
+$ADMIN->add('format_kickstart', new admin_externalpage('kickstarttemplates', get_string('manage_templates', 'format_kickstart'),
 new moodle_url('/course/format/kickstart/templates.php')));
