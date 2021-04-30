@@ -97,7 +97,7 @@ if ($ADMIN->fulltree) {
     ));
 }
 //$settings->visiblename = get_string('general_settings', 'format_kickstart');
-$ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));
+//$ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));
 
 $ADMIN->add('format_kickstart', $settings);
 // Tell core we already added the settings structure.
