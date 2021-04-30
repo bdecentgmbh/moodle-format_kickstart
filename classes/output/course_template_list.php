@@ -67,7 +67,7 @@ class course_template_list implements \templatable, \renderable {
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    public function get_templates(){
+    public function get_templates() {
         global $DB, $COURSE, $CFG;
 
         $limit = format_kickstart_has_pro() ? 0 : 2 * 2;
