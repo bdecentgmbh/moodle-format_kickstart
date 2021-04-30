@@ -96,7 +96,7 @@ if ($ADMIN->fulltree) {
         $options
     ));
 }
-$settings->visiblename = get_string('general_settings', 'format_kickstart');
+//$settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));
 
 $ADMIN->add('format_kickstart', $settings);
