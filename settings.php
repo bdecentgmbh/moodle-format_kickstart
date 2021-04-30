@@ -96,8 +96,8 @@ if ($ADMIN->fulltree) {
         $options
     ));
 }
-//$settings->visiblename = get_string('general_settings', 'format_kickstart');
-//$ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));
+$settings->visiblename = get_string('general_settings', 'format_kickstart');
+$ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));
 
 $ADMIN->add('format_kickstart', $settings);
 // Tell core we already added the settings structure.
@@ -105,3 +105,6 @@ $settings = null;
 
 $ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('course_templates', 'format_kickstart'),
     new moodle_url('/course/format/kickstart/templates.php'), 'format/kickstart:manage_templates'));
+
+$ADMIN->add('format_kickstart', new admin_externalpage('templates', get_string('manage_templates', 'format_kickstart'),
+new moodle_url('/course/format/kickstart/templates.php')));
