@@ -18,7 +18,7 @@
  * Kickstart course format.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -37,6 +37,6 @@ require_login();
 
 echo $OUTPUT->header();
 echo \html_writer::div(get_string('buyprosummary', 'format_kickstart'), 'mb-2');
-echo \html_writer::link('https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
+echo \html_writer::link('http://bdecent.de/kickstart',
     get_string('learnmore', 'format_kickstart'), ['target' => '_blank', 'class' => 'btn btn-primary']);
 echo $OUTPUT->footer();

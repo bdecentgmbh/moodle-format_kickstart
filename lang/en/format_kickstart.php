@@ -18,7 +18,7 @@
  * Strings for component format_kickstart.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,7 +26,7 @@ $string['automatictemplate'] = 'Automatic template';
 $string['automatictemplate_desc'] = 'If only one template is available to the user it will automatically be imported. The user will be notified on the page when this happens.';
 $string['automatictemplate_help'] = 'The course template was automatically applied. If you require a different template, please contact the system administrator.';
 $string['buypro'] = 'Buy Kickstart Pro';
-$string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/">Kickstart Pro</a>.';
+$string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="http://bdecent.de/kickstart">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';
 $string['confirmtemplate'] = 'Are you sure you want to use this template?';
 $string['course_backup'] = 'Course backup file (.mbz)';
@@ -38,7 +38,7 @@ $string['coursecreatorredirect_desc'] = 'Force course creators to use Kickstart\
 $string['create_template'] = 'Create template';
 $string['createcoursefromtemplate'] = 'Create course from template';
 $string['defaultteacherinstructions'] = 'Default teacher instructions';
-$string['defaultteacherinstructions_default'] = '<p>Currently, there\'s nothing in here, so start adding your content. If you need any help, here\'s a video tutorial on all the options you have. We\'ve made creating courses really easy for you. First, you choose a template that suits your course, then you can start adding content.</p>';
+$string['defaultteacherinstructions_default'] = '<p>Currently, there\'s nothing in here, so start adding your content. We\'ve made creating courses really easy for you. First, you choose a template that suits your course, then you can start adding content.</p>';
 $string['defaultteacherinstructions_desc'] = 'Default content displayed to teachers before a template has been chosen.';
 $string['defaultuserinstructions'] = 'Default student instructions';
 $string['defaultuserinstructions_default'] = '<p>Your teacher has not added any content into this course (yet).</p><p>If you have any questions, contact your teacher.</p>';

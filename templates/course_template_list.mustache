@@ -72,8 +72,9 @@
 <hr>
 
 <h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
+{{#canmanage}}<a href="{{createtemplateurl}}">{{#str}}create_template, format_kickstart{{/str}}</a>.{{/canmanage}}
 {{#notemplates}}
-    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}} {{#canmanage}}<a href="{{createtemplateurl}}">{{#str}}create_template, format_kickstart{{/str}}</a>.{{/canmanage}}</p>
+    <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
 {{/notemplates}}
 {{#templates}}
     {{#groups}}
