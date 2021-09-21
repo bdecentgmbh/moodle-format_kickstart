@@ -37,18 +37,18 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     if ($oldversion < 2019050800) {
 
-        // Define table kickstart_template to be created.
-        $table = new xmldb_table('kickstart_template');
+        // Define table format_kickstart_template to be created.
+        $table = new xmldb_table('format_kickstart_template');
 
-        // Adding fields to table kickstart_template.
+        // Adding fields to table format_kickstart_template.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('title', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
         $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
 
-        // Adding keys to table kickstart_template.
+        // Adding keys to table format_kickstart_template.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
 
-        // Conditionally launch create table for kickstart_template.
+        // Conditionally launch create table for format_kickstart_template.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
@@ -59,8 +59,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     if ($oldversion < 2019050900) {
 
-        // Define field description_format to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field description_format to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('description_format', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
 
         // Conditionally launch add field description_format.
@@ -74,8 +74,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     if ($oldversion < 2019061703) {
 
-        // Define field preview_url to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field preview_url to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('preview_url', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'description_format');
 
         // Conditionally launch add field preview_url.
@@ -89,8 +89,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     if ($oldversion < 2020051200) {
 
-        // Define field restrictcohort to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field restrictcohort to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('restrictcohort', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'preview_url');
 
         // Conditionally launch add field restrictcohort.
@@ -98,8 +98,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Define field restrictcategory to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field restrictcategory to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('restrictcategory', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'restrictcohort');
 
         // Conditionally launch add field restrictcategory.
@@ -107,8 +107,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Define field restrictrole to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field restrictrole to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('restrictrole', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'restrictcategory');
 
         // Conditionally launch add field restrictrole.
@@ -116,8 +116,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Define field cohortids to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field cohortids to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('cohortids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'restrictrole');
 
         // Conditionally launch add field cohortids.
@@ -125,8 +125,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Define field categoryids to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field categoryids to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('categoryids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'cohortids');
 
         // Conditionally launch add field categoryids.
@@ -134,8 +134,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Define field roleids to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field roleids to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('roleids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'categoryids');
 
         // Conditionally launch add field roleids.
@@ -149,8 +149,8 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     if ($oldversion < 2020052502) {
 
-        // Define field includesubcategories to be added to kickstart_template.
-        $table = new xmldb_table('kickstart_template');
+        // Define field includesubcategories to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('includesubcategories', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'categoryids');
 
         // Conditionally launch add field includesubcategories.
@@ -160,6 +160,18 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
         // Kickstart savepoint reached.
         upgrade_plugin_savepoint(true, 2020052502, 'format', 'kickstart');
+    }
+
+    if ($oldversion < 2021091600) {
+        // Define field sort to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
+        $field = new xmldb_field('sort', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'roleids');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2021091600, 'format', 'kickstart');
     }
 
     return true;

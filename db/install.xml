@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="kickstart_template" COMMENT="Course template definitions.">
+    <TABLE NAME="format_kickstart_template" COMMENT="Course template definitions.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
@@ -18,6 +18,7 @@
         <FIELD NAME="categoryids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="includesubcategories" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="If true, subcategories of chosen category will be included in access."/>
         <FIELD NAME="roleids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sort" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $tagareas = [
     [
-        'itemtype' => 'kickstart_template',
+        'itemtype' => 'format_kickstart_template',
         'component' => 'format_kickstart',
         'callback' => 'format_kickstart_get_tagged_templates',
         'callbackfile' => '/course/format/loclstart/lib.php',

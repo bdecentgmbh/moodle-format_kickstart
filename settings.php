@@ -36,6 +36,11 @@ if ($ADMIN->fulltree) {
             get_string('coursecreatorredirect_desc', 'format_kickstart'),
             0));
 
+        $settings->add(new admin_setting_confightmleditor('format_kickstart/coursecreatorinstructions',
+            get_string('coursecreatorinstructions', 'format_kickstart'),
+            get_string('coursecreatorinstructions_desc', 'format_kickstart'),
+            get_string('coursecreatorinstructions_default', 'format_kickstart')));
+
         $settings->add(new admin_setting_configcheckbox('format_kickstart/automatictemplate',
             get_string('automatictemplate', 'format_kickstart'),
             get_string('automatictemplate_desc', 'format_kickstart'),
@@ -108,3 +113,4 @@ $ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('
 
 $ADMIN->add('format_kickstart', new admin_externalpage('managetemplates', get_string('manage_templates', 'format_kickstart'),
 new moodle_url('/course/format/kickstart/templates.php')));
+
