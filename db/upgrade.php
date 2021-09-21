@@ -162,7 +162,7 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020052502, 'format', 'kickstart');
     }
 
-    if ($oldversion < 2021092100) {
+    if ($oldversion < 2021092101) {
         // Define field sort to be added to format_kickstart_template.
         $table = new xmldb_table('format_kickstart_template');
         $field = new xmldb_field('sort', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'roleids');
@@ -171,7 +171,7 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         }
 
         // Kickstart savepoint reached.
-        upgrade_plugin_savepoint(true, 2021092100, 'format', 'kickstart');
+        upgrade_plugin_savepoint(true, 2021092101, 'format', 'kickstart');
     }
 
     return true;
