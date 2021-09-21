@@ -38,7 +38,7 @@ function xmldb_format_kickstart_install() {
     $file = $CFG->dirroot.'/course/format/kickstart/createtemplates.php';
     if (file_exists($file)) {
         require_once($file);
-        // Install automatically templates.
+        // Install templates automatically.
         install_templates();
     }
     return true;

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component format_kickstart.
+ * Strings for component kickstart format.
  *
  * @package    format_kickstart
  * @copyright  2021 bdecent gmbh <https://bdecent.de>

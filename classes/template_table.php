@@ -84,7 +84,7 @@ class template_table extends \table_sql {
     }
 
     /**
-     * Generate sort list.
+     * Generate sort list for the templates.
      *
      * @param \stdClass $data
      * @return mixed

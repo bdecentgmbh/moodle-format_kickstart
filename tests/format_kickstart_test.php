@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Kickstart course format.
+ * Kickstart course format testcases.
  *
  * @package    format_kickstart
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Test course importing.
+ * Test kickstart course format.
  *
  * @group      format_kickstart
  * @group      format_kickstart_test
@@ -115,7 +115,7 @@ class format_kickstart_test extends advanced_testcase {
     }
 
     /**
-     * Case to check available kickstart pro.
+     * Case to check the availablity of kickstart pro.
      */
     public function test_check_kickstart_has_pro() {
         $pluginman = \core_plugin_manager::instance();
