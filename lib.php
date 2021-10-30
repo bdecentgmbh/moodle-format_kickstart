@@ -33,7 +33,7 @@ require_once($CFG->dirroot. '/course/format/lib.php');
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_kickstart extends format_base {
+class format_kickstart extends core_courseformat\base {
 
     /**
      * Definitions of the additional options that this course format uses for course

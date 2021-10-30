@@ -88,3 +88,9 @@ body.format-kickstart .form-control .fa-search {
 #page-content form .edit-shortname-parent-kickstart i {
     padding: 10px;
 }
+
+@media (min-width: 576px) {
+    .mform > .form-group {
+        margin-left: 1.5rem;
+    }
+}
