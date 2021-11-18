@@ -60,7 +60,7 @@ class template_form extends \moodleform {
         $mform->setType('description', PARAM_RAW);
 
         $mform->addElement('tags', 'tags', get_string('tags'),
-            ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
+            ['itemtype' => 'format_kickstart_template', 'component' => 'format_kickstart']);
 
         $mform->addElement('filemanager', 'course_backup',
             get_string('course_backup', 'format_kickstart'), null, [
@@ -96,14 +96,7 @@ class template_form extends \moodleform {
 
             $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
             $mform->setType('restrictcategory', PARAM_BOOL);
-
-            if (class_exists("\core_course_category")) {
-                $categories = \core_course_category::make_categories_list('moodle/course:create');
-            } else {
-                // Moodle 3.5 compatibility.
-                require_once("$CFG->dirroot/lib/coursecatlib.php");
-                $categories = \coursecat::make_categories_list('moodle/course:create');
-            }
+            $categories = \core_course_category::make_categories_list('moodle/course:create');
             $mform->addElement('autocomplete', 'categoryids', get_string('categories'), $categories,
                 ['multiple' => true]);
             $mform->hideIf('categoryids', 'restrictcategory');

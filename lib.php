@@ -96,8 +96,8 @@ class format_kickstart extends format_base {
      *
      * If $data does not contain property with the option name, the option will not be updated
      *
-     * @param stdClass|array $data return value from {@link moodleform::get_data()} or array with data
-     * @param null|int null if these are options for course or section id (course_sections.id)
+     * @param stdClass|array $data return value from {moodleform::get_data()} or array with data
+     * @param null|int $sectionid  if these are options for course or section id (course_sections.id)
      *     if these are options for section
      * @return bool whether there were any changes to the options values
      * @throws dml_exception
@@ -182,8 +182,8 @@ class format_kickstart extends format_base {
      * In case if course format was changed to 'topics', we try to copy options
      * 'coursedisplay' and 'hiddensections' from the previous format.
      *
-     * @param stdClass|array $data return value from {@link moodleform::get_data()} or array with data
-     * @param stdClass $oldcourse if this function is called from {@link update_course()}
+     * @param stdClass|array $data return value from {moodleform::get_data()} or array with data
+     * @param stdClass $oldcourse if this function is called from {update_course()}
      *     this object contains information about the course before update
      * @return bool whether there were any changes to the options values
      */
@@ -255,4 +255,59 @@ function format_kickstart_has_pro() {
         return $CFG->kickstart_pro;
     }
     return array_key_exists('kickstart_pro', core_component::get_plugin_list('local'));
+}
+
+/**
+ * Automatically create the template.
+ * @param object $template template info
+ * @param int $sort sort position
+ * @param object $context page context
+ * @param string $component
+ * @return void
+ */
+function format_kickstart_create_template($template, $sort, $context, $component) {
+
+    global $DB, $CFG, $USER;
+    if (!isguestuser() && isloggedin()) {
+        $fs = get_file_storage();
+        $draftidattach = file_get_unused_draft_itemid();
+        $template->sort = $sort;
+        $template->course_backup = $draftidattach;
+        $template->cohortids = json_encode($template->cohortids);
+        $template->categoryids = json_encode($template->categoryids);
+        $template->roleids = json_encode($template->roleids);
+        $id = $DB->insert_record('format_kickstart_template', $template);
+        core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id, $context, $template->tags);
+        if (isset($template->backupfile) && !empty($template->backupfile)) {
+            $filerecord = new stdClass();
+            $filerecord->component = 'format_kickstart';
+            $filerecord->contextid = $context->id;
+            $filerecord->filearea = "course_backups";
+            $filerecord->filepath = '/';
+            $filerecord->itemid = $id;
+            $filerecord->filename = $template->backupfile;
+            $exist = check_record_exsist($filerecord);
+            if ($exist != 1) {
+                if ($component == 'format_kickstart') {
+                    $backuppath = $CFG->dirroot . "/course/format/kickstart/assets/templates/$template->backupfile";
+                } else if ($component == 'local_kickstart_pro') {
+                    $backuppath = $CFG->dirroot . "/local/kickstart_pro/assets/templates/$template->backupfile";
+                }
+                $fs->create_file_from_pathname($filerecord, $backuppath);
+            }
+        }
+    }
+}
+
+/**
+ * Does this file exist
+ * @param object $filerecord
+ * @return bool
+ */
+function check_record_exsist($filerecord) {
+
+    $fs = get_file_storage();
+    $exist = $fs->file_exists($filerecord->contextid, $filerecord->component, $filerecord->filearea,
+        $filerecord->itemid, $filerecord->filepath, $filerecord->filename);
+    return $exist;
 }

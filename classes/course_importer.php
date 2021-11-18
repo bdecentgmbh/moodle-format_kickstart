@@ -53,7 +53,7 @@ class course_importer {
     public static function import_from_template($templateid, $courseid) {
         global $CFG, $DB;
 
-        $template = $DB->get_record('kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
+        $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
         $fs = get_file_storage();
         $files = $fs->get_area_files(\context_system::instance()->id, 'format_kickstart', 'course_backups',

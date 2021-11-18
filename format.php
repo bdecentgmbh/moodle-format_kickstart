@@ -29,6 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->libdir.'/completionlib.php');
 
+
+
 $context = context_course::instance($course->id);
 // Retrieve course format option fields and add them to the $course object.
 $course = course_get_format($course)->get_course();
@@ -47,10 +49,10 @@ if (format_kickstart_has_pro()) {
         echo $output->render(new \format_kickstart\output\import_course_list());
     }
 }
+
 if (!has_capability('format/kickstart:import_from_template', $context)) {
     if (format_kickstart_has_pro() && !has_capability('local/kickstart_pro:import_other_courses', $context)) {
         $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
-
         echo $prorenderer->render(new \local_kickstart_pro\output\default_view($course));
     } else {
         echo format_text($course->userinstructions['text'], $course->userinstructions['format']);

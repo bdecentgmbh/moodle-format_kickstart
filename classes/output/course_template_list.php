@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 use renderer_base;
 
 require_once("$CFG->dirroot/cohort/lib.php");
+require_once("$CFG->dirroot/course/format/kickstart/lib.php");
 
 /**
  * Widget that displays course templates inside a course.
@@ -89,56 +90,57 @@ class course_template_list implements \templatable, \renderable {
         }
 
         $templates = [];
-
-        foreach ($DB->get_records('kickstart_template') as $template) {
-            // Apply template access if pro is installed.
-            if (format_kickstart_has_pro()) {
-                $categoryids = [];
-                $rootcategoryids = json_decode($template->categoryids, true);
-                if (is_array($rootcategoryids)) {
-                    foreach ($rootcategoryids as $categoryid) {
-                        if (class_exists("\core_course_category")) {
+        $listtemplates = [];
+        if (format_kickstart_has_pro()) {
+            $listtemplates = $DB->get_records('format_kickstart_template', null, 'sort');
+        } else {
+            $listtemplates = $DB->get_records('format_kickstart_template');
+        }
+        if (!empty($listtemplates)) {
+            foreach ($listtemplates as $template) {
+                // Apply template access if pro is installed.
+                if (format_kickstart_has_pro()) {
+                    $categoryids = [];
+                    $rootcategoryids = json_decode($template->categoryids, true);
+                    if (is_array($rootcategoryids)) {
+                        foreach ($rootcategoryids as $categoryid) {
                             $coursecat = \core_course_category::get($categoryid, IGNORE_MISSING);
-                        } else {
-                            // Moodle 3.5 compatibility.
-                            require_once("$CFG->dirroot/lib/coursecatlib.php");
-                            $coursecat = \coursecat::get($categoryid, IGNORE_MISSING);
-                        }
-                        if ($coursecat) {
-                            $categoryids[] = $categoryid;
-                            if ($template->includesubcategories) {
-                                $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                            if ($coursecat) {
+                                $categoryids[] = $categoryid;
+                                if ($template->includesubcategories) {
+                                    $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                                }
                             }
                         }
                     }
-                }
-                if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
-                    if (($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
-                        ($template->restrictcategory && !in_array($this->course->category, $categoryids)) ||
-                        ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))) {
-                        continue;
+
+                    if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
+                        if (($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
+                            ($template->restrictcategory && !in_array($this->course->category, $categoryids)) ||
+                            ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))) {
+                            continue;
+                        }
                     }
                 }
-            }
 
-            $template->description_formatted = format_text($template->description, $template->description_format);
-            $tags = [];
-            foreach (\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $template->id) as $tag) {
-                $tags[] = '#' . $tag->get_display_name(false);
-            }
-            $template->hashtags = implode(' ', $tags);
-            $template->link = new \moodle_url('/course/format/kickstart/confirm.php', [
-                'template_id' => $template->id,
-                'course_id' => $COURSE->id
-            ]);
+                $template->description_formatted = format_text($template->description, $template->description_format);
+                $tags = [];
+                foreach (\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $template->id) as $tag) {
+                    $tags[] = '#' . $tag->get_display_name(false);
+                }
+                $template->hashtags = implode(' ', $tags);
+                $template->link = new \moodle_url('/course/format/kickstart/confirm.php', [
+                    'template_id' => $template->id,
+                    'course_id' => $COURSE->id
+                ]);
 
-            if ($limit > 0 && count($templates) >= $limit) {
-                break;
-            }
+                if ($limit > 0 && count($templates) >= $limit) {
+                    break;
+                }
 
-            $templates[] = $template;
+                $templates[] = $template;
+            }
         }
-
         return $templates;
     }
 
@@ -154,7 +156,6 @@ class course_template_list implements \templatable, \renderable {
     public function export_for_template(renderer_base $output) {
 
         $templates = $this->get_templates();
-
         if (!format_kickstart_has_pro() && is_siteadmin()) {
             $template = new \stdClass();
             $template->isplaceholder = true;

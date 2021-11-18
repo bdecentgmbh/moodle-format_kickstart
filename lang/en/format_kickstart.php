@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component format_kickstart.
+ * Strings for component kickstart format.
  *
  * @package    format_kickstart
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
@@ -91,3 +91,16 @@ $string['userinstructions'] = 'Student instructions';
 $string['userinstructions_help'] = 'Content displayed to students before a template has been chosen by the teacher.';
 $string['usetemplate'] = 'Use template';
 $string['welcometoyourcourse'] = 'Welcome to your new course';
+$string['staffonthiscourse'] = 'Staff on this course';
+$string['welcometo'] = 'Welcome to';
+$string['shortname'] = "Short name:";
+$string['missingcategory'] = "Missing category";
+$string['selectcategory'] = "Select Category";
+$string['moreresults'] = 'There are more results, enter a more specific search';
+$string['coursecreatorinstructions'] = "Course creator instructions";
+$string['coursecreatorinstructions_desc'] = "Default content displayed to the course creator
+Show the 'create from template' page";
+$string['coursecreatorinstructions_default'] = "<p> Please choose a name for your course. Then select a category. In the next step
+you will be able to enrol users to the course. In the last step, you can choose a template for your course.</p>";
+
+

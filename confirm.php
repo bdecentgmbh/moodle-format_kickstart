@@ -32,13 +32,13 @@ $templateid = required_param('template_id', PARAM_INT);
 
 $PAGE->set_context(\context_course::instance($courseid));
 $PAGE->set_url(new moodle_url('/course/format/confirm.php', ['template_id' => $templateid, 'course_id' => $courseid]));
-
+$PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init');
 require_login();
 
 require_capability('format/kickstart:import_from_template', $PAGE->context);
 
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-$template = $DB->get_record('kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
+$template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
 $PAGE->set_title($template->title);
 $PAGE->set_heading($template->title);

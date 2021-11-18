@@ -15,28 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Kickstart course format.
+ * Kickstart templates list.
  *
  * @package    format_kickstart
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../../config.php');
-
 defined('MOODLE_INTERNAL') || die();
 
-$PAGE->set_context(context_system::instance());
-$PAGE->set_title(get_string('buypro', 'format_kickstart'));
-$PAGE->set_heading(get_string('buypro', 'format_kickstart'));
-$PAGE->set_url(new moodle_url('/course/format/kickstart/buypro.php'));
+global $freetemplates;
+$freetemplates = [
 
-$PAGE->navbar->add(get_string('buypro', 'format_kickstart'));
+    '0' => array(
+        'id' => 0,
+        'title' => 'demo test 1',
+        'description' => '<p dir="ltr" style="text-align: left;">test content of the block content</p>',
+        'tags' => [],
+        'backupfile' => 'course-10-online.mbz',
+        'preview_url' => '',
+        'restrictcohort' => 0,
+        'cohortids' => [],
+        'restrictcategory' => 0,
+        'categoryids' => [],
+        'includesubcategories' => 0,
+        'restrictrole' => 0,
+        'roleids' => [],
+        'description_format' => 1,
+    ),
+];
 
-require_login();
-
-echo $OUTPUT->header();
-echo \html_writer::div(get_string('buyprosummary', 'format_kickstart'), 'mb-2');
-echo \html_writer::link('http://bdecent.de/kickstart',
-    get_string('learnmore', 'format_kickstart'), ['target' => '_blank', 'class' => 'btn btn-primary']);
-echo $OUTPUT->footer();

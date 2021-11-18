@@ -44,7 +44,7 @@ switch ($action) {
         $PAGE->set_heading(get_string('create_template', 'format_kickstart'));
         $PAGE->navbar->add(get_string('create_template', 'format_kickstart'));
 
-        if (!format_kickstart_has_pro() && $DB->count_records('kickstart_template') >= 2 * 2) {
+        if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template') >= 2 * 2) {
             redirect(new moodle_url('/course/format/kickstart/buypro.php'));
         }
 
@@ -54,13 +54,15 @@ switch ($action) {
             $data->description_format = $data->description['format'];
             $data->description = $data->description['text'];
             if (format_kickstart_has_pro()) {
+                $counttemplate = $DB->count_records("format_kickstart_template");
                 $data->cohortids = json_encode($data->cohortids);
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
+                $data->sort = (!empty($counttemplate)) ? $counttemplate + 1 : 1;
             }
-            $id = $DB->insert_record('kickstart_template', $data);
-
-            core_tag_tag::set_item_tags('format_kickstart', 'kickstart_template', $id, context_system::instance(), $data->tags);
+            $id = $DB->insert_record('format_kickstart_template', $data);
+            core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
+                context_system::instance(), $data->tags);
             file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
                 $id, ['subdirs' => 0, 'maxfiles' => 1]);
 
@@ -79,8 +81,8 @@ switch ($action) {
 
         $id = required_param('id', PARAM_INT);
 
-        $template = $DB->get_record('kickstart_template', ['id' => $id], '*', MUST_EXIST);
-        $template->tags = core_tag_tag::get_item_tags_array('format_kickstart', 'kickstart_template', $template->id);
+        $template = $DB->get_record('format_kickstart_template', ['id' => $id], '*', MUST_EXIST);
+        $template->tags = core_tag_tag::get_item_tags_array('format_kickstart', 'format_kickstart_template', $template->id);
 
         $form = new \format_kickstart\form\template_form($PAGE->url);
 
@@ -92,9 +94,10 @@ switch ($action) {
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
             }
-            $DB->update_record('kickstart_template', $data);
+            $DB->update_record('format_kickstart_template', $data);
 
-            core_tag_tag::set_item_tags('format_kickstart', 'kickstart_template', $id, context_system::instance(), $data->tags);
+            core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
+                context_system::instance(), $data->tags);
             file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
                 $data->id, ['subdirs' => 0, 'maxfiles' => 1]);
 
@@ -132,12 +135,12 @@ switch ($action) {
 
         $id = required_param('id', PARAM_INT);
 
-        $template = $DB->get_record('kickstart_template', ['id' => $id], '*', MUST_EXIST);
+        $template = $DB->get_record('format_kickstart_template', ['id' => $id], '*', MUST_EXIST);
 
         $form = new \format_kickstart\form\template_delete_form($PAGE->url);
 
         if ($data = $form->get_data()) {
-            $DB->delete_records('kickstart_template', ['id' => $data->id]);
+            $DB->delete_records('format_kickstart_template', ['id' => $data->id]);
             \core\notification::success(get_string('template_deleted', 'format_kickstart'));
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else if ($form->is_cancelled()) {

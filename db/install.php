@@ -15,28 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Kickstart course format.
+ * Install scripts for course format Kickstart
  *
  * @package    format_kickstart
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../../config.php');
-
 defined('MOODLE_INTERNAL') || die();
 
-$PAGE->set_context(context_system::instance());
-$PAGE->set_title(get_string('buypro', 'format_kickstart'));
-$PAGE->set_heading(get_string('buypro', 'format_kickstart'));
-$PAGE->set_url(new moodle_url('/course/format/kickstart/buypro.php'));
+/**
+ * Install script for format_kickstart
+ * @return void
+ */
+function xmldb_format_kickstart_install() {
+    global $CFG;
 
-$PAGE->navbar->add(get_string('buypro', 'format_kickstart'));
+    if (method_exists('core_plugin_manager', 'reset_caches')) {
+        core_plugin_manager::reset_caches();
+    }
 
-require_login();
-
-echo $OUTPUT->header();
-echo \html_writer::div(get_string('buyprosummary', 'format_kickstart'), 'mb-2');
-echo \html_writer::link('http://bdecent.de/kickstart',
-    get_string('learnmore', 'format_kickstart'), ['target' => '_blank', 'class' => 'btn btn-primary']);
-echo $OUTPUT->footer();
+    $file = $CFG->dirroot.'/course/format/kickstart/createtemplates.php';
+    if (file_exists($file)) {
+        require_once($file);
+        // Install templates automatically.
+        install_templates();
+    }
+    return true;
+}

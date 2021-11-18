@@ -5,9 +5,9 @@ body.format-kickstart .form-control .fa-search {
 
 /* Moodle 3.5 compatibility */
 
-.format-kickstart .input-group>.form-control,
-.format-kickstart .input-group>.custom-select,
-.format-kickstart .input-group>.custom-file {
+.format-kickstart .input-group > .form-control,
+.format-kickstart .input-group > .custom-select,
+.format-kickstart .input-group > .custom-file {
     position: relative;
     flex: 1 1 auto;
     width: 1%;
@@ -23,7 +23,7 @@ body.format-kickstart .form-control .fa-search {
 }
 
 .format-kickstart .input-group.mb-3 {
-    margin-bottom: 1rem!important;
+    margin-bottom: 1rem;
 }
 
 .format-kickstart .input-group-append {
@@ -31,7 +31,6 @@ body.format-kickstart .form-control .fa-search {
     background: #efefef;
     border-top: 1px;
     border-bottom: 1px;
-    border-left: 0px;
     border-right: 1px;
     border-color: #ccc;
     border-style: solid;
@@ -46,14 +45,14 @@ body.format-kickstart .form-control .fa-search {
     background-color: #fff;
     -webkit-background-clip: border-box;
     background-clip: border-box;
-    border: 1px solid rgba(0,0,0,.125);
-    margin-bottom: .5rem!important;
+    border: 1px solid rgba(0, 0, 0, .125);
+    margin-bottom: .5rem;
 }
 
 .format-kickstart .card-deck {
     display: flex;
     flex-direction: column;
-    margin-bottom: .5rem!important;
+    margin-bottom: .5rem;
 }
 
 @media (min-width: 576px) {
@@ -82,6 +81,10 @@ body.format-kickstart .form-control .fa-search {
 
 .format-kickstart .card-footer {
     padding: .75rem 1.25rem;
-    background-color: rgba(0,0,0,.03);
-    border-top: 1px solid rgba(0,0,0,.125);
+    background-color: rgba(0, 0, 0, .03);
+    border-top: 1px solid rgba(0, 0, 0, .125);
+}
+
+#page-content form .edit-shortname-parent-kickstart i {
+    padding: 10px;
 }
