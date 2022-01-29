@@ -18,7 +18,7 @@
  * Redirect users to purchase Kickstart Pro.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,9 +35,7 @@ $PAGE->set_context(\context_course::instance($courseid));
 
 require_login();
 
-if (!$PAGE->user_allowed_editing()) {
-    throw new moodle_exception('notallowed', 'format_kickstart');
-}
+require_capability('format/kickstart:import_from_template', $PAGE->context);
 
 \format_kickstart\course_importer::import_from_template($templateid, $courseid);
 

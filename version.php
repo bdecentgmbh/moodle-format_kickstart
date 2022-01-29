@@ -18,14 +18,15 @@
  * Version details
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019061703;         // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2017051509;         // Requires this Moodle version.
+$plugin->version   = 2021092102;         // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2017111309;         // Requires this Moodle version.
+$plugin->release = 'Version 1.2';
 $plugin->component = 'format_kickstart'; // Full name of the plugin (used for diagnostics).
+$plugin->supported = [39, 311];
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0';

@@ -15,59 +15,98 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component format_kickstart.
+ * Strings for component kickstart format.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['automatictemplate'] = 'Automatic template';
+$string['automatictemplate_desc'] = 'If only one template is available to the user it will automatically be imported. The user will be notified on the page when this happens.';
+$string['automatictemplate_help'] = 'The course template was automatically applied. If you require a different template, please contact the system administrator.';
 $string['buypro'] = 'Buy Kickstart Pro';
-$string['buypromaxtemplates'] = 'You are using the maximum number (<b>3</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/">Kickstart Pro</a>.';
+$string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="http://bdecent.de/kickstart">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';
 $string['confirmtemplate'] = 'Are you sure you want to use this template?';
 $string['course_backup'] = 'Course backup file (.mbz)';
 $string['course_backup_help'] = 'When a user selects this template from within a course, this .mbz course backup will be imported into the course.';
 $string['course_templates'] = 'Course templates';
-$string['create_template'] = 'Create template';
 $string['coursebackupnotset'] = 'Template has no course backup set.';
+$string['coursecreatorredirect'] = 'Course creator redirect';
+$string['coursecreatorredirect_desc'] = 'Force course creators to use Kickstart\'s "create from template" page when creating new courses. For example, when a course creator clicks "Add new course", they will be redirected to Kickstart.';
+$string['create_template'] = 'Create template';
+$string['createcoursefromtemplate'] = 'Create course from template';
 $string['defaultteacherinstructions'] = 'Default teacher instructions';
+$string['defaultteacherinstructions_default'] = '<p>Currently, there\'s nothing in here, so start adding your content. We\'ve made creating courses really easy for you. First, you choose a template that suits your course, then you can start adding content.</p>';
 $string['defaultteacherinstructions_desc'] = 'Default content displayed to teachers before a template has been chosen.';
-$string['defaultteacherinstructions_default'] = '<p>Currently, there\'s nothing in here, so start adding your content. If you need any help, here\'s a video tutorial on all the options you have. We\'ve made creating courses really easy for you. First, you choose a template that suits your course, then you can start adding content.</p>';
 $string['defaultuserinstructions'] = 'Default student instructions';
-$string['defaultuserinstructions_desc'] = 'Default content displayed to students before a template has been chosen by the teacher.';
 $string['defaultuserinstructions_default'] = '<p>Your teacher has not added any content into this course (yet).</p><p>If you have any questions, contact your teacher.</p>';
+$string['defaultuserinstructions_desc'] = 'Default content displayed to students before a template has been chosen by the teacher.';
 $string['delete'] = 'Delete';
 $string['delete_template'] = 'Delete template';
 $string['description'] = 'Description';
 $string['edit'] = 'Edit';
 $string['edit_template'] = 'Edit template';
+$string['enrollmenthelp'] = 'Before continuing you may enroll teachers (or any users). Click <b>Proceed to course content</b> to choose a template to import.';
 $string['general_settings'] = 'General settings';
 $string['getpro'] = 'Get more templates with Kickstart Pro';
 $string['goprotoenable'] = 'Go Pro to enable';
 $string['gotocourse'] = 'Go to course';
 $string['importcourse'] = 'Import course';
 $string['importexplanation'] = 'Here is a list of courses you are enrolled in as a teacher. You can import contents from these courses. Use the search box to narrow down the list of courses.';
+$string['importtarget'] = 'Import target';
+$string['importtarget_desc'] = 'Choose how Kickstart templates should be imported into courses.';
+$string['includesubcategories'] = 'Include subcategories';
+$string['includesubcategories_help'] = 'If checked, subcategories of chosen categories will also have access to this template.';
+$string['kickstart:import_from_template'] = 'Import from templates';
 $string['kickstart:manage_templates'] = 'Manage templates';
 $string['learnmore'] = 'Learn more';
 $string['manage_templates'] = 'Manage templates';
 $string['migratefromcourses'] = 'Migrate content from other courses';
-$string['notallowed'] = 'You are not allowed to do this.';
-$string['notemplates'] = 'No templates have been created yet.';
+$string['notemplates'] = 'No templates are available yet.';
 $string['pluginname'] = 'Kickstart format';
 $string['previewurl'] = 'Preview URL';
 $string['previewurl_help'] = 'If provided a button will display on the template that will open this URL in a new tab';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
+$string['restoretoexistingcourseadding'] = 'Merge Kickstart templates into courses';
+$string['restoretoexistingcoursedeleting'] = 'Delete existing content when importing Kickstart templates';
+$string['restrictcategory'] = 'Restrict by categories';
+$string['restrictcohort'] = 'Restrict by cohorts';
+$string['restrictrole'] = 'Restrict by roles';
 $string['searchterm'] = 'Showing results for "{$a->term}"';
 $string['sectionname'] = 'Kickstart';
+$string['showing'] = 'Showing {$a->count} course(s)';
 $string['tagarea_kickstart_template'] = 'Kickstart templates';
 $string['teacherinstructions'] = 'Teacher instructions';
 $string['teacherinstructions_help'] = 'Content displayed to teachers before a template has been chosen.';
 $string['template_created'] = 'Template successfully created';
 $string['template_deleted'] = 'Template successfully deleted';
 $string['template_edited'] = 'Template successfully edited';
+$string['templateaccess'] = 'Template access';
 $string['title'] = 'Title';
+$string['usedefault'] = 'Use default restore setting';
+$string['usedefault_help'] = 'These settings are applied when importing a template.';
 $string['userinstructions'] = 'Student instructions';
 $string['userinstructions_help'] = 'Content displayed to students before a template has been chosen by the teacher.';
 $string['usetemplate'] = 'Use template';
 $string['welcometoyourcourse'] = 'Welcome to your new course';
+$string['staffonthiscourse'] = 'Staff on this course';
+$string['welcometo'] = 'Welcome to';
+$string['shortname'] = "Short name:";
+$string['missingcategory'] = "Missing category";
+$string['selectcategory'] = "Select Category";
+$string['moreresults'] = 'There are more results, enter a more specific search';
+$string['coursecreatorinstructions'] = "Course creator instructions";
+$string['coursecreatorinstructions_desc'] = "Default content displayed to the course creator
+Show the 'create from template' page";
+$string['coursecreatorinstructions_default'] = "<p> Please choose a name for your course. Then select a category. In the next step
+you will be able to enrol users to the course. In the last step, you can choose a template for your course.</p>";
+
+$string['config_keep_roles_and_enrolments'] = 'By default keep current roles and enrolments.';
+$string['config_keep_groups_and_groupings'] = 'By default keep current groups and groupings.';
+$string['configrestoreusers'] = 'Sets the default for whether to restore users if they were included in the backup.';
+$string['generalrestoresettings'] = 'General restore settings';
+$string['setting_keep_roles_and_enrolments'] = 'Keep current roles and enrolments';
+$string['setting_keep_groups_and_groupings'] = 'Keep current groups and groupings';
+$string['generalusers'] = 'Include users';

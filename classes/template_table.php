@@ -18,7 +18,7 @@
  * Template list table.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,7 +32,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * List of templates.
  *
  * @package format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class template_table extends \table_sql {
@@ -43,6 +43,7 @@ class template_table extends \table_sql {
      * @throws \coding_exception
      */
     public function __construct() {
+        global $DB;
         parent::__construct('templates');
 
         // Define the headers and columns.
@@ -52,15 +53,20 @@ class template_table extends \table_sql {
         $headers[] = get_string('title', 'format_kickstart');
         $headers[] = get_string('description', 'format_kickstart');
         $headers[] = get_string('tags');
-        $headers[] = get_string('actions');
         $columns[] = 'title';
         $columns[] = 'description';
         $columns[] = 'tags';
+        if (format_kickstart_has_pro()) {
+            $headers[] = get_string('up') .'/'. get_string('down');
+            $columns[] = 'updown';
+            $this->no_sorting('updown');
+            $this->cnt = 0;
+        }
+        $headers[] = get_string('actions');
         $columns[] = 'actions';
-
+        $this->totaltemplates = $DB->count_records('format_kickstart_template', null);
         $this->no_sorting('tags');
         $this->no_sorting('actions');
-
         $this->define_columns($columns);
         $this->define_headers($headers);
     }
@@ -73,9 +79,44 @@ class template_table extends \table_sql {
      */
     public function col_tags($data) {
         global $OUTPUT;
-        return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'kickstart_template', $data->id),
+        return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $data->id),
             null, 'template-tags');
     }
+
+    /**
+     * Generate sort list for the templates.
+     *
+     * @param \stdClass $data
+     * @return mixed
+     */
+    public function col_updown($data) {
+        global $OUTPUT;
+        $templateurl = new \moodle_url('/course/format/kickstart/templates.php');
+        $updown = '';
+        $strup = get_string('up');
+        $strdown = get_string('down');
+        $spacer = $OUTPUT->pix_icon('spacer', '', 'moodle', array('class' => 'iconsmall'));
+        if ($this->cnt) {
+            $updown .= \html_writer::link($templateurl->out(false,
+            array('action' => 'up', 'template' => $data->id)),
+            $OUTPUT->pix_icon('t/up', $strup, 'moodle', array('class' => 'iconsmall')),
+                array('id' => "sort-template-up-action")). '';
+        } else {
+            $updown .= $spacer;
+        }
+
+        if ($this->cnt < ($this->totaltemplates - 1)) {
+            $updown .= '&nbsp;'. \html_writer::link($templateurl->out(false,
+            array('action' => 'down', 'template' => $data->id)),
+            $OUTPUT->pix_icon('t/down', $strdown, 'moodle',
+                array('class' => 'iconsmall')), array('id' => "sort-template-down-action"));
+        } else {
+            $updown .= $spacer;
+        }
+        $this->cnt++;
+        return $updown;
+    }
+
 
     /**
      * Actions for tags.
@@ -111,16 +152,18 @@ class template_table extends \table_sql {
             $wsql = 'AND ' . $wsql;
         }
         $sql = 'SELECT *
-                FROM {kickstart_template} t
+                FROM {format_kickstart_template} t
                 '.$wsql;
 
         $sort = $this->get_sql_sort();
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
+        } else if (format_kickstart_has_pro()) {
+            $sql = $sql . 'ORDER BY sort';
         }
 
         if ($pagesize != -1) {
-            $total = $DB->count_records('kickstart_template');
+            $total = $DB->count_records('format_kickstart_template');
             $this->pagesize($pagesize, $total);
         } else {
             $this->pageable(false);

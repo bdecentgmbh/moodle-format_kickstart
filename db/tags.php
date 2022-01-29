@@ -18,7 +18,7 @@
  * Tag areas.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $tagareas = [
     [
-        'itemtype' => 'kickstart_template',
+        'itemtype' => 'format_kickstart_template',
         'component' => 'format_kickstart',
         'callback' => 'format_kickstart_get_tagged_templates',
         'callbackfile' => '/course/format/loclstart/lib.php',

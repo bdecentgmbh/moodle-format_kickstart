@@ -18,22 +18,88 @@
  * Settings for format_kickstart
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
+global $CFG;
+
+require_once("$CFG->dirroot/course/format/kickstart/lib.php");
+require_once("$CFG->dirroot/backup/util/includes/backup_includes.php");
+
 if ($ADMIN->fulltree) {
+    if (format_kickstart_has_pro()) {
+        $settings->add(new admin_setting_configcheckbox('format_kickstart/coursecreatorredirect',
+            get_string('coursecreatorredirect', 'format_kickstart'),
+            get_string('coursecreatorredirect_desc', 'format_kickstart'),
+            0));
+
+        $settings->add(new admin_setting_confightmleditor('format_kickstart/coursecreatorinstructions',
+            get_string('coursecreatorinstructions', 'format_kickstart'),
+            get_string('coursecreatorinstructions_desc', 'format_kickstart'),
+            get_string('coursecreatorinstructions_default', 'format_kickstart')));
+
+        $settings->add(new admin_setting_configcheckbox('format_kickstart/automatictemplate',
+            get_string('automatictemplate', 'format_kickstart'),
+            get_string('automatictemplate_desc', 'format_kickstart'),
+            1));
+    }
+
+    $settings->add(new admin_setting_configselect('format_kickstart/importtarget',
+        get_string('importtarget', 'format_kickstart'),
+        get_string('importtarget_desc', 'format_kickstart'),
+        \backup::TARGET_EXISTING_DELETING, [
+            \backup::TARGET_EXISTING_DELETING => get_string('restoretoexistingcoursedeleting', 'format_kickstart'),
+            \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart')
+        ]));
+
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
-            get_string('defaultuserinstructions', 'format_kickstart'),
-            get_string('defaultuserinstructions_desc', 'format_kickstart'),
-            get_string('defaultuserinstructions_default', 'format_kickstart')));
+        get_string('defaultuserinstructions', 'format_kickstart'),
+        get_string('defaultuserinstructions_desc', 'format_kickstart'),
+        get_string('defaultuserinstructions_default', 'format_kickstart')));
 
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultteacherinstructions',
-            get_string('defaultteacherinstructions', 'format_kickstart'),
-            get_string('defaultteacherinstructions_desc', 'format_kickstart'),
-            get_string('defaultteacherinstructions_default', 'format_kickstart')));
+        get_string('defaultteacherinstructions', 'format_kickstart'),
+        get_string('defaultteacherinstructions_desc', 'format_kickstart'),
+        get_string('defaultteacherinstructions_default', 'format_kickstart')));
+
+    $options = [
+        0 => get_string('no'),
+        1 => get_string('yes'),
+        2 => get_string('usedefault', 'format_kickstart')
+    ];
+
+    $settings->add(new admin_setting_heading(
+        'restoresettings',
+        get_string('generalrestoresettings', 'format_kickstart'),
+        get_string('usedefault_help', 'format_kickstart')
+    ));
+
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/restore_general_users',
+        get_string('generalusers', 'format_kickstart'),
+        get_string('configrestoreusers', 'format_kickstart'),
+        0,
+        $options
+    ));
+
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/restore_replace_keep_roles_and_enrolments',
+        get_string('setting_keep_roles_and_enrolments', 'format_kickstart'),
+        get_string('config_keep_roles_and_enrolments', 'format_kickstart'),
+        0,
+        $options
+    ));
+
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/restore_replace_keep_groups_and_groupings',
+        get_string('setting_keep_groups_and_groupings', 'format_kickstart'),
+        get_string('config_keep_groups_and_groupings', 'format_kickstart'),
+        0,
+        $options
+    ));
 }
 $settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));
@@ -42,5 +108,9 @@ $ADMIN->add('format_kickstart', $settings);
 // Tell core we already added the settings structure.
 $settings = null;
 
-$ADMIN->add('format_kickstart', new admin_externalpage('templates', get_string('manage_templates', 'format_kickstart'),
-    new moodle_url('/course/format/kickstart/templates.php')));
+$ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('course_templates', 'format_kickstart'),
+    new moodle_url('/course/format/kickstart/templates.php'), 'format/kickstart:manage_templates'));
+
+$ADMIN->add('format_kickstart', new admin_externalpage('kickstartmanagetemplates', get_string('manage_templates', 'format_kickstart'),
+new moodle_url('/course/format/kickstart/templates.php')));
+

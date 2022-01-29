@@ -18,39 +18,41 @@
  * Kickstart course format.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use format_kickstart\output\course_template_list;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->libdir.'/completionlib.php');
 
+
+
 $context = context_course::instance($course->id);
 // Retrieve course format option fields and add them to the $course object.
 $course = course_get_format($course)->get_course();
-
-if (($marker >= 0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
-    $course->marker = $marker;
-    course_set_marker($course->id, $marker);
-}
 
 // Make sure section 0 is created.
 course_create_sections_if_missing($course, 0);
 
 $output = $PAGE->get_renderer('format_kickstart');
 
-if ($PAGE->user_allowed_editing()) {
-    echo $output->render(new \format_kickstart\output\course_template_list($course));
-    if (has_capability('moodle/restore:restoretargetimport', $context) && (format_kickstart_has_pro() || is_siteadmin())) {
+if (has_capability('format/kickstart:import_from_template', $context)) {
+    echo $output->render(new course_template_list($course, $USER->id));
+}
+if (format_kickstart_has_pro()) {
+    if (has_capability('local/kickstart_pro:import_other_courses', $context)) {
         echo \html_writer::empty_tag('hr');
         echo $output->render(new \format_kickstart\output\import_course_list());
     }
-} else {
-    if (format_kickstart_has_pro()) {
-        $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
+}
 
+if (!has_capability('format/kickstart:import_from_template', $context)) {
+    if (format_kickstart_has_pro() && !has_capability('local/kickstart_pro:import_other_courses', $context)) {
+        $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
         echo $prorenderer->render(new \local_kickstart_pro\output\default_view($course));
     } else {
         echo format_text($course->userinstructions['text'], $course->userinstructions['format']);

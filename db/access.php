@@ -18,7 +18,7 @@
  * Capability definitions for the Kickstart format
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,6 +30,15 @@ $capabilities = [
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'manager' => CAP_ALLOW,
+        ]
+    ],
+    'format/kickstart:import_from_template' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW
         ]
     ]
 ];

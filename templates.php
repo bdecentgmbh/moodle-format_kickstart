@@ -18,31 +18,60 @@
  * List of templates.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require(__DIR__.'/../../../config.php');
 require_once(__DIR__.'/lib.php');
+require_once("$CFG->libdir/adminlib.php");
 
 global $USER;
 
 $download = optional_param('download', '', PARAM_ALPHA);
+$action = optional_param('action', '', PARAM_TEXT);
+$templateid = optional_param('template', '', PARAM_TEXT);
+
 
 $context = context_system::instance();
-
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
+
+// Template sort action.
+if ($action && $templateid) {
+
+    if ($action == 'up') {
+
+        $currenttemplate = $DB->get_record('format_kickstart_template', array('id' => $templateid));
+        $prevtemplate = $DB->get_record('format_kickstart_template', array('sort' => $currenttemplate->sort - 1));
+        if ($prevtemplate) {
+            $DB->set_field('format_kickstart_template', 'sort', $prevtemplate->sort,
+            array('id' => $currenttemplate->id));
+            $DB->set_field('format_kickstart_template', 'sort', $currenttemplate->sort,
+            array('id' => $prevtemplate->id));
+        }
+
+    } else if ($action = "down") {
+        $currenttemplate = $DB->get_record('format_kickstart_template', array('id' => $templateid));
+        $nexttemplate = $DB->get_record('format_kickstart_template', array('sort' => $currenttemplate->sort + 1));
+        if ($nexttemplate) {
+            $DB->set_field('format_kickstart_template', 'sort', $nexttemplate->sort,
+            array('id' => $currenttemplate->id));
+            $DB->set_field('format_kickstart_template', 'sort', $currenttemplate->sort,
+            array('id' => $nexttemplate->id));
+        }
+    }
+    redirect($PAGE->url);
+}
+
+admin_externalpage_setup('kickstarttemplates');
+
 $PAGE->set_title(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_heading(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
     get_string('create_template', 'format_kickstart')));
-$PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'));
 
-require_login();
-require_capability('format/kickstart:manage_templates', $context);
-
-if (!format_kickstart_has_pro() && $DB->count_records('kickstart_template') >= 3) {
+if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template') >= 2 * 2) {
     \core\notification::warning(get_string('buypromaxtemplates', 'format_kickstart'));
 }
 

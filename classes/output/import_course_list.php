@@ -18,7 +18,7 @@
  * Widget that displays courses to import inside course.
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ use renderer_base;
 /**
  * Widget that displays courses to import inside course.
  *
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @package format_kickstart
  */
@@ -64,6 +64,7 @@ class import_course_list implements \templatable, \renderable {
         if ($component->get_count() === 0) {
             $html .= $OUTPUT->notification(get_string('nomatchingcourses', 'backup'));
         } else {
+            $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
             foreach ($component->get_results() as $course) {
                 if ($course->id == $SITE->id || $course->id == $COURSE->id) {
                     continue;
@@ -75,7 +76,7 @@ class import_course_list implements \templatable, \renderable {
                 $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
                     'id' => $COURSE->id,
                     'importid' => $course->id,
-                    'target' => \backup::TARGET_EXISTING_DELETING
+                    'target' => $target
                 ]);
                 $courses[] = $course;
             }
@@ -88,7 +89,7 @@ class import_course_list implements \templatable, \renderable {
             'html' => $html,
             'courses' => $courses,
             'haspro' => format_kickstart_has_pro(),
-            'searchlabel' => get_string('showing', 'local_kickstart_pro', ['count' => $component->get_count()]),
+            'searchlabel' => get_string('showing', 'format_kickstart', ['count' => $component->get_count()]),
             'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
             'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id])

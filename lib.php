@@ -18,7 +18,7 @@
  * This file contains main class for the course format Kickstart
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ require_once($CFG->dirroot. '/course/format/lib.php');
  * Main class for the Kickstart course format
  *
  * @package    format_kickstart
- * @copyright  2019 bdecent gmbh <https://bdecent.de>
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_kickstart extends format_base {
@@ -90,13 +90,100 @@ class format_kickstart extends format_base {
     }
 
     /**
+     * Override: Allow editor element types to be saved properly.
+     *
+     * Updates format options for a course or section
+     *
+     * If $data does not contain property with the option name, the option will not be updated
+     *
+     * @param stdClass|array $data return value from {moodleform::get_data()} or array with data
+     * @param null|int $sectionid  if these are options for course or section id (course_sections.id)
+     *     if these are options for section
+     * @return bool whether there were any changes to the options values
+     * @throws dml_exception
+     */
+    protected function update_format_options($data, $sectionid = null) {
+        global $DB;
+        // Moodle 3.5 compatibility.
+        if (method_exists($this, 'validate_format_options')) {
+            $data = $this->validate_format_options((array)$data, $sectionid);
+        }
+        if (!$sectionid) {
+            $allformatoptions = $this->course_format_options();
+            $sectionid = 0;
+        } else {
+            $allformatoptions = $this->section_format_options();
+        }
+        if (empty($allformatoptions)) {
+            // Nothing to update anyway.
+            return false;
+        }
+        $defaultoptions = array();
+        $cached = array();
+        foreach ($allformatoptions as $key => $option) {
+            $defaultoptions[$key] = null;
+            if (array_key_exists('default', $option)) {
+                $defaultoptions[$key] = $option['default'];
+            }
+            $cached[$key] = ($sectionid === 0 || !empty($option['cache']));
+        }
+        $records = $DB->get_records('course_format_options',
+            array('courseid' => $this->courseid,
+                'format' => $this->format,
+                'sectionid' => $sectionid
+            ), '', 'name,id,value');
+        $changed = $needrebuild = false;
+        foreach ($defaultoptions as $key => $value) {
+            if (isset($records[$key])) {
+                if (array_key_exists($key, $data) && $records[$key]->value !== $data[$key]) {
+                    $DB->set_field('course_format_options', 'value',
+                        $data[$key], array('id' => $records[$key]->id));
+                    $changed = true;
+                    $needrebuild = $needrebuild || $cached[$key];
+                }
+            } else {
+                if (array_key_exists($key, $data) && $data[$key] !== $value) {
+                    $newvalue = $data[$key];
+                    $changed = true;
+                    $needrebuild = $needrebuild || $cached[$key];
+                } else {
+                    $newvalue = $value;
+                    // We still insert entry in DB, but there are no changes from user point of view.
+                    // No need to call rebuild_course_cache().
+                }
+
+                $newvalue = !is_array($newvalue) ? $newvalue : $newvalue['text'];
+
+                $DB->insert_record('course_format_options', array(
+                    'courseid' => $this->courseid,
+                    'format' => $this->format,
+                    'sectionid' => $sectionid,
+                    'name' => $key,
+                    'value' => $newvalue
+                ));
+            }
+        }
+        if ($needrebuild) {
+            rebuild_course_cache($this->courseid, true);
+        }
+        if ($changed) {
+            // Reset internal caches.
+            if (!$sectionid) {
+                $this->course = false;
+            }
+            unset($this->formatoptions[$sectionid]);
+        }
+        return $changed;
+    }
+
+    /**
      * Updates format options for a course
      *
      * In case if course format was changed to 'topics', we try to copy options
      * 'coursedisplay' and 'hiddensections' from the previous format.
      *
-     * @param stdClass|array $data return value from {@link moodleform::get_data()} or array with data
-     * @param stdClass $oldcourse if this function is called from {@link update_course()}
+     * @param stdClass|array $data return value from {moodleform::get_data()} or array with data
+     * @param stdClass $oldcourse if this function is called from {update_course()}
      *     this object contains information about the course before update
      * @return bool whether there were any changes to the options values
      */
@@ -168,4 +255,87 @@ function format_kickstart_has_pro() {
         return $CFG->kickstart_pro;
     }
     return array_key_exists('kickstart_pro', core_component::get_plugin_list('local'));
+}
+
+/**
+ * Automatically create the template.
+ * @param object $template template info
+ * @param int $sort sort position
+ * @param object $context page context
+ * @param string $component
+ * @return void
+ */
+function format_kickstart_create_template($template, $sort, $context, $component) {
+
+    global $DB, $CFG, $USER;
+    if (!isguestuser() && isloggedin()) {
+        $fs = get_file_storage();
+        $draftidattach = file_get_unused_draft_itemid();
+        $template->sort = $sort;
+        $template->course_backup = $draftidattach;
+        $template->cohortids = json_encode($template->cohortids);
+        $template->categoryids = json_encode($template->categoryids);
+        $template->roleids = json_encode($template->roleids);
+        $id = $DB->insert_record('format_kickstart_template', $template);
+        core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id, $context, $template->tags);
+        if (isset($template->backupfile) && !empty($template->backupfile)) {
+            $filerecord = new stdClass();
+            $filerecord->component = 'format_kickstart';
+            $filerecord->contextid = $context->id;
+            $filerecord->filearea = "course_backups";
+            $filerecord->filepath = '/';
+            $filerecord->itemid = $id;
+            $filerecord->filename = $template->backupfile;
+            $exist = check_record_exsist($filerecord);
+            if ($exist != 1) {
+                if ($component == 'format_kickstart') {
+                    $backuppath = $CFG->dirroot . "/course/format/kickstart/assets/templates/$template->backupfile";
+                } else if ($component == 'local_kickstart_pro') {
+                    $backuppath = $CFG->dirroot . "/local/kickstart_pro/assets/templates/$template->backupfile";
+                }
+                $fs->create_file_from_pathname($filerecord, $backuppath);
+            }
+        }
+    }
+}
+
+/**
+ * Does this file exist
+ * @param object $filerecord
+ * @return bool
+ */
+function check_record_exsist($filerecord) {
+
+    $fs = get_file_storage();
+    $exist = $fs->file_exists($filerecord->contextid, $filerecord->component, $filerecord->filearea,
+        $filerecord->itemid, $filerecord->filepath, $filerecord->filename);
+    return $exist;
+}
+
+if (!function_exists('make_backup_temp_directory')) {
+    /**
+     * Create a directory under $CFG->backuptempdir and make sure it is writable.
+     *
+     * Do not use for storing generic temp files - see make_temp_directory() instead for this purpose.
+     *
+     * Backup temporary files must be on a shared storage.
+     *
+     * @param string $directory  the relative path of the directory to be created under $CFG->backuptempdir
+     * @param bool $exceptiononerror throw exception if error encountered
+     * @return string|false Returns full path to directory if successful, false if not; may throw exception
+     */
+    function make_backup_temp_directory($directory, $exceptiononerror = true) {
+        global $CFG;
+        if (!isset($CFG->backuptempdir)) {
+            $CFG->backuptempdir = "$CFG->tempdir/backup";
+        }
+
+        if ($CFG->backuptempdir !== "$CFG->tempdir/backup") {
+            check_dir_exists($CFG->backuptempdir, true, true);
+            protect_directory($CFG->backuptempdir);
+        } else {
+            protect_directory($CFG->tempdir);
+        }
+        return make_writable_directory("$CFG->backuptempdir/$directory", $exceptiononerror);
+    }
 }

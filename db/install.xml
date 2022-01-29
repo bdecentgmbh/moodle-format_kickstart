@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="course/format/kickstart/db" VERSION="20190617" COMMENT="XMLDB file for Moodle course/format/kickstart"
+<XMLDB PATH="course/format/kickstart/db" VERSION="20200525" COMMENT="XMLDB file for Moodle course/format/kickstart"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="kickstart_template" COMMENT="Course template definitions.">
+    <TABLE NAME="format_kickstart_template" COMMENT="Course template definitions.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="description_format" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="preview_url" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Link to preview template"/>
+        <FIELD NAME="restrictcohort" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="restrictcategory" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="restrictrole" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="cohortids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="categoryids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="includesubcategories" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="If true, subcategories of chosen category will be included in access."/>
+        <FIELD NAME="roleids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sort" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
