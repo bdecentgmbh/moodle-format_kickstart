@@ -25,23 +25,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $freetemplates;
-$freetemplates = [
-
-    '0' => array(
-        'id' => 0,
-        'title' => 'demo test 1',
-        'description' => '<p dir="ltr" style="text-align: left;">test content of the block content</p>',
-        'tags' => [],
-        'backupfile' => 'course-10-online.mbz',
-        'preview_url' => '',
-        'restrictcohort' => 0,
-        'cohortids' => [],
-        'restrictcategory' => 0,
-        'categoryids' => [],
-        'includesubcategories' => 0,
-        'restrictrole' => 0,
-        'roleids' => [],
-        'description_format' => 1,
-    ),
-];
+$freetemplates = [];
 
