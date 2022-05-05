@@ -145,7 +145,7 @@ class template_table extends \table_sql {
      * @throws \dml_exception
      */
     public function query_db($pagesize, $useinitialsbar = true) {
-        global $DB;
+        global $DB, $CFG;
 
         list($wsql, $params) = $this->get_sql_where();
         if ($wsql) {
@@ -159,7 +159,11 @@ class template_table extends \table_sql {
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
         } else if (format_kickstart_has_pro()) {
-            $sql = $sql . 'ORDER BY sort';
+            if ($CFG->kickstart_templates) {
+                $orders = explode(",", $CFG->kickstart_templates);
+                array_unshift($orders, 'id');
+                $sql = $sql . 'ORDER BY FIELD ('. implode(",", $orders) . ')';
+            }
         }
 
         if ($pagesize != -1) {

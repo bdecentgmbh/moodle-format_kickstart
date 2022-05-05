@@ -296,6 +296,7 @@ function format_kickstart_create_template($template, $sort, $context, $component
                 $fs->create_file_from_pathname($filerecord, $backuppath);
             }
         }
+        return $id;
     }
 }
 

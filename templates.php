@@ -36,30 +36,39 @@ $templateid = optional_param('template', '', PARAM_TEXT);
 $context = context_system::instance();
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
-
+$templates = $CFG->kickstart_templates ? explode(",", $CFG->kickstart_templates) : [];
 // Template sort action.
 if ($action && $templateid) {
 
-    if ($action == 'up') {
-
-        $currenttemplate = $DB->get_record('format_kickstart_template', array('id' => $templateid));
-        $prevtemplate = $DB->get_record('format_kickstart_template', array('sort' => $currenttemplate->sort - 1));
-        if ($prevtemplate) {
-            $DB->set_field('format_kickstart_template', 'sort', $prevtemplate->sort,
-            array('id' => $currenttemplate->id));
-            $DB->set_field('format_kickstart_template', 'sort', $currenttemplate->sort,
-            array('id' => $prevtemplate->id));
-        }
-
-    } else if ($action = "down") {
-        $currenttemplate = $DB->get_record('format_kickstart_template', array('id' => $templateid));
-        $nexttemplate = $DB->get_record('format_kickstart_template', array('sort' => $currenttemplate->sort + 1));
-        if ($nexttemplate) {
-            $DB->set_field('format_kickstart_template', 'sort', $nexttemplate->sort,
-            array('id' => $currenttemplate->id));
-            $DB->set_field('format_kickstart_template', 'sort', $currenttemplate->sort,
-            array('id' => $nexttemplate->id));
-        }
+    switch($action) {
+        case 'up':
+            if (!in_array($templateid, $templates)) {
+                break;
+            }
+            $enabled = array_flip($templates);
+            $current = $enabled[$templateid];
+            if ($current == 0) {
+                break; // Already at the top
+            }
+            $enabled = array_flip($enabled);
+            $enabled[$current] = $enabled[$current - 1];
+            $enabled[$current - 1] = $templateid;
+            set_config('kickstart_templates', implode(',', $enabled));
+            break;
+        case 'down':
+            if (!in_array($templateid, $templates)) {
+                break;
+            }
+            $enabled = array_flip($templates);
+            $current = $enabled[$templateid];
+            if ($current == count($enabled) - 1) {
+                break; // Already at the end
+            }
+            $enabled = array_flip($enabled);
+            $enabled[$current] = $enabled[$current + 1];
+            $enabled[$current + 1] = $templateid;
+            set_config('kickstart_templates', implode(',', $enabled));
+            break;
     }
     redirect($PAGE->url);
 }

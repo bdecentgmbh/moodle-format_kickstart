@@ -25,7 +25,7 @@
 require(__DIR__.'/../../../config.php');
 require_once(__DIR__.'/lib.php');
 
-global $USER, $DB;
+global $USER, $DB, $CFG;
 
 $action = required_param('action', PARAM_TEXT);
 
@@ -37,7 +37,8 @@ $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'), new moodl
 
 require_login();
 require_capability('format/kickstart:manage_templates', $context);
-
+$templates = $CFG->kickstart_templates ? explode(",", $CFG->kickstart_templates) : [];
+$templatesflip = array_flip($templates);
 switch ($action) {
     case 'create':
         $PAGE->set_title(get_string('create_template', 'format_kickstart'));
@@ -61,6 +62,8 @@ switch ($action) {
                 $data->sort = (!empty($counttemplate)) ? $counttemplate + 1 : 1;
             }
             $id = $DB->insert_record('format_kickstart_template', $data);
+            array_push($templates, $id);
+            set_config('kickstart_templates', implode(',', $templates));
             core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
                 context_system::instance(), $data->tags);
             file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
@@ -141,6 +144,10 @@ switch ($action) {
 
         if ($data = $form->get_data()) {
             $DB->delete_records('format_kickstart_template', ['id' => $data->id]);
+            unset($templatesflip[$data->id]);
+            $templatesinfo = array_flip($templatesflip);
+            sort($templatesflip);
+            set_config('kickstart_templates', implode(',', $templatesinfo));
             \core\notification::success(get_string('template_deleted', 'format_kickstart'));
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else if ($form->is_cancelled()) {

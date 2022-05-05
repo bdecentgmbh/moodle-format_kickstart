@@ -35,12 +35,15 @@ function install_templates() {
     $context = context_system::instance();
     $cnt = 1;
     if (!empty($freetemplates)) {
+        $templates = [];
         foreach ($freetemplates as $template) {
             $template = (object) $template;
             // Create template.
-            format_kickstart_create_template($template, $cnt, $context, 'format_kickstart');
+            $templateid = format_kickstart_create_template($template, $cnt, $context, 'format_kickstart');
             $cnt++;
+            $templates[] = $templateid;
         }
+        set_config('kickstart_templates', implode(',', $templates));
     }
 }
 
