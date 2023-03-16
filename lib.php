@@ -33,7 +33,16 @@ require_once($CFG->dirroot. '/course/format/lib.php');
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_kickstart extends format_base {
+class format_kickstart extends core_courseformat\base {
+
+    /**
+     * Indicates whether the course format supports the creation of a news forum.
+     *
+     * @return bool
+     */
+    public function supports_news() {
+        return false;
+    }
 
     /**
      * Definitions of the additional options that this course format uses for course
@@ -50,13 +59,29 @@ class format_kickstart extends format_base {
     public function course_format_options($foreditform = false) {
         static $courseformatoptions = false;
         if ($courseformatoptions === false) {
+            $defaultuserinstructions = get_config('format_kickstart', 'defaultuserinstructions');
+            $defaultteacherinstructions = get_config('format_kickstart', 'defaultteacherinstructions');
             $courseformatoptions = [
+                'templatesview' => [
+                    'label' => new lang_string('templatesview', 'format_kickstart'),
+                    'help' => 'templatesview',
+                    'help_component' => 'format_kickstart',
+                    'type' => PARAM_TEXT,
+                    'element_type' => 'select',
+                    'element_attributes' => [
+                        [
+                            'tile' => new lang_string('strtile', 'format_kickstart'),
+                            'list' => new lang_string('strlist', 'format_kickstart')
+                        ],
+                    ],
+                    'default' => get_config('format_kickstart', 'defaulttemplatesview'),
+                ],
                 'userinstructions' => [
                     'label' => new lang_string('userinstructions', 'format_kickstart'),
                     'help' => 'userinstructions',
                     'help_component' => 'format_kickstart',
                     'default' => [
-                        'text' => get_config('format_kickstart', 'defaultuserinstructions'),
+                        'text' => !empty($defaultuserinstructions) ? $defaultuserinstructions : '',
                         'format' => FORMAT_HTML
                     ],
                     'type' => PARAM_RAW,
@@ -72,7 +97,7 @@ class format_kickstart extends format_base {
                     'help' => 'teacherinstructions',
                     'help_component' => 'format_kickstart',
                     'default' => [
-                        'text' => get_config('format_kickstart', 'defaultteacherinstructions'),
+                        'text' => !empty($defaultteacherinstructions) ? $defaultteacherinstructions : '',
                         'format' => FORMAT_HTML
                     ],
                     'type' => PARAM_RAW,
@@ -276,6 +301,7 @@ function format_kickstart_create_template($template, $sort, $context, $component
         $template->cohortids = json_encode($template->cohortids);
         $template->categoryids = json_encode($template->categoryids);
         $template->roleids = json_encode($template->roleids);
+        $template->courseformat = 0;
         $id = $DB->insert_record('format_kickstart_template', $template);
         core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id, $context, $template->tags);
         if (isset($template->backupfile) && !empty($template->backupfile)) {
@@ -296,6 +322,21 @@ function format_kickstart_create_template($template, $sort, $context, $component
                 $fs->create_file_from_pathname($filerecord, $backuppath);
             }
         }
+        if (format_kickstart_has_pro() && isset($template->templatebackimg) && !empty($template->templatebackimg)) {
+            $filerecord = new stdClass();
+            $filerecord->component = 'local_kickstart_pro';
+            $filerecord->contextid = $context->id;
+            $filerecord->filearea = "templatebackimg";
+            $filerecord->filepath = '/';
+            $filerecord->itemid = $id;
+            $filerecord->filename = $template->templatebackimg;
+            $exist = check_record_exsist($filerecord);
+            if ($exist != 1) {
+                $imagepath = $CFG->dirroot . "/local/kickstart_pro/assets/$template->templatebackimg";
+                $fs->create_file_from_pathname($filerecord, $backuppath);
+            }
+        }
+        return $id;
     }
 }
 
@@ -310,4 +351,214 @@ function check_record_exsist($filerecord) {
     $exist = $fs->file_exists($filerecord->contextid, $filerecord->component, $filerecord->filearea,
         $filerecord->itemid, $filerecord->filepath, $filerecord->filename);
     return $exist;
+}
+
+/**
+ * Import the course format template
+ * @return void
+ */
+function format_kickstart_import_courseformat_template() {
+    global $DB, $CFG;
+    $formats = core_plugin_manager::instance()->get_plugins_of_type('format');
+    $counttemplate = $DB->count_records("format_kickstart_template");
+    foreach ($formats as $format) {
+        $counttemplate++;
+        if ($format->name == 'designer') {
+            require_once($CFG->dirroot."/course/format/designer/lib.php");
+            $coursetypes = format_kickstart_get_designer_coursetypes();
+            foreach ($coursetypes as $type) {
+                format_kickstart_add_couseformat_template($type, $format->name, $counttemplate, $format->is_enabled());
+                if ($type != end($coursetypes)) {
+                    $counttemplate++;
+                }
+            }
+        } else {
+            format_kickstart_add_couseformat_template($format->displayname, $format->name, $counttemplate, $format->is_enabled());
+        }
+    }
+}
+
+/**
+ * Add the course format template.
+ * @param string $templatename
+ * @param string $format
+ * @param int $counttemplate
+ * @param bool $isenabled
+ */
+function format_kickstart_add_couseformat_template($templatename, $format, $counttemplate, $isenabled) {
+    global $DB, $CFG;
+    $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
+    if (!$DB->record_exists('format_kickstart_template', ['title' => $templatename,
+                        'courseformat' => 1])) {
+        $template = new stdClass();
+        $template->title = $templatename;
+        $template->sort = $counttemplate;
+        $template->courseformat = 1;
+        $template->format = $format;
+        if (!defined('BEHAT_SITE_RUNNING')) {
+            $template->visible = ($isenabled) ? 1 : 0;
+        } else {
+            $template->visible = 1;
+        }
+        $templateid = $DB->insert_record('format_kickstart_template', $template);
+        array_push($templates, $templateid);
+        set_config('kickstart_templates', implode(',', $templates));
+    }
+}
+
+/**
+ * Update the course format template.
+ * @param object $template
+ * @return void
+ */
+function format_kickstart_update_template_format_options($template) {
+    global $DB, $SITE, $CFG;
+    $isdesignerformat = ($template->format == 'designer') ? true : false;
+    $records = $DB->get_records('course_format_options',
+        array(
+            'courseid' => $SITE->id,
+            'format' => $template->format
+        )
+    );
+    if ($records) {
+        $courseformat = $template->format;
+        if ($isdesignerformat) {
+            $coursetypes = format_kickstart_get_designer_coursetypes();
+            $coursetype = array_search($template->title, $coursetypes);
+            $courseformat = strtolower($template->title);
+        }
+        foreach ($records as $record) {
+            if (!$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
+                'templateid' => $template->id, 'name' => $record->name])) {
+                $data = new stdClass();
+                $data->templateid = $template->id;
+                $data->displayname = $template->title;
+                $data->format = $courseformat;
+                $data->name = $record->name;
+                $data->value = $record->value;
+                if ($isdesignerformat && $record->name == 'coursetype') {
+                    $data->value = $coursetype;
+                }
+                $DB->insert_record('format_kickstart_options', $data);
+            } else {
+                if ($isdesignerformat && $record->name == 'coursetype') {
+                    $record->value = $coursetype;
+                }
+                if ($existrecord->value != $record->value) {
+                    $existrecord->value = $record->value;
+                    $DB->update_record('format_kickstart_options', $existrecord);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Get the course format options.
+ * @param object $template
+ * @return object
+ */
+function format_kickstart_get_template_format_options($template) {
+    global $DB;
+    $courseformat = $template->format;
+    if ($template->format == 'designer') {
+        $courseformat = strtolower($template->title);
+    }
+    $records = $DB->get_records_menu('format_kickstart_options',
+        array(
+            'templateid' => $template->id,
+            'format' => $courseformat
+        ),
+        '',
+        'name,value'
+    );
+    $params['format'] = $template->format;
+    $params['id'] = '1';
+    $courseformat = course_get_format((object) $params);
+    // Check course format has editor type.
+    $iseditors = array_column($courseformat->course_format_options(), 'element_type');
+    if (in_array('editor', $iseditors)) {
+        $editors = array_keys($iseditors, 'editor');
+        $courseformatcourse = $courseformat->get_course();
+        foreach ($editors as $editor) {
+            $elementname = array_keys($courseformat->course_format_options())[$editor];
+            $records[$elementname] = $courseformatcourse->{$elementname};
+        }
+    }
+    return $records;
+}
+
+/**
+ * Check the format status remove or add.
+ * @return void
+ */
+function format_kickstart_check_format_template() {
+    global $DB, $SITE, $CFG;
+    $cache = cache::make('format_kickstart', 'templates');
+    if (!$cache->get('templateformat')) {
+        $records = $DB->get_records_menu('format_kickstart_template', array('courseformat' => 1), '', 'id,format');
+        $records = array_unique($records);
+        $formats = core_plugin_manager::instance()->get_plugins_of_type('format');
+        $formats = array_keys($formats);
+        $removeformats = array_diff($records, $formats);
+        $addformats = array_diff($formats, $records);
+
+        // Remove the formats.
+        if ($removeformats) {
+            foreach ($removeformats as $removeformat) {
+                $template = $DB->get_record('format_kickstart_template', ['format' => $removeformat]);
+                format_kickstart_remove_kickstart_templates($template->id);
+            }
+        }
+
+        // Add the formats.
+        if ($addformats) {
+            foreach ($addformats as $addformat) {
+                format_kickstart_import_courseformat_template();
+            }
+        }
+        $cache->set('templateformat', true);
+    }
+}
+
+/**
+ * Remove the kickstart template settings.
+ * @param int $templateid
+ */
+function format_kickstart_remove_kickstart_templates($templateid) {
+    global $CFG, $SITE, $DB;
+    $fs = get_file_storage();
+    $context = context_system::instance();
+    $templates = [];
+    if (isset($CFG->kickstart_templates) && $CFG->kickstart_templates) {
+        $templates = explode(",", $CFG->kickstart_templates);
+    }
+    // Delete the template bg.
+    $fs->delete_area_files($context->id, 'local_kickstart_pro', 'templatebackimg', $templateid);
+    $fs->delete_area_files($context->id, 'format_kickstart', 'course_backups', $templateid);
+    $template = $DB->get_record('format_kickstart_template', ['id' => $templateid]);
+    if ($template->courseformat) {
+        $DB->delete_records('format_kickstart_options', ['templateid' => $templateid]);
+        $DB->delete_records('course_format_options', ['courseid' => $SITE->id, 'format' => $template->format]);
+    }
+    $DB->delete_records('format_kickstart_template', ['id' => $templateid]);
+    unset($templates[array_search($templateid, $templates)]);
+    set_config('kickstart_templates', implode(',', $templates));
+}
+
+/**
+ * Get the designer format course types.
+ */
+function format_kickstart_get_designer_coursetypes() {
+    if (function_exists('format_designer_get_coursetypes')) {
+        return format_designer_get_coursetypes();
+    } else {
+        $coursetypes = [
+            0 => get_string('normal'),
+            DESIGNER_TYPE_KANBAN => get_string('kanbanboard', 'format_designer'),
+            DESIGNER_TYPE_COLLAPSIBLE => get_string('collapsiblesections', 'format_designer'),
+            DESIGNER_TYPE_FLOW => get_string('type_flow', 'format_designer')
+        ];
+        return $coursetypes;
+    }
 }

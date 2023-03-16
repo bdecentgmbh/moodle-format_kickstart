@@ -145,23 +145,32 @@ class template_table extends \table_sql {
      * @throws \dml_exception
      */
     public function query_db($pagesize, $useinitialsbar = true) {
-        global $DB;
-
+        global $DB, $CFG;
         list($wsql, $params) = $this->get_sql_where();
         if ($wsql) {
             $wsql = 'AND ' . $wsql;
         }
         $sql = 'SELECT *
                 FROM {format_kickstart_template} t
-                '.$wsql;
-
+                WHERE t.visible = 1 '.$wsql;
         $sort = $this->get_sql_sort();
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
         } else if (format_kickstart_has_pro()) {
-            $sql = $sql . 'ORDER BY sort';
+            if (!empty($CFG->kickstart_templates)) {
+                $orders = explode(",", $CFG->kickstart_templates);
+                $orders = array_filter(array_unique($orders), 'strlen');
+                if (!empty($orders)) {
+                    list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+                    $sql .= "AND ID $insql";
+                    $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
+                        return "WHEN id = $value THEN " . array_search($value, $orders);
+                    }, $orders)) . " END)";
+                    $sql .= " ORDER BY $subquery";
+                    $params += $inparams;
+                }
+            }
         }
-
         if ($pagesize != -1) {
             $total = $DB->count_records('format_kickstart_template');
             $this->pagesize($pagesize, $total);
@@ -172,7 +181,6 @@ class template_table extends \table_sql {
         if ($useinitialsbar && !$this->is_downloading()) {
             $this->initialbars(true);
         }
-
         $this->rawdata = $DB->get_recordset_sql($sql, $params, $this->get_page_start(), $this->get_page_size());
     }
 }

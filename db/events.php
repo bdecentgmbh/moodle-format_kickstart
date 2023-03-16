@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Define plugin events.
  *
- * @package    format_kickstart
- * @copyright  2021 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   format_kickstart
+ * @category  event
+ * @copyright bdecent GmbH 2021
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2023030104;         // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires = 2022041900;         // Requires this Moodle version.
-$plugin->release = 'Version 1.2';
-$plugin->component = 'format_kickstart'; // Full name of the plugin (used for diagnostics).
-$plugin->supported = [40, 40];
-$plugin->maturity = MATURITY_STABLE;
+$observers = array(
+    array(
+    'eventname' => 'core\event\config_log_created',
+    'callback' => '\format_kickstart\observer::format_kickstart_changeconfig',
+    ),
+);

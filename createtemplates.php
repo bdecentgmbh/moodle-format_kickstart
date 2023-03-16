@@ -31,16 +31,21 @@ require_once(__DIR__."/lib.php");
  * Install templates
  */
 function install_templates() {
-    global $freetemplates;
+    global $freetemplates, $DB, $CFG;
     $context = context_system::instance();
-    $cnt = 1;
+    $cnt = $DB->count_records('format_kickstart_template');
     if (!empty($freetemplates)) {
+        $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
         foreach ($freetemplates as $template) {
             $template = (object) $template;
             // Create template.
-            format_kickstart_create_template($template, $cnt, $context, 'format_kickstart');
             $cnt++;
+            $templateid = format_kickstart_create_template($template, $cnt, $context, 'format_kickstart');
+            if (!array_search($templateid, $templates)) {
+                array_push($templates, $templateid);
+            }
         }
+        set_config('kickstart_templates', implode(',', $templates));
     }
 }
 

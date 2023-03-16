@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 require(__DIR__.'/../../../config.php');
 require_once(__DIR__.'/lib.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -38,5 +39,6 @@ require_login();
 require_capability('format/kickstart:import_from_template', $PAGE->context);
 
 \format_kickstart\course_importer::import_from_template($templateid, $courseid);
+
 
 redirect(new moodle_url('/course/view.php', ['id' => $courseid]));
