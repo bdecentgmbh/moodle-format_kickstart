@@ -92,10 +92,17 @@ class course_template_list implements \templatable, \renderable {
         $templates = [];
         $listtemplates = [];
         if (format_kickstart_has_pro()) {
-            $listtemplates = $DB->get_records('format_kickstart_template', null, 'sort');
+            $orders = explode(",", $CFG->kickstart_templates);
+            $orders = array_filter(array_unique($orders), 'strlen');
+            $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
+                return "WHEN id = $value THEN " . array_search($value, $orders);
+            }, $orders)) . " END)";
+            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 ORDER BY $subquery";
+            $listtemplates = $DB->get_records_sql($sql);
         } else {
-            $listtemplates = $DB->get_records('format_kickstart_template');
+            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1]);
         }
+        $templatecount = 0;
         if (!empty($listtemplates)) {
             foreach ($listtemplates as $template) {
                 // Apply template access if pro is installed.
@@ -134,8 +141,21 @@ class course_template_list implements \templatable, \renderable {
                     'course_id' => $COURSE->id
                 ]);
 
-                if ($limit > 0 && count($templates) >= $limit) {
+                if (!$template->courseformat) {
+                    $templatecount++;
+                }
+                if ($limit > 0 && $templatecount >= $limit) {
                     break;
+                }
+
+                if (format_kickstart_has_pro()) {
+                    require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+                    if (function_exists('local_kickstart_pro_get_template_backimages')) {
+                        $template->backimages = local_kickstart_pro_get_template_backimages($template->id);
+                        $template->isbackimages = count($template->backimages);
+                        $template->showimageindicators = !empty($template->backimages) && count($template->backimages)
+                            > 1 ? true : false;
+                    }
                 }
 
                 $templates[] = $template;
@@ -169,6 +189,7 @@ class course_template_list implements \templatable, \renderable {
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
                 $this->course->teacherinstructions['format']),
+            'templateclass' => ($this->course->templatesview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
