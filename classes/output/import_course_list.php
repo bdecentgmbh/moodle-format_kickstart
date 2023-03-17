@@ -24,8 +24,6 @@
 
 namespace format_kickstart\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use renderer_base;
 
 /**

@@ -13,31 +13,26 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * Privacy Subsystem implementation for format_kickstart.
+ * format kickstart plugin uninstallation.
  *
  * @package    format_kickstart
- * @copyright  2021 bdecent gmbh <https://bdecent.de>
+ * @copyright  bdecent GmbH 2021
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace format_kickstart\privacy;
 
 /**
- * Privacy Subsystem for format_kickstart implementing null_provider.
- *
- * @copyright  2021 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Uninstall script for format_kickstart
+ * @return void
  */
-class provider implements \core_privacy\local\metadata\null_provider {
-
-    /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
-     *
-     * @return  string
-     */
-    public static function get_reason() : string {
-        return 'privacy:metadata';
-    }
+function xmldb_format_kickstart_uninstall() {
+    global $DB, $SITE;
+    $DB->delete_records_select(
+        'course_format_options',
+        "courseid = :siteid AND format != :site",
+        array("siteid" => $SITE->id, 'site' => 'site')
+    );
+    unset_config('kickstart_templates');
+    return true;
 }
