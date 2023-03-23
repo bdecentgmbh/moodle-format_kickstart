@@ -72,6 +72,12 @@ if ($action && $templateid) {
             $enabled[$current + 1] = $templateid;
             set_config('kickstart_templates', implode(',', $enabled));
             break;
+        case 'disable':
+            $DB->set_field('format_kickstart_template', 'status', 0, array('id' => $templateid));
+            break;
+        case 'enable' :
+            $DB->set_field('format_kickstart_template', 'status', 1, array('id' => $templateid));
+            break;
     }
     redirect($PAGE->url);
 }

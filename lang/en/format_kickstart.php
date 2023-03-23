@@ -29,6 +29,7 @@ $string['buypro'] = 'Buy Kickstart Pro';
 $string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="http://bdecent.de/kickstart">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';
 $string['confirmtemplate'] = 'Are you sure you want to use this Template "{$a->name}"?';
+$string['strconfirmtemplate'] = 'Are you sure you want to use this Template';
 $string['course_backup'] = 'Course backup file (.mbz)';
 $string['course_backup_help'] = 'When a user selects this template from within a course, this .mbz course backup will be imported into the course.';
 $string['course_templates'] = 'Course templates';
@@ -113,4 +114,4 @@ $string['strtile'] = "Tile";
 $string['strlist'] = "List";
 $string['defaulttemplatesview'] = 'Default templates view';
 $string['defaulttemplatesview_desc'] = 'Default templates displayed to tiles or list view.';
-
+$string['disable'] = "Disable";
