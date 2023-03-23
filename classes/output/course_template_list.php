@@ -96,10 +96,10 @@ class course_template_list implements \templatable, \renderable {
             $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
                 return "WHEN id = $value THEN " . array_search($value, $orders);
             }, $orders)) . " END)";
-            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 ORDER BY $subquery";
+            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 AND status = 1 ORDER BY $subquery";
             $listtemplates = $DB->get_records_sql($sql);
         } else {
-            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1]);
+            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1, 'status' => 1]);
         }
         $templatecount = 0;
         if (!empty($listtemplates)) {

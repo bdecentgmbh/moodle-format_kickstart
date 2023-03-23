@@ -48,7 +48,7 @@ $PAGE->navbar->add(get_string('usetemplate', 'format_kickstart'));
 $continueurl = new moodle_url('/course/format/kickstart/import.php', ['template_id' => $templateid, 'course_id' => $courseid]);
 $continuebutton = new single_button($continueurl, get_string('import'), 'post');
 $confirmstr = \html_writer::tag('h4', $template->title);
-$confirmstr .= \html_writer::tag('p', get_string('confirmtemplate', 'format_kickstart'));
+$confirmstr .= \html_writer::tag('p', get_string('strconfirmtemplate', 'format_kickstart'));
 
 echo $OUTPUT->header();
 echo $OUTPUT->confirm($confirmstr, $continuebutton, new \moodle_url('/course/view.php', ['id' => $courseid]));

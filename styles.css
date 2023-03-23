@@ -74,6 +74,7 @@ body.format-kickstart .form-control .fa-search {
     min-height: 120px;
     object-fit: cover;
     border-radius: 5px;
+    height: 100%;
 }
 
 #page-course-view-kickstart.kickstart-icon:before {
@@ -190,6 +191,13 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     background-color: #0f6cbf;
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer {
+    text-align: right;
     border: 0;
     background: none;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a {
+    margin-bottom: 10px;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
+    margin-left: 10px;
 }

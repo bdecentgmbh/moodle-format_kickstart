@@ -50,12 +50,17 @@ class template_table extends \table_sql {
         $headers = [];
         $columns = [];
 
+        $strenable    = get_string('enable');
+        $strdisable   = get_string('disable');
+
         $headers[] = get_string('title', 'format_kickstart');
         $headers[] = get_string('description', 'format_kickstart');
         $headers[] = get_string('tags');
+        $headers[] = $strenable . '/' . $strdisable;
         $columns[] = 'title';
         $columns[] = 'description';
         $columns[] = 'tags';
+        $columns[] = 'status';
         if (format_kickstart_has_pro()) {
             $headers[] = get_string('up') .'/'. get_string('down');
             $columns[] = 'updown';
@@ -67,6 +72,7 @@ class template_table extends \table_sql {
         $this->totaltemplates = $DB->count_records('format_kickstart_template', null);
         $this->no_sorting('tags');
         $this->no_sorting('actions');
+        $this->no_sorting('status');
         $this->define_columns($columns);
         $this->define_headers($headers);
     }
@@ -82,6 +88,43 @@ class template_table extends \table_sql {
         return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $data->id),
             null, 'template-tags');
     }
+
+    /**
+     * Get any extra classes names to add to this row in the HTML.
+     *
+     * @param stdClass $row The row of data
+     * @return string The row class
+     */
+    public function get_row_class($row) {
+        if (!$row->status) {
+            return 'dimmed_text';
+        }
+    }
+
+    /**
+     * Generate status list.
+     *
+     * @param \stdClass $data
+     * @return mixed
+     */
+    public function col_status($data) {
+        global $OUTPUT;
+        $templateurl = new \moodle_url('/course/format/kickstart/templates.php');
+        $status = '';
+        if ($data->status) {
+            $status .= \html_writer::link($templateurl->out(false,
+            array('action' => 'disable', 'template' => $data->id)),
+            $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', array('class' => 'iconsmall')),
+                array('id' => "sort-template-up-action")). '';
+        } else {
+            $status .= \html_writer::link($templateurl->out(false,
+            array('action' => 'enable', 'template' => $data->id)),
+            $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', array('class' => 'iconsmall')),
+                array('id' => "sort-template-up-action")). '';
+        }
+        return $status;
+    }
+
 
     /**
      * Generate sort list for the templates.
@@ -128,13 +171,15 @@ class template_table extends \table_sql {
      */
     public function col_actions($data) {
         global $OUTPUT;
-
-        return $OUTPUT->single_button(
+        $output = $OUTPUT->single_button(
             new \moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]),
-            get_string('edit', 'format_kickstart'), 'get') .
-            $OUTPUT->single_button(
-                new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
-                get_string('delete', 'format_kickstart'), 'get');
+            get_string('edit', 'format_kickstart'), 'get');
+        if (!($data->courseformat)) {
+            $output .= $OUTPUT->single_button(
+                    new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
+                    get_string('delete', 'format_kickstart'), 'get');
+        }
+        return $output;
     }
 
     /**
