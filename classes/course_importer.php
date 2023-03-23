@@ -130,6 +130,8 @@ class course_importer {
         if (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') < 2) {
             $settings['role_assignments'] =
                 (bool)get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments');
+            $settings['enrolments'] = (bool) (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') == 1) ?
+                \backup::ENROL_ALWAYS : \backup::ENROL_NEVER;
         }
 
         if (get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings') < 2) {

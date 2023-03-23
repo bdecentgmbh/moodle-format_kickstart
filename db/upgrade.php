@@ -221,6 +221,16 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2023030101, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2023032102) {
+        $table = new xmldb_table('format_kickstart_template');
+        $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, '1', null, null, null, 1, 'visible');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2023032102, 'format', 'kickstart');
+    }
+
     format_kickstart_import_courseformat_template();
 
     return true;

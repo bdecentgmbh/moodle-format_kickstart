@@ -32,8 +32,8 @@
         self.contextId = contextid;
         self.courseId = courseid;
         if (useTemplate) {
-            useTemplate.forEach((element) => {
-                element.addEventListener('click', self.templateHandler.bind(this));
+            useTemplate.forEach(function (element)  {
+                element.addEventListener('click', self.templateHandler.bind(self));
             });
         }
     };
@@ -49,13 +49,13 @@
     Formatkickstart.prototype.templateHandler = function(event) {
         var self = this;
         event.preventDefault();
-        let templateName = event.target.getAttribute("data-templatename");
-        let templateId = event.target.getAttribute("data-template");
+        var templateName = event.target.getAttribute("data-templatename");
+        var templateId = event.target.getAttribute("data-template");
         self.confirmImportTemplate(templateId, templateName);
     };
 
     Formatkickstart.prototype.confirmImportTemplate = function(templateId, templateName) {
-        let self = this;
+        var self = this;
         var plugindata = {
             name: templateName
         };
@@ -72,7 +72,7 @@
                         args: {templateid: templateId, courseid: self.courseId},
                         done: function(response) {
                             if (response) {
-                                let redirect = Config.wwwroot + "/course/view.php?id=" + self.courseId;
+                                var redirect = Config.wwwroot + "/course/view.php?id=" + self.courseId;
                                 window.location.assign(redirect);
                             }
                         }

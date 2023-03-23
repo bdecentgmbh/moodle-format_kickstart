@@ -20,6 +20,7 @@
         <FIELD NAME="roleids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="sort" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="courseformat" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="visible" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="format" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>

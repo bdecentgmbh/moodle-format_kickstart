@@ -101,10 +101,10 @@ class course_template_list implements \templatable, \renderable {
             $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
                 return "WHEN id = $value THEN " . array_search($value, $orders);
             }, $orders)) . " END)";
-            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 ORDER BY $subquery";
+            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 AND status = 1 ORDER BY $subquery";
             $listtemplates = $DB->get_records_sql($sql);
         } else {
-            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1]);
+            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1, 'status' => 1]);
         }
         $templatecount = 0;
         if (!empty($listtemplates)) {
@@ -119,7 +119,14 @@ class course_template_list implements \templatable, \renderable {
                             if ($coursecat) {
                                 $categoryids[] = $categoryid;
                                 if ($template->includesubcategories) {
-                                    $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                                    $context = $coursecat->get_context();
+                                    $sql = \context_helper::get_preload_record_columns_sql('ctx');
+                                    $childcategories = $DB->get_records_sql('SELECT c.id, c.visible, '. $sql.
+                                        ' FROM {context} ctx '.
+                                        ' JOIN {course_categories} c ON c.id = ctx.instanceid'.
+                                        ' WHERE ctx.path like ? AND ctx.contextlevel = ?',
+                                            array($context->path. '/%', CONTEXT_COURSECAT));
+                                    $categoryids = array_merge($categoryids, array_keys($childcategories));
                                 }
                             }
                         }

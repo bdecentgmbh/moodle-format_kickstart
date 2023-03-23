@@ -71,6 +71,7 @@ body.format-kickstart .form-control .fa-search {
     min-height: 120px;
     object-fit: cover;
     border-radius: 5px;
+    height: 100%;
 }
 #page-course-view-kickstart.kickstart-icon:before {
     content: '\f1ce';
@@ -166,9 +167,6 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_de
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
     border-radius: 5px;
 }
-/*.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block img {
-    border-radius: 5px;
-}*/
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block .carousel .carousel-indicators {
     margin-bottom: 0;
     bottom: 0;
@@ -183,10 +181,14 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_de
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block .carousel .carousel-indicators li.active {
     background-color: #0f6cbf;
 }
-/*.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block .carousel-item {
-    height: auto;
-}*/
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer {
+    text-align: right;
     border: 0;
     background: none;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a {
+    margin-bottom: 10px;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
+    margin-left: 10px;
 }
