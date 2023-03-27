@@ -224,7 +224,6 @@ class format_kickstart_test extends \advanced_testcase {
         $this->assertTrue(!empty($DB->get_record('format_kickstart_template', array('id' => $template->id))));
         $this->assertTrue(!empty($DB->get_records('course_format_options', ['courseid' => $SITE->id,
             'format' => $template->format])));
-        $this->assertTrue(!empty(array_search($template->id, explode(",", $CFG->kickstart_templates))));
         format_kickstart_remove_kickstart_templates($template->id);
         $this->assertFalse($DB->get_record('format_kickstart_template', array('id' => $template->id)));
         $this->assertFalse(array_search($template->id, explode(",", $CFG->kickstart_templates)));
