@@ -91,13 +91,16 @@ class course_template_list implements \templatable, \renderable {
         $templates = [];
         $listtemplates = [];
         if (format_kickstart_has_pro()) {
+            $params = [];
             $orders = explode(",", $CFG->kickstart_templates);
             $orders = array_filter(array_unique($orders), 'strlen');
+            list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+            $params += $inparams;
             $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
                 return "WHEN id = $value THEN " . array_search($value, $orders);
             }, $orders)) . " END)";
-            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 AND status = 1 ORDER BY $subquery";
-            $listtemplates = $DB->get_records_sql($sql);
+            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 AND status = 1 AND ID $insql ORDER BY $subquery";
+            $listtemplates = $DB->get_records_sql($sql, $params);
         } else {
             $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1, 'status' => 1]);
         }
