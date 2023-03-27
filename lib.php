@@ -398,8 +398,10 @@ function format_kickstart_add_couseformat_template($templatename, $format, $coun
         $template->format = $format;
         $template->visible = ($isenabled) ? 1 : 0;
         $templateid = $DB->insert_record('format_kickstart_template', $template);
-        array_push($templates, $templateid);
-        set_config('kickstart_templates', implode(',', $templates));
+        if ($isenabled) {
+            array_push($templates, $templateid);
+            set_config('kickstart_templates', implode(',', $templates));
+        }
     }
 }
 
@@ -530,8 +532,17 @@ function format_kickstart_check_format_template() {
             $DB->set_field('format_kickstart_template', 'visible', 1, array('format' => $format, 'courseformat' => 1));
         }
     }
-    set_config('kickstart_templates', implode(',', $templates));
 
+    // Add the kickstart templates to visible template remove the store config.
+    $records = $DB->get_records_menu('format_kickstart_template', array('visible' => 1), '', 'id,id');
+    if ($records) {
+        $records = array_keys($records);
+        $addtemplates = array_diff($records, $templates);
+        $templates = array_merge($templates, $addtemplates);
+    }
+
+    set_config('kickstart_templates', implode(',', $templates));
+    // If check when installing and uninstall course format, add or remove the template.
     $cache = cache::make('format_kickstart', 'templates');
     if (!$cache->get('templateformat')) {
         $records = $DB->get_records_menu('format_kickstart_template', array('courseformat' => 1), '', 'id,format');
@@ -540,7 +551,6 @@ function format_kickstart_check_format_template() {
         $formats = array_keys($formats);
         $removeformats = array_diff($records, $formats);
         $addformats = array_diff($formats, $records);
-
         // Remove the formats.
         if ($removeformats) {
             foreach ($removeformats as $removeformat) {
