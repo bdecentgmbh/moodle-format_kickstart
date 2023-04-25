@@ -72,7 +72,7 @@ class course_importer {
             $backuptempdir = $CFG->tempdir . '/backup/' . 'template' . $templateid;
             $files[0]->extract_to_pathname($fp, $backuptempdir);
 
-            self::import('template' . $templateid, $courseid);
+            self::import('template' . $templateid, $courseid, $templateid);
         } else {
             $course = (array) $DB->get_record('course', array('id' => $courseid));
             $course['format'] = $template->format;
@@ -106,16 +106,17 @@ class course_importer {
      *
      * @param string $backuptempdir
      * @param int $courseid
+     * @param int $templateid
      * @throws \base_plan_exception
      * @throws \base_setting_exception
      * @throws \dml_exception
      * @throws \restore_controller_exception
      */
-    public static function import($backuptempdir, $courseid) {
+    public static function import($backuptempdir, $courseid, $templateid) {
         global $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);
-
+        $details = \backup_general_helper::get_backup_information($backuptempdir);
         $settings = [
             'overwrite_conf' => true,
             'course_shortname' => $course->shortname,
@@ -124,7 +125,11 @@ class course_importer {
         ];
 
         if (get_config('format_kickstart', 'restore_general_users') < 2) {
-            $settings['users'] = (bool) get_config('format_kickstart', 'restore_general_users');
+            if (isset($details->root_settings['users']) && $details->root_settings['users']) {
+                $settings['users'] = (bool) get_config('format_kickstart', 'restore_general_users');
+            } else {
+                $settings['users'] = \backup::ENROL_NEVER;
+            }
         }
 
         if (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') < 2) {
