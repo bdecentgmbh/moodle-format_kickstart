@@ -63,3 +63,4 @@ if (!has_capability('format/kickstart:import_from_template', $context)) {
         echo format_text($course->userinstructions['text'], $course->userinstructions['format']);
     }
 }
+
