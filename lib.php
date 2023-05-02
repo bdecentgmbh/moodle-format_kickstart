@@ -581,13 +581,15 @@ function format_kickstart_remove_kickstart_templates($templateid) {
     if (isset($CFG->kickstart_templates) && $CFG->kickstart_templates) {
         $templates = explode(",", $CFG->kickstart_templates);
     }
+    $template = $DB->get_record('format_kickstart_template', ['id' => $templateid]);
     // Delete the template bg.
     $fs->delete_area_files($context->id, 'local_kickstart_pro', 'templatebackimg', $templateid);
-    $fs->delete_area_files($context->id, 'format_kickstart', 'course_backups', $templateid);
     $template = $DB->get_record('format_kickstart_template', ['id' => $templateid]);
     if ($template->courseformat) {
         $DB->delete_records('format_kickstart_options', ['templateid' => $templateid]);
         $DB->delete_records('course_format_options', ['courseid' => $SITE->id, 'format' => $template->format]);
+    } else {
+        $fs->delete_area_files($context->id, 'format_kickstart', 'course_backups', $templateid);
     }
     $DB->delete_records('format_kickstart_template', ['id' => $templateid]);
     unset($templates[array_search($templateid, $templates)]);
