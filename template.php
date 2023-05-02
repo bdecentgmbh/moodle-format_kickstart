@@ -116,31 +116,50 @@ switch ($action) {
                 $courseformat = course_get_format((object) $params);
                 $courseformat->update_course_format_options($data);
                 format_kickstart_update_template_format_options($template);
-            } else {
-                $data->description_format = $data->description['format'];
-                $data->description = $data->description['text'];
-                if (format_kickstart_has_pro()) {
-                    $data->cohortids = json_encode($data->cohortids);
-                    $data->categoryids = json_encode($data->categoryids);
-                    $data->roleids = json_encode($data->roleids);
-                }
-                $DB->update_record('format_kickstart_template', $data);
-                core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
-                    context_system::instance(), $data->tags);
+            }
+            $data->description_format = $data->description['format'];
+            $data->description = $data->description['text'];
+            if (format_kickstart_has_pro()) {
+                $data->cohortids = json_encode($data->cohortids);
+                $data->categoryids = json_encode($data->categoryids);
+                $data->roleids = json_encode($data->roleids);
+            }
+            $DB->update_record('format_kickstart_template', $data);
+
+            core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
+                context_system::instance(), $data->tags);
+            if (isset($data->course_backup)) {
                 file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
                     $data->id, ['subdirs' => 0, 'maxfiles' => 1]);
-
-                if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
-                    file_save_draft_area_files($data->templatebackimg, $context->id, 'local_kickstart_pro', 'templatebackimg',
-                    $data->id, $templatebgoptions);
-                }
             }
+
+            if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
+                file_save_draft_area_files($data->templatebackimg, $context->id, 'local_kickstart_pro', 'templatebackimg',
+                $data->id, $templatebgoptions);
+            }
+
             \core\notification::success(get_string('template_edited', 'format_kickstart'));
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else if ($form->is_cancelled()) {
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else {
 
+            $template->description = [
+                'text' => $template->description,
+                'format' => $template->description_format
+            ];
+            if (format_kickstart_has_pro()) {
+                if (function_exists('local_kickstart_pro_get_template_backimages')) {
+                    $drafteditor = file_get_submitted_draft_itemid('templatebackimg');
+                    file_prepare_draft_area($drafteditor, $context->id, 'local_kickstart_pro',
+                        'templatebackimg', $id, $templatebgoptions);
+                    $template->templatebackimg = $drafteditor;
+                }
+                $template->cohortids = json_decode($template->cohortids, true);
+                $template->categoryids = json_decode($template->categoryids, true);
+                $template->roleids = json_decode($template->roleids, true);
+            }
+            // Check the template is normal or course format.
             if (!$template->courseformat) {
                 $draftitemid = file_get_submitted_draft_itemid('course_backup');
 
@@ -148,21 +167,6 @@ switch ($action) {
                     ['subdirs' => 0, 'maxfiles' => 1]);
 
                 $template->course_backup = $draftitemid;
-                $template->description = [
-                    'text' => $template->description,
-                    'format' => $template->description_format
-                ];
-                if (format_kickstart_has_pro()) {
-                    if (function_exists('local_kickstart_pro_get_template_backimages')) {
-                        $drafteditor = file_get_submitted_draft_itemid('templatebackimg');
-                        file_prepare_draft_area($drafteditor, $context->id, 'local_kickstart_pro',
-                            'templatebackimg', $id, $templatebgoptions);
-                        $template->templatebackimg = $drafteditor;
-                    }
-                    $template->cohortids = json_decode($template->cohortids, true);
-                    $template->categoryids = json_decode($template->categoryids, true);
-                    $template->roleids = json_decode($template->roleids, true);
-                }
                 $form->set_data($template);
             } else {
                 $params['format'] = $template->format;

@@ -13,7 +13,7 @@ Feature: Check the kickstart course format features.
       | fullname | shortname | category | enablecompletion | showcompletionconditions | format    | newsitems |
       | Course 1 | C1        | 0        | 1                | 1                        | kickstart | 1         |
       | Course 2 | C2        | 0        | 1                | 1                        | kickstart | 1         |
-      | Course 3 | C3        | 0        | 1                | 1                        | topics    | 1         |
+      | Course 3 | C3        | 0        | 1                | 1                        | kickstart | 1         |
       | Course 4 | C4        | 0        | 1                | 1                        | kickstart | 1         |
     And the following "categories" exist:
       | name | category | idnumber |
@@ -163,16 +163,15 @@ Feature: Check the kickstart course format features.
   Scenario: Check the single activity format template
     Given I log in as "admin"
     And I am on "Course 3" course homepage with editing mode on
-    And I navigate to "Edit settings" in current page administration
-    And I set the following fields to these values:
-      | format | kickstart |
-    Then I press "Save and display"
     Then I should see "Course templates"
     And I should see "Single activity format"
     And I click kickstart template ".use-template[data-templatename=\"Single activity format\"]"
     And I click on "Import" "button" in the ".modal" "css_element"
     And I start watching to see if a new page loads
-    Then I should see "General news and announcements"
+    And I set the following fields to these values:
+      | Forum name | Test Forum |
+    Then I press "Save and display"
+    Then I should see "Test Forum"
     And I navigate to "Plugins > Course formats > Manage templates" in site administration
     Then I click on "Edit" "button" in the "Single activity format" "table_row"
     And I should see "Edit template"
@@ -180,10 +179,3 @@ Feature: Check the kickstart course format features.
       | Type of activity | Page |
     Then I press "Save changes"
     Then I am on "Course 3" course homepage
-    And I navigate to "Edit settings" in current page administration
-    And I set the following fields to these values:
-      | format | kickstart |
-    Then I press "Save and display"
-    And I click kickstart template ".use-template[data-templatename=\"Single activity format\"]"
-    And I click on "Import" "button" in the ".modal" "css_element"
-    And I should see "Example page1 content"
