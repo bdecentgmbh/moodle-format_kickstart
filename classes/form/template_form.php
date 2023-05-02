@@ -63,8 +63,6 @@ class template_form extends \moodleform {
         if (!$checkformat) {
             $mform->addRule('title', get_string('required'), 'required');
         }
-
-
         $mform->addElement('editor', 'description', get_string('description', 'format_kickstart'));
         $mform->setType('description', PARAM_RAW);
 
