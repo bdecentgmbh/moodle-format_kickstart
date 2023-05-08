@@ -36,7 +36,12 @@ $templateid = optional_param('template', '', PARAM_TEXT);
 $context = context_system::instance();
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
-$templates = $CFG->kickstart_templates ? explode(",", $CFG->kickstart_templates) : [];
+
+// Check the template add or not.
+format_kickstart_check_format_template();
+$templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
+$templates = array_values(array_filter(array_unique($templates), 'strlen'));
+
 // Template sort action.
 if ($action && $templateid) {
 
@@ -48,7 +53,7 @@ if ($action && $templateid) {
             $enabled = array_flip($templates);
             $current = $enabled[$templateid];
             if ($current == 0) {
-                break; // Already at the top
+                break; // Already at the top.
             }
             $enabled = array_flip($enabled);
             $enabled[$current] = $enabled[$current - 1];
@@ -62,12 +67,18 @@ if ($action && $templateid) {
             $enabled = array_flip($templates);
             $current = $enabled[$templateid];
             if ($current == count($enabled) - 1) {
-                break; // Already at the end
+                break; // Already at the end.
             }
             $enabled = array_flip($enabled);
             $enabled[$current] = $enabled[$current + 1];
             $enabled[$current + 1] = $templateid;
             set_config('kickstart_templates', implode(',', $enabled));
+            break;
+        case 'disable':
+            $DB->set_field('format_kickstart_template', 'status', 0, array('id' => $templateid));
+            break;
+        case 'enable' :
+            $DB->set_field('format_kickstart_template', 'status', 1, array('id' => $templateid));
             break;
     }
     redirect($PAGE->url);
@@ -80,7 +91,7 @@ $PAGE->set_heading(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
     get_string('create_template', 'format_kickstart')));
 
-if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template') >= 2 * 2) {
+if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template', array('courseformat' => 0)) >= 2 * 2) {
     \core\notification::warning(get_string('buypromaxtemplates', 'format_kickstart'));
 }
 

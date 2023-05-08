@@ -50,12 +50,17 @@ class template_table extends \table_sql {
         $headers = [];
         $columns = [];
 
+        $strenable    = get_string('enable');
+        $strdisable   = get_string('disable');
+
         $headers[] = get_string('title', 'format_kickstart');
         $headers[] = get_string('description', 'format_kickstart');
         $headers[] = get_string('tags');
+        $headers[] = $strenable . '/' . $strdisable;
         $columns[] = 'title';
         $columns[] = 'description';
         $columns[] = 'tags';
+        $columns[] = 'status';
         if (format_kickstart_has_pro()) {
             $headers[] = get_string('up') .'/'. get_string('down');
             $columns[] = 'updown';
@@ -67,6 +72,7 @@ class template_table extends \table_sql {
         $this->totaltemplates = $DB->count_records('format_kickstart_template', null);
         $this->no_sorting('tags');
         $this->no_sorting('actions');
+        $this->no_sorting('status');
         $this->define_columns($columns);
         $this->define_headers($headers);
     }
@@ -82,6 +88,43 @@ class template_table extends \table_sql {
         return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $data->id),
             null, 'template-tags');
     }
+
+    /**
+     * Get any extra classes names to add to this row in the HTML.
+     *
+     * @param stdClass $row The row of data
+     * @return string The row class
+     */
+    public function get_row_class($row) {
+        if (!$row->status) {
+            return 'dimmed_text';
+        }
+    }
+
+    /**
+     * Generate status list.
+     *
+     * @param \stdClass $data
+     * @return mixed
+     */
+    public function col_status($data) {
+        global $OUTPUT;
+        $templateurl = new \moodle_url('/course/format/kickstart/templates.php');
+        $status = '';
+        if ($data->status) {
+            $status .= \html_writer::link($templateurl->out(false,
+            array('action' => 'disable', 'template' => $data->id)),
+            $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', array('class' => 'iconsmall')),
+                array('id' => "sort-template-up-action")). '';
+        } else {
+            $status .= \html_writer::link($templateurl->out(false,
+            array('action' => 'enable', 'template' => $data->id)),
+            $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', array('class' => 'iconsmall')),
+                array('id' => "sort-template-up-action")). '';
+        }
+        return $status;
+    }
+
 
     /**
      * Generate sort list for the templates.
@@ -128,13 +171,15 @@ class template_table extends \table_sql {
      */
     public function col_actions($data) {
         global $OUTPUT;
-
-        return $OUTPUT->single_button(
+        $output = $OUTPUT->single_button(
             new \moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]),
-            get_string('edit', 'format_kickstart'), 'get') .
-            $OUTPUT->single_button(
-                new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
-                get_string('delete', 'format_kickstart'), 'get');
+            get_string('edit', 'format_kickstart'), 'get');
+        if (!($data->courseformat)) {
+            $output .= $OUTPUT->single_button(
+                    new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
+                    get_string('delete', 'format_kickstart'), 'get');
+        }
+        return $output;
     }
 
     /**
@@ -153,19 +198,25 @@ class template_table extends \table_sql {
         }
         $sql = 'SELECT *
                 FROM {format_kickstart_template} t
-                '.$wsql;
-
+                WHERE t.visible = 1 '.$wsql;
         $sort = $this->get_sql_sort();
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
         } else if (format_kickstart_has_pro()) {
-            if ($CFG->kickstart_templates) {
+            if (!empty($CFG->kickstart_templates)) {
                 $orders = explode(",", $CFG->kickstart_templates);
-                array_unshift($orders, 'id');
-                $sql = $sql . 'ORDER BY FIELD ('. implode(",", $orders) . ')';
+                $orders = array_filter(array_unique($orders), 'strlen');
+                if (!empty($orders)) {
+                    list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+                    $sql .= "AND ID $insql";
+                    $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
+                        return "WHEN id = $value THEN " . array_search($value, $orders);
+                    }, $orders)) . " END)";
+                    $sql .= " ORDER BY $subquery";
+                    $params += $inparams;
+                }
             }
         }
-
         if ($pagesize != -1) {
             $total = $DB->count_records('format_kickstart_template');
             $this->pagesize($pagesize, $total);
@@ -176,7 +227,6 @@ class template_table extends \table_sql {
         if ($useinitialsbar && !$this->is_downloading()) {
             $this->initialbars(true);
         }
-
         $this->rawdata = $DB->get_recordset_sql($sql, $params, $this->get_page_start(), $this->get_page_size());
     }
 }

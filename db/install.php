@@ -22,19 +22,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Install script for format_kickstart
  * @return void
  */
 function xmldb_format_kickstart_install() {
     global $CFG;
-
+    require_once($CFG->dirroot. "/course/format/kickstart/lib.php");
     if (method_exists('core_plugin_manager', 'reset_caches')) {
         core_plugin_manager::reset_caches();
     }
-
+    format_kickstart_import_courseformat_template();
     $file = $CFG->dirroot.'/course/format/kickstart/createtemplates.php';
     if (file_exists($file)) {
         require_once($file);

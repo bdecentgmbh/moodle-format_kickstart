@@ -44,13 +44,8 @@ class behat_format_kickstart extends behat_base {
      * @param TableNode $table The course data
      */
     public function i_create_a_kickstart_template_with(TableNode $table) {
-
-        $parentnodes = get_string('courses', 'admin');
-        $this->execute("behat_general::i_am_on_homepage");
-        $this->execute("behat_navigation::i_navigate_to_in_site_administration",
-            array($parentnodes . ' > ' . get_string('course_templates', 'format_kickstart'))
-        );
-        $this->execute("behat_forms::press_button", get_string('create_template', 'format_kickstart'));
+        $url = new moodle_url('/course/format/kickstart/template.php', array('action' => 'create', 'sesskey' => sesskey()));
+        $this->execute('behat_general::i_visit', [$url]);
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
         $this->execute("behat_forms::press_button", get_string('savechanges'));
     }
@@ -69,5 +64,24 @@ class behat_format_kickstart extends behat_base {
         );
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
         $this->execute("behat_forms::press_button", get_string('savechanges'));
+    }
+
+    /**
+     * Set the kickstart format plugins settings.
+     *
+     * @Given /^I click kickstart template "(?P<element_string>(?:[^"]|\\")*)"$/
+     * @param string $selector Selector
+     */
+    public function i_click_kickstart_template($selector) {
+        $script = "
+            return (function() {
+                var element = document.querySelectorAll('$selector')[0];
+                return element.click();
+            })();
+        ";
+        $config = $this->evaluate_script($script);
+        if ($config === false) {
+            throw new ExpectationException("Doesn't working correct", $this->getSession());
+        }
     }
 }

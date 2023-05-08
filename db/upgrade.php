@@ -22,7 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Upgrade script for format_kickstart
@@ -32,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 function xmldb_format_kickstart_upgrade($oldversion) {
     global $CFG, $DB;
-
+    require_once($CFG->dirroot. "/course/format/kickstart/lib.php");
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2019050800) {
@@ -175,6 +174,71 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         // Kickstart savepoint reached.
         upgrade_plugin_savepoint(true, 2021092102, 'format', 'kickstart');
     }
+
+    if ($oldversion < 2023021800) {
+        // Define field sort to be added to format_kickstart_template.
+        $table = new xmldb_table('format_kickstart_template');
+        $field = new xmldb_field('courseformat', XMLDB_TYPE_INTEGER, '1', null, null, null, 0, 'sort');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('format', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'courseformat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('visible', XMLDB_TYPE_INTEGER, '1', null, null, null, 1, 'format');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2023021800, 'format', 'kickstart');
+    }
+
+    // Create kickstart format options table if not exist.
+    if ($oldversion < 2023030101) {
+        // Define table format_kickstart_options to be created.
+        $table = new xmldb_table('format_kickstart_options');
+
+        // Adding fields to table format_kickstart_options.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('templateid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('displayname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('format', XMLDB_TYPE_CHAR, '21', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('sectionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('value', XMLDB_TYPE_TEXT, null, null, null, null, null);
+
+        // Adding keys to table format_kickstart_options.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for format_kickstart_options.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2023030101, 'format', 'kickstart');
+    }
+
+    if ($oldversion < 2023032102) {
+        $table = new xmldb_table('format_kickstart_template');
+        $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, '1', null, null, null, 1, 'visible');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2023032102, 'format', 'kickstart');
+    }
+
+    if ($oldversion < 2023040300) {
+        $DB->set_field('tag_instance', 'itemtype', 'format_kickstart_template',
+            array('itemtype' => 'kickstart_template', 'component' => 'format_kickstart'));
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2023040300, 'format', 'kickstart');
+    }
+
+    format_kickstart_import_courseformat_template();
 
     return true;
 }

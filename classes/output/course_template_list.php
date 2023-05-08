@@ -72,7 +72,6 @@ class course_template_list implements \templatable, \renderable {
         global $DB, $COURSE, $CFG;
 
         $limit = format_kickstart_has_pro() ? 0 : 2 * 2;
-
         $cohorts = [];
         if (function_exists('cohort_get_user_cohorts')) {
             $cohorts = cohort_get_user_cohorts($this->userid);
@@ -92,10 +91,20 @@ class course_template_list implements \templatable, \renderable {
         $templates = [];
         $listtemplates = [];
         if (format_kickstart_has_pro()) {
-            $listtemplates = $DB->get_records('format_kickstart_template', null, 'sort');
+            $params = [];
+            $orders = explode(",", $CFG->kickstart_templates);
+            $orders = array_filter(array_unique($orders), 'strlen');
+            list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+            $params += $inparams;
+            $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
+                return "WHEN id = $value THEN " . array_search($value, $orders);
+            }, $orders)) . " END)";
+            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 AND status = 1 AND ID $insql ORDER BY $subquery";
+            $listtemplates = $DB->get_records_sql($sql, $params);
         } else {
-            $listtemplates = $DB->get_records('format_kickstart_template');
+            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1, 'status' => 1]);
         }
+        $templatecount = 0;
         if (!empty($listtemplates)) {
             foreach ($listtemplates as $template) {
                 // Apply template access if pro is installed.
@@ -133,11 +142,21 @@ class course_template_list implements \templatable, \renderable {
                     'template_id' => $template->id,
                     'course_id' => $COURSE->id
                 ]);
-
-                if ($limit > 0 && count($templates) >= $limit) {
+                if (!$template->courseformat) {
+                    $templatecount++;
+                }
+                if ($limit > 0 && $templatecount >= $limit) {
                     break;
                 }
-
+                if (format_kickstart_has_pro()) {
+                    require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+                    if (function_exists('local_kickstart_pro_get_template_backimages')) {
+                        $template->backimages = local_kickstart_pro_get_template_backimages($template->id);
+                        $template->isbackimages = count($template->backimages);
+                        $template->showimageindicators = !empty($template->backimages) && count($template->backimages)
+                            > 1 ? true : false;
+                    }
+                }
                 $templates[] = $template;
             }
         }
@@ -154,7 +173,6 @@ class course_template_list implements \templatable, \renderable {
      * @throws \moodle_exception
      */
     public function export_for_template(renderer_base $output) {
-
         $templates = $this->get_templates();
         if (!format_kickstart_has_pro() && is_siteadmin()) {
             $template = new \stdClass();
@@ -163,12 +181,12 @@ class course_template_list implements \templatable, \renderable {
             $template->link = 'https://bdecent.de/kickstart/';
             $templates[] = $template;
         }
-
         return [
             'templates' => ['groups' => $this->get_groups($templates)],
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
                 $this->course->teacherinstructions['format']),
+            'templateclass' => ($this->course->templatesview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
