@@ -81,7 +81,11 @@ class course_template_list implements \templatable, \renderable {
         }
         $cohortids = [];
         foreach ($cohorts as $cohort) {
-            $cohortids[] = $cohort->id;
+            if (is_int($cohort)) {
+                $cohortids[] = $cohort;
+            } else {
+                $cohortids[] = $cohort->id;
+            }
         }
 
         $roleids = [];
@@ -92,10 +96,20 @@ class course_template_list implements \templatable, \renderable {
         $templates = [];
         $listtemplates = [];
         if (format_kickstart_has_pro()) {
-            $listtemplates = $DB->get_records('format_kickstart_template', null, 'sort');
+            $params = [];
+            $orders = explode(",", $CFG->kickstart_templates);
+            $orders = array_filter(array_unique($orders), 'strlen');
+            list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+            $params += $inparams;
+            $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
+                return "WHEN id = $value THEN " . array_search($value, $orders);
+            }, $orders)) . " END)";
+            $sql = "SELECT * FROM {format_kickstart_template} WHERE visible = 1 AND status = 1 AND ID $insql ORDER BY $subquery";
+            $listtemplates = $DB->get_records_sql($sql, $params);
         } else {
-            $listtemplates = $DB->get_records('format_kickstart_template');
+            $listtemplates = $DB->get_records('format_kickstart_template', ['visible' => 1, 'status' => 1]);
         }
+        $templatecount = 0;
         if (!empty($listtemplates)) {
             foreach ($listtemplates as $template) {
                 // Apply template access if pro is installed.
@@ -108,7 +122,14 @@ class course_template_list implements \templatable, \renderable {
                             if ($coursecat) {
                                 $categoryids[] = $categoryid;
                                 if ($template->includesubcategories) {
-                                    $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                                    $context = $coursecat->get_context();
+                                    $sql = \context_helper::get_preload_record_columns_sql('ctx');
+                                    $childcategories = $DB->get_records_sql('SELECT c.id, c.visible, '. $sql.
+                                        ' FROM {context} ctx '.
+                                        ' JOIN {course_categories} c ON c.id = ctx.instanceid'.
+                                        ' WHERE ctx.path like ? AND ctx.contextlevel = ?',
+                                            array($context->path. '/%', CONTEXT_COURSECAT));
+                                    $categoryids = array_merge($categoryids, array_keys($childcategories));
                                 }
                             }
                         }
@@ -134,8 +155,19 @@ class course_template_list implements \templatable, \renderable {
                     'course_id' => $COURSE->id
                 ]);
 
-                if ($limit > 0 && count($templates) >= $limit) {
+                if (!$template->courseformat) {
+                    $templatecount++;
+                }
+                if ($limit > 0 && $templatecount >= $limit) {
                     break;
+                }
+
+                if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
+                    require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+                    $template->backimages = local_kickstart_pro_get_template_backimages($template->id);
+                    $template->isbackimages = count($template->backimages);
+                    $template->showimageindicators = !empty($template->backimages) && count($template->backimages) > 1
+                        ? true : false;
                 }
 
                 $templates[] = $template;
@@ -169,6 +201,7 @@ class course_template_list implements \templatable, \renderable {
             'has_pro' => format_kickstart_has_pro(),
             'teacherinstructions' => format_text($this->course->teacherinstructions['text'],
                 $this->course->teacherinstructions['format']),
+            'templateclass' => ($this->course->templatesview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),

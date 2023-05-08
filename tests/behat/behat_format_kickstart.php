@@ -70,4 +70,23 @@ class behat_format_kickstart extends behat_base {
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
         $this->execute("behat_forms::press_button", get_string('savechanges'));
     }
+
+     /**
+     * Set the kickstart format plugins settings.
+     *
+     * @Given /^I click kickstart template "(?P<element_string>(?:[^"]|\\")*)"$/
+     * @param string $selector Selector
+     */
+    public function i_click_kickstart_template($selector) {
+        $script = "
+            return (function() {
+                var element = document.querySelectorAll('$selector')[0];
+                return element.click();
+            })();
+        ";
+        $config = $this->evaluate_script($script);
+        if ($config === false) {
+            throw new ExpectationException("Doesn't working correct", $this->getSession());
+        }
+    }
 }

@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Code to be executed after the plugin's database scheme has been installed is defined here.
  *
- * @package    format_kickstart
- * @copyright  2021 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     format_kickstart
+ * @category    Cache
+ * @copyright   Lmsace dev team
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2023050200;         // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2017111300;         // Requires this Moodle version.
-$plugin->release = 'Version 1.2';
-$plugin->component = 'format_kickstart'; // Full name of the plugin (used for diagnostics).
-$plugin->supported = [39, 311];
-$plugin->maturity  = MATURITY_STABLE;
+$definitions = array(
+    'templates' => array(
+        'mode' => cache_store::MODE_APPLICATION,
+    ),
+);
