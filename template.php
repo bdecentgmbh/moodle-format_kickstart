@@ -196,6 +196,7 @@ switch ($action) {
 
         if ($data = $form->get_data()) {
             format_kickstart_remove_kickstart_templates($data->id);
+
             \core\notification::success(get_string('template_deleted', 'format_kickstart'));
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else if ($form->is_cancelled()) {

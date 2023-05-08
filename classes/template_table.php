@@ -191,6 +191,7 @@ class template_table extends \table_sql {
      */
     public function query_db($pagesize, $useinitialsbar = true) {
         global $DB, $CFG;
+
         list($wsql, $params) = $this->get_sql_where();
         if ($wsql) {
             $wsql = 'AND ' . $wsql;
