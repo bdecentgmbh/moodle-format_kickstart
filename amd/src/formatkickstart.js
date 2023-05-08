@@ -15,39 +15,79 @@
 
 /**
  * Defines Kicstart javascript.
- * @package   format_kickstart
+ * @module   format_kickstart/formatkickstart
  * @category  Classes - autoloading
  * @copyright 2021, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- define(['core/loadingicon'], function(Loadingicon) {
+ define(['core/str', 'core/notification', 'core/config', 'core/ajax'],
+    function(str, notification, Config, Ajax) {
 
     /**
      * Controls kicstart javascript.
+     * @param {int} contextid
+     * @param {int} courseid
+     * @return {void}
     */
-    var Formatkickstart = function() {
-        var buttonelement = document.querySelectorAll("#modal-footer .buttons")[0];
-        if (buttonelement) {
-            buttonelement.insertAdjacentHTML("beforebegin", "<span id='load-action'></span>");
+    var Formatkickstart = function(contextid, courseid) {
+        var self = this;
+        var useTemplate = document.querySelectorAll(".templates-block .use-template");
+        self.contextId = contextid;
+        self.courseId = courseid;
+        if (useTemplate) {
+            useTemplate.forEach((element) => {
+                element.addEventListener('click', self.templateHandler.bind(this));
+            });
         }
-        document.querySelectorAll(this.confirmform)[0].addEventListener("submit", this.importInstrctions.bind(this));
     };
 
-    Formatkickstart.prototype.confirmform = ".buttons .singlebutton form";
     Formatkickstart.prototype.confirmbutton = ".buttons .singlebutton form button";
+
     Formatkickstart.prototype.loadiconElement = "#modal-footer span#load-action";
 
-    Formatkickstart.prototype.importInstrctions = function() {
-        var buttons = document.querySelectorAll(this.confirmbutton);
-        for (let $i in buttons) {
-            buttons[$i].disabled = true;
-        }
-        Loadingicon.addIconToContainer(this.loadiconElement);
+    Formatkickstart.prototype.courseId = null;
+
+    Formatkickstart.prototype.contextId = null;
+
+    Formatkickstart.prototype.templateHandler = function(e) {
+        var self = this;
+        e.preventDefault();
+        let templateName = e.target.getAttribute("data-templatename");
+        let templateId = e.target.getAttribute("data-template");
+        self.confirmImportTemplate(templateId, templateName);
+    };
+
+    Formatkickstart.prototype.confirmImportTemplate = function(templateId, templateName) {
+        let self = this;
+        var plugindata = {
+            name: templateName
+        };
+        str.get_strings([
+            {key: 'confirm', component: 'core'},
+            {key: 'confirmtemplate', param: plugindata, component: 'format_kickstart'},
+            {key: 'import'},
+            {key: 'no'}
+        ]).done(function(s) {
+                notification.confirm(s[0], s[1], s[2], s[3], function() {
+                    document.querySelectorAll("body")[0].classList.add("kickstart-icon");
+                    Ajax.call([{
+                        methodname: 'format_kickstart_import_template',
+                        args: {templateid: templateId, courseid: self.courseId},
+                        done: function(response) {
+                            if (response) {
+                                let redirect = Config.wwwroot + "/course/view.php?id=" + self.courseId;
+                                window.location.assign(redirect);
+                            }
+                        }
+                    }]);
+                });
+            }
+        );
     };
 
     return {
-        init: function() {
-            return new Formatkickstart();
+        init: function(contextid, courseid) {
+            return new Formatkickstart(contextid, courseid);
         }
     };
 });

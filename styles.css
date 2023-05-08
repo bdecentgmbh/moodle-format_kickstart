@@ -1,3 +1,12 @@
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 body.format-kickstart .form-control .fa-search {
     margin-right: 0;
 }
@@ -51,8 +60,41 @@ body.format-kickstart .form-control .fa-search {
 
 .format-kickstart .card-deck {
     display: flex;
-    flex-direction: column;
     margin-bottom: .5rem;
+}
+.format-kickstart .card-deck.templates-block .image-block {
+    margin-bottom: 20px;
+}
+.format-kickstart .card-deck.templates-block .image-block .carousel-item {
+    height: 200px;
+    width: 100%;
+}
+.format-kickstart .card-deck.templates-block .image-block .carousel-item img {
+    width: 100%;
+    min-height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+    height: 100%;
+}
+#page-course-view-kickstart.kickstart-icon:before {
+    content: '\f1ce';
+    font-family: fontawesome;
+    font-size: 40px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    animation: spin 2s linear infinite;
+    z-index: 11;
+}
+#page-course-view-kickstart.kickstart-icon:after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, .9);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
 }
 
 @media (min-width: 576px) {
@@ -87,4 +129,68 @@ body.format-kickstart .form-control .fa-search {
 
 #page-content form .edit-shortname-parent-kickstart i {
     padding: 10px;
+}
+
+@media (min-width: 576px) {
+    .mform > .form-group {
+        margin-left: 1.5rem;
+    }
+}
+
+body#page-course-format-kickstart-template.template-designer-format #fitem_id_coursetype {
+    display: none;
+}
+
+/*List view*/
+.format-kickstart .course-content .kickstart-list-view .templates-block {
+    display: block;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card {
+    margin-bottom: 20px;
+    flex-direction: row;
+    align-items: center;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body {
+    display: flex;
+    align-items: center;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block {
+    max-width: 150px;
+    width: 100%;
+    height: 120px;
+    display: inline-block;
+    margin-bottom: 0;
+    margin-right: 20px;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block .carousel {
+    height: 100%;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block .carousel .carousel-inner {
+    height: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    border-radius: 5px;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block
+.carousel .carousel-indicators li {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #fff;
+    background-color: #000;
+    border-radius: 50%;
+    margin: 0 5px 0 0;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body .image-block
+.carousel .carousel-indicators li.active {
+    background-color: #0f6cbf;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer {
+    text-align: right;
+    border: 0;
+    background: none;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a {
+    margin-bottom: 10px;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
+    margin-left: 10px;
 }
