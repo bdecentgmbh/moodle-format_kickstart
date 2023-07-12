@@ -29,22 +29,22 @@ jobs:
       matrix:
         include:
           - php: '8.0'
-            moodle-branch: 'MOODLE_400_STABLE'
+            moodle-branch: 'MOODLE_402_STABLE'
+            database: 'mariadb'
+          - php: '8.0'
+            moodle-branch: 'MOODLE_402_STABLE'
+            database: 'pgsql'
+          - php: '7.4'
+            moodle-branch: 'MOODLE_402_STABLE'
+            database: 'pgsql'
+          - php: '7.4'
+            moodle-branch: 'MOODLE_402_STABLE'
             database: 'mariadb'
           - php: '8.0'
             moodle-branch: 'MOODLE_401_STABLE'
             database: 'mariadb'
           - php: '8.0'
-            moodle-branch: 'master'
-            database: 'mariadb'
-          - php: '8.0'
-            moodle-branch: 'MOODLE_400_STABLE'
-            database: 'pgsql'
-          - php: '8.0'
             moodle-branch: 'MOODLE_401_STABLE'
-            database: 'pgsql'
-          - php: '8.0'
-            moodle-branch: 'master'
             database: 'pgsql'
           - php: '7.4'
             moodle-branch: 'MOODLE_401_STABLE'
@@ -52,6 +52,12 @@ jobs:
           - php: '7.4'
             moodle-branch: 'MOODLE_401_STABLE'
             database: 'mariadb'
+          - php: '8.0'
+            moodle-branch: 'MOODLE_400_STABLE'
+            database: 'mariadb'
+          - php: '8.0'
+            moodle-branch: 'MOODLE_400_STABLE'
+            database: 'pgsql'
           - php: '7.4'
             moodle-branch: 'MOODLE_400_STABLE'
             database: 'pgsql'
@@ -118,9 +124,9 @@ jobs:
         if: ${{ always() }}
         run: moodle-plugin-ci mustache
 
-      # - name: Grunt
-      #   if: ${{ always() }}
-      #   run: moodle-plugin-ci grunt
+      - name: Grunt
+        if: ${{ always() }}
+        run: moodle-plugin-ci grunt
 
       - name: PHPUnit tests
         if: ${{ always() }}
