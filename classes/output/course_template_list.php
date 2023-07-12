@@ -110,14 +110,16 @@ class course_template_list implements \templatable, \renderable {
                 // Apply template access if pro is installed.
                 if (format_kickstart_has_pro()) {
                     $categoryids = [];
-                    $rootcategoryids = json_decode($template->categoryids, true);
-                    if (is_array($rootcategoryids)) {
-                        foreach ($rootcategoryids as $categoryid) {
-                            $coursecat = \core_course_category::get($categoryid, IGNORE_MISSING);
-                            if ($coursecat) {
-                                $categoryids[] = $categoryid;
-                                if ($template->includesubcategories) {
-                                    $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                    if ($template->categoryids) {
+                        $rootcategoryids = json_decode($template->categoryids, true);
+                        if (is_array($rootcategoryids)) {
+                            foreach ($rootcategoryids as $categoryid) {
+                                $coursecat = \core_course_category::get($categoryid, IGNORE_MISSING);
+                                if ($coursecat) {
+                                    $categoryids[] = $categoryid;
+                                    if ($template->includesubcategories) {
+                                        $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                                    }
                                 }
                             }
                         }
@@ -132,7 +134,12 @@ class course_template_list implements \templatable, \renderable {
                     }
                 }
 
-                $template->description_formatted = format_text($template->description, $template->description_format);
+                $template->description_formatted = format_text(file_rewrite_pluginfile_urls($template->description,
+                                                        'pluginfile.php',
+                                                        \context_system::instance()->id,
+                                                        'format_kickstart',
+                                                        'description',
+                                                        $template->id), $template->descriptionformat);
                 $tags = [];
                 foreach (\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $template->id) as $tag) {
                     $tags[] = '#' . $tag->get_display_name(false);

@@ -24,7 +24,7 @@
 
 namespace format_kickstart\output;
 
-use plugin_renderer_base;
+use core_courseformat\output\section_renderer;
 use renderable;
 
 /**
@@ -33,7 +33,7 @@ use renderable;
  * @copyright 2021 bdecent gmbh <https://bdecent.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class renderer extends plugin_renderer_base {
+class renderer extends section_renderer {
 
     /**
      * Overrides the parent so that templatable widgets are handled even without their explicit render method.

@@ -62,7 +62,7 @@ class format_kickstart_test extends \advanced_testcase {
         $template = new \stdClass();
         $template->title = '';
         $template->description = '';
-        $template->description_format = '';
+        $template->descriptionformat = '';
         $template->id = $DB->insert_record('format_kickstart_template', $template);
 
         $fs = get_file_storage();
@@ -149,7 +149,7 @@ class format_kickstart_test extends \advanced_testcase {
             'includesubcategories' => 0,
             'restrictrole' => 0,
             'roleids' => [],
-            'description_format' => 1,
+            'descriptionformat' => 1,
         );
         return (object) $template;
     }

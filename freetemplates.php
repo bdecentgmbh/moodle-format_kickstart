@@ -41,7 +41,7 @@ $freetemplates = [
         'includesubcategories' => 0,
         'restrictrole' => 0,
         'roleids' => [],
-        'description_format' => 1,
+        'descriptionformat' => 1,
     ),
 ];
 

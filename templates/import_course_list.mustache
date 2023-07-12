@@ -28,7 +28,7 @@
                     "id": "2",
                     "title": "Test",
                     "description": "This is a test template",
-                    "description_format": "1",
+                    "descriptionformat": "1",
                     "description_formatted": "This is a test template",
                     "hashtags": "#tag1 #tag2",
                     "isplaceholder": false,
@@ -59,9 +59,9 @@
         {{#courses}}
             <div class="card mb-2 text-muted">
                 <div class="card-body">
+                    <h5 class="card-title">{{fullname}}</h5>
                     <a href="#" class="btn btn-dark disabled pull-right">{{#str}}importcourse, format_kickstart{{/str}}</a>
                     <a href="#" class="btn btn-outline-dark disabled pull-right mr-2">{{#str}}gotocourse, format_kickstart{{/str}}</a>
-                    <h5 class="card-title">{{fullname}}</h5>
                 </div>
             </div>
         {{/courses}}

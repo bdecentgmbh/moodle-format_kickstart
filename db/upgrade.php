@@ -60,9 +60,9 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
         // Define field description_format to be added to format_kickstart_template.
         $table = new xmldb_table('kickstart_template');
-        $field = new xmldb_field('description_format', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
+        $field = new xmldb_field('descriptionformat', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
 
-        // Conditionally launch add field description_format.
+        // Conditionally launch add field descriptionformat.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -75,7 +75,7 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
         // Define field preview_url to be added to format_kickstart_template.
         $table = new xmldb_table('kickstart_template');
-        $field = new xmldb_field('preview_url', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'description_format');
+        $field = new xmldb_field('preview_url', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'descriptionformat');
 
         // Conditionally launch add field preview_url.
         if (!$dbman->field_exists($table, $field)) {
@@ -236,6 +236,16 @@ function xmldb_format_kickstart_upgrade($oldversion) {
             array('itemtype' => 'kickstart_template', 'component' => 'format_kickstart'));
         // Kickstart savepoint reached.
         upgrade_plugin_savepoint(true, 2023040300, 'format', 'kickstart');
+    }
+
+    if ($oldversion < 2023071101) {
+        $table = new xmldb_table('format_kickstart_template');
+        $field = new xmldb_field('description_format', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'descriptionformat');
+        }
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2023071101, 'format', 'kickstart');
     }
 
     format_kickstart_import_courseformat_template();
