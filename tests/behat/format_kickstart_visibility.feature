@@ -37,6 +37,7 @@ Feature: Check the kickstart course format features.
     Given I log in as "admin"
     And I create a kickstart template with:
       | Title | Test template 1 |
+      | Course backup file (.mbz) | /course/format/kickstart/tests/course.mbz|
     Then I should see "Template successfully created"
     Then I should see "Test template 1" in the "#templates_r5" "css_element"
     And I click on "#templates_r5 .singlebutton:nth-child(1)" "css_element" in the "Test template 1" "table_row"
@@ -94,19 +95,23 @@ Feature: Check the kickstart course format features.
     And I press "Create template"
     And I set the following fields to these values:
       | Title | Test template 1|
+    And I upload "/course/format/kickstart/tests/course.mbz" file to "Course backup file (.mbz)" filemanager
     And I press "Save changes"
     And I should see "Template successfully created"
     And I press "Create template"
     And I set the following fields to these values:
       | Title | Test template 2|
+    And I upload "/course/format/kickstart/tests/course.mbz" file to "Course backup file (.mbz)" filemanager
     And I press "Save changes"
     And I press "Create template"
     And I set the following fields to these values:
       | Title | Test template 3|
+    And I upload "/course/format/kickstart/tests/course.mbz" file to "Course backup file (.mbz)" filemanager
     And I press "Save changes"
     And I press "Create template"
     And I set the following fields to these values:
       | Title | Test template 4|
+    And I upload "/course/format/kickstart/tests/course.mbz" file to "Course backup file (.mbz)" filemanager
     And I press "Save changes"
     And I should see "You are using the maximum number (4) of templates allowed in Kickstart free edition."
     And I press "Create template"

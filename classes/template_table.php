@@ -90,6 +90,21 @@ class template_table extends \table_sql {
     }
 
     /**
+     * Generate description.
+     * @param \stdClass $data
+     * @return mixed
+     */
+    public function col_description($data) {
+        $context = \context_system::instance();
+        return format_text(file_rewrite_pluginfile_urls($data->description,
+                    'pluginfile.php',
+                    $context->id,
+                    'format_kickstart',
+                    'description',
+                    $data->id), $data->descriptionformat);
+    }
+
+    /**
      * Get any extra classes names to add to this row in the HTML.
      *
      * @param stdClass $row The row of data
@@ -191,7 +206,6 @@ class template_table extends \table_sql {
      */
     public function query_db($pagesize, $useinitialsbar = true) {
         global $DB, $CFG;
-
         list($wsql, $params) = $this->get_sql_where();
         if ($wsql) {
             $wsql = 'AND ' . $wsql;

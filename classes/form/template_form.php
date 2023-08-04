@@ -50,6 +50,7 @@ class template_form extends \moodleform {
         $mform = $this->_form;
         $templatebgoptions = $this->_customdata['templatebgoptions'];
         $template = isset($this->_customdata['template']) ? $this->_customdata['template'] : [];
+        $editoroptions = $this->_customdata['editoroptions'];
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
@@ -63,8 +64,8 @@ class template_form extends \moodleform {
         if (!$checkformat) {
             $mform->addRule('title', get_string('required'), 'required');
         }
-        $mform->addElement('editor', 'description', get_string('description', 'format_kickstart'));
-        $mform->setType('description', PARAM_RAW);
+        $mform->addElement('editor', 'description_editor', get_string('description', 'format_kickstart'), null, $editoroptions);
+        $mform->setType('description_editor', PARAM_RAW);
 
         $mform->addElement('tags', 'tags', get_string('tags'),
             ['itemtype' => 'format_kickstart_template', 'component' => 'format_kickstart']);
@@ -79,6 +80,7 @@ class template_form extends \moodleform {
                 'return_types' => FILE_INTERNAL | FILE_EXTERNAL
                 ]);
             $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
+            $mform->addRule('course_backup', get_string('required'), 'required');
         }
 
         $mform->addElement('text', 'preview_url', get_string('previewurl', 'format_kickstart'));

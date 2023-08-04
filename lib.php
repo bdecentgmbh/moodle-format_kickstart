@@ -575,3 +575,30 @@ function format_kickstart_get_designer_coursetypes() {
         return $coursetypes;
     }
 }
+
+
+/**
+ * Serves file from.
+ *
+ * @param mixed $course course or id of the course
+ * @param mixed $cm course module or id of the course module
+ * @param context $context Context used in the file.
+ * @param string $filearea Filearea the file stored
+ * @param array $args Arguments
+ * @param bool $forcedownload Force download the file instead of display.
+ * @param array $options additional options affecting the file serving
+ * @return bool false if file not found, does not return if found - just send the file
+ */
+function format_kickstart_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+    require_login();
+    if ($context->contextlevel != CONTEXT_SYSTEM && $filearea != 'description') {
+        return false;
+    }
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'format_kickstart', $filearea, $args[0], '/', $args[1]);
+    if (!$file) {
+        return false;
+    }
+    send_stored_file($file, 0, 0, 0, $options);
+}

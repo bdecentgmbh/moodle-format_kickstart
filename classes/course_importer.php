@@ -72,7 +72,7 @@ class course_importer {
             $backuptempdir = make_backup_temp_directory('template' . $templateid);
             $files[0]->extract_to_pathname($fp, $backuptempdir);
 
-            self::import('template' . $templateid, $courseid, $templateid);
+            self::import('template' . $templateid, $courseid);
         } else {
             $course = (array) $DB->get_record('course', array('id' => $courseid));
             $course['format'] = $template->format;
@@ -106,13 +106,12 @@ class course_importer {
      *
      * @param string $backuptempdir
      * @param int $courseid
-     * @param int $templateid
      * @throws \base_plan_exception
      * @throws \base_setting_exception
      * @throws \dml_exception
      * @throws \restore_controller_exception
      */
-    public static function import($backuptempdir, $courseid, $templateid) {
+    public static function import($backuptempdir, $courseid) {
         global $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);

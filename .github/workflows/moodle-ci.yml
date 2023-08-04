@@ -4,11 +4,11 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     services:
       postgres:
-        image: postgres:13
+        image: postgres:13.0
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -29,35 +29,11 @@ jobs:
       matrix:
         include:
           - php: '8.0'
-            moodle-branch: 'MOODLE_400_STABLE'
+            moodle-branch: 'MOODLE_402_STABLE'
             database: 'mariadb'
           - php: '8.0'
-            moodle-branch: 'MOODLE_401_STABLE'
-            database: 'mariadb'
-          - php: '8.0'
-            moodle-branch: 'master'
-            database: 'mariadb'
-          - php: '8.0'
-            moodle-branch: 'MOODLE_400_STABLE'
+            moodle-branch: 'MOODLE_402_STABLE'
             database: 'pgsql'
-          - php: '8.0'
-            moodle-branch: 'MOODLE_401_STABLE'
-            database: 'pgsql'
-          - php: '8.0'
-            moodle-branch: 'master'
-            database: 'pgsql'
-          - php: '7.4'
-            moodle-branch: 'MOODLE_401_STABLE'
-            database: 'pgsql'
-          - php: '7.4'
-            moodle-branch: 'MOODLE_401_STABLE'
-            database: 'mariadb'
-          - php: '7.4'
-            moodle-branch: 'MOODLE_400_STABLE'
-            database: 'pgsql'
-          - php: '7.4'
-            moodle-branch: 'MOODLE_400_STABLE'
-            database: 'mariadb'
 
     steps:
       - name: Check out repository code
@@ -118,9 +94,9 @@ jobs:
         if: ${{ always() }}
         run: moodle-plugin-ci mustache
 
-      # - name: Grunt
-      #   if: ${{ always() }}
-      #   run: moodle-plugin-ci grunt
+      - name: Grunt
+        if: ${{ always() }}
+        run: moodle-plugin-ci grunt
 
       - name: PHPUnit tests
         if: ${{ always() }}

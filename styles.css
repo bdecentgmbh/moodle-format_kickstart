@@ -57,7 +57,9 @@ body.format-kickstart .form-control .fa-search {
     border: 1px solid rgba(0, 0, 0, .125);
     margin-bottom: .5rem;
 }
-
+.format-kickstart .course-content > a {
+    float: right;
+}
 .format-kickstart .card-deck .carousel-inner {
     display: flex;
     margin-bottom: .5rem;
@@ -121,7 +123,19 @@ body.format-kickstart .form-control .fa-search {
     flex: 1 1 auto;
     padding: 1.25rem;
 }
-
+.format-kickstart .card-body .card-title {
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+.format-kickstart .course-content > .card .card-body {
+    text-align: right;
+}
+.format-kickstart .course-content > .card .card-body .card-title {
+    text-align: left;
+    margin-top: 5px;
+    margin-bottom: 9px;
+    margin-right: 5px;
+}
 .format-kickstart .card-footer {
     padding: .75rem 1.25rem;
     background-color: rgba(0, 0, 0, .03);
@@ -136,8 +150,10 @@ body.format-kickstart .form-control .fa-search {
     .mform > .form-group {
         margin-left: 1.5rem;
     }
+    .format-kickstart .course-content > .card .card-body .card-title {
+        float: left;
+    }
 }
-
 body#page-course-format-kickstart-template.template-designer-format #fitem_id_coursetype {
     display: none;
 }
@@ -200,4 +216,10 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
     margin-left: 10px;
+}
+#page-admin-course-format-kickstart-templates .generaltable tbody tr td .singlebutton {
+    margin-right: 10px;
+}
+#page-admin-course-format-kickstart-templates .generaltable tbody tr td .singlebutton + .singlebutton {
+    margin: 10px 0;
 }
