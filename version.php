@@ -28,5 +28,5 @@ $plugin->version = 2023071201;         // The current plugin version (Date: YYYY
 $plugin->requires = 2022041900;         // Requires this Moodle version.
 $plugin->release = 'Version 1.3';
 $plugin->component = 'format_kickstart'; // Full name of the plugin (used for diagnostics).
-$plugin->supported = [40, 402];
+$plugin->supported = [400, 402];
 $plugin->maturity = MATURITY_STABLE;
