@@ -38,6 +38,16 @@ require_once($CFG->libdir . '/tablelib.php');
 class template_table extends \table_sql {
 
     /**
+     * @var int
+     */
+    public $totaltemplates;
+
+    /**
+     * @var int
+     */
+    public $cnt;
+
+    /**
      * Setup table.
      *
      * @throws \coding_exception
@@ -75,6 +85,16 @@ class template_table extends \table_sql {
         $this->no_sorting('status');
         $this->define_columns($columns);
         $this->define_headers($headers);
+    }
+
+    /**
+     * Generate title.
+     *
+     * @param \stdClass $data
+     * @return mixed
+     */
+    public function col_title($data) {
+        return format_string($data->title);
     }
 
     /**

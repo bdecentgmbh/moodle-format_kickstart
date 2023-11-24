@@ -39,7 +39,7 @@ class observer {
         $data = $event->get_data();
         $plugin = $data['other']['plugin'];
         $name = isset($data['other']['name']) ? $data['other']['name'] : '';
-        if (preg_match("/^format_/", $plugin) && $name == 'disabled') {
+        if (preg_match("/^format_/", $plugin ?? '') && $name == 'disabled') {
             $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
             $disable = ($data['other']['value'] == 1) ? true : false;
             $format = substr($plugin, 7);

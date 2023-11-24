@@ -140,6 +140,7 @@ class course_template_list implements \templatable, \renderable {
                                                         'format_kickstart',
                                                         'description',
                                                         $template->id), $template->descriptionformat);
+                $template->title = format_string($template->title);
                 $tags = [];
                 foreach (\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $template->id) as $tag) {
                     $tags[] = '#' . $tag->get_display_name(false);
@@ -152,7 +153,7 @@ class course_template_list implements \templatable, \renderable {
                 if (!$template->courseformat) {
                     $templatecount++;
                 }
-                if ($limit > 0 && $templatecount >= $limit) {
+                if ($limit > 0 && $templatecount > $limit) {
                     break;
                 }
                 if (format_kickstart_has_pro()) {

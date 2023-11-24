@@ -173,9 +173,9 @@ switch ($action) {
                         'templatebackimg', $id, $templatebgoptions);
                     $template->templatebackimg = $drafteditor;
                 }
-                $template->cohortids = json_decode($template->cohortids, true);
-                $template->categoryids = json_decode($template->categoryids, true);
-                $template->roleids = json_decode($template->roleids, true);
+                $template->cohortids = isset($template->cohortids) ? json_decode($template->cohortids, true) : [];
+                $template->categoryids = isset($template->categoryids) ? json_decode($template->categoryids, true) : [];
+                $template->roleids = isset($template->roleids) ? json_decode($template->roleids, true) : [];
             }
             // Check the template is normal or course format.
             if (!$template->courseformat) {
