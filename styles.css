@@ -152,7 +152,7 @@ body.format-kickstart .form-control .fa-search {
 }
 
 @media (min-width: 576px) {
-    .mform > .form-group {
+    .format-kickstart .mform > .form-group {
         margin-left: 1.5rem;
     }
     .format-kickstart .course-content > .card .card-body .card-title {
