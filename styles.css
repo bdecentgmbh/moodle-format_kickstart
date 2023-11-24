@@ -159,6 +159,7 @@ body.format-kickstart .form-control .fa-search {
         float: left;
     }
 }
+
 body#page-course-format-kickstart-template.template-designer-format #fitem_id_coursetype {
     display: none;
 }
