@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$functions = array(
-    'format_kickstart_import_template' => array(
+$functions = [
+    'format_kickstart_import_template' => [
         'classname' => 'format_kickstart\external',
         'methodname' => 'import_template',
         'description' => 'Import the template',
@@ -33,5 +33,5 @@ $functions = array(
         'capabilities' => 'format/kickstart:import_from_template',
         'ajax' => true,
         'loginrequired' => true,
-    ),
-);
+    ],
+];

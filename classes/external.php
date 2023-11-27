@@ -26,7 +26,7 @@ namespace format_kickstart;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \format_kickstart\course_importer;
+use format_kickstart\course_importer;
 
 require_once($CFG->libdir.'/externallib.php');
 
@@ -42,10 +42,10 @@ class external extends \external_api {
     public static function import_template_parameters() {
 
         return new \external_function_parameters(
-            array(
+            [
                 'templateid' => new \external_value(PARAM_INT, 'Kickstart Template id'),
-                'courseid' => new \external_value(PARAM_INT, 'Course id')
-            )
+                'courseid' => new \external_value(PARAM_INT, 'Course id'),
+            ],
         );
     }
 
@@ -62,7 +62,7 @@ class external extends \external_api {
         $context = \context_course::instance($courseid);
         require_capability('format/kickstart:import_from_template', $context);
         $params = self::validate_parameters(self::import_template_parameters(),
-                        array('templateid' => $templateid, 'courseid' => $courseid));
+                        ['templateid' => $templateid, 'courseid' => $courseid]);
         course_importer::import_from_template($templateid, $courseid);
         return true;
     }

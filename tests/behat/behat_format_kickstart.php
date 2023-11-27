@@ -44,7 +44,7 @@ class behat_format_kickstart extends behat_base {
      * @param TableNode $table The course data
      */
     public function i_create_a_kickstart_template_with(TableNode $table) {
-        $url = new moodle_url('/course/format/kickstart/template.php', array('action' => 'create', 'sesskey' => sesskey()));
+        $url = new moodle_url('/course/format/kickstart/template.php', ['action' => 'create', 'sesskey' => sesskey()]);
         $this->execute('behat_general::i_visit', [$url]);
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
         $this->execute("behat_forms::press_button", get_string('savechanges'));
@@ -60,7 +60,7 @@ class behat_format_kickstart extends behat_base {
 
         $this->execute("behat_general::i_am_on_homepage");
         $this->execute("behat_navigation::i_navigate_to_in_site_administration",
-            array("Plugins" . ' > ' . "Course formats". '>'."General settings")
+            ["Plugins" . ' > ' . "Course formats". '>'."General settings"],
         );
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
         $this->execute("behat_forms::press_button", get_string('savechanges'));

@@ -30,7 +30,7 @@ $capabilities = [
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'manager' => CAP_ALLOW,
-        ]
+        ],
     ],
     'format/kickstart:import_from_template' => [
         'captype' => 'write',
@@ -38,8 +38,8 @@ $capabilities = [
         'archetypes' => [
             'manager' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW
-        ]
-    ]
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
 ];
 

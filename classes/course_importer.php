@@ -74,7 +74,7 @@ class course_importer {
 
             self::import('template' . $templateid, $courseid);
         } else {
-            $course = (array) $DB->get_record('course', array('id' => $courseid));
+            $course = (array) $DB->get_record('course', ['id' => $courseid]);
             $course['format'] = $template->format;
             // Get format opitions.
             $params['format'] = $template->format;

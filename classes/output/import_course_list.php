@@ -69,12 +69,12 @@ class import_course_list implements \templatable, \renderable {
                 }
                 $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
                 $course->fullname = format_string($course->fullname, true, [
-                    'context' => \context_course::instance($course->id)
+                    'context' => \context_course::instance($course->id),
                 ]);
                 $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
                     'id' => $COURSE->id,
                     'importid' => $course->id,
-                    'target' => $target
+                    'target' => $target,
                 ]);
                 $courses[] = $course;
             }
@@ -90,7 +90,7 @@ class import_course_list implements \templatable, \renderable {
             'searchlabel' => get_string('showing', 'format_kickstart', ['count' => $component->get_count()]),
             'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
-            'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id])
+            'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id]),
         ];
     }
 }

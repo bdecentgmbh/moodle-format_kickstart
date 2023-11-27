@@ -148,14 +148,14 @@ class template_table extends \table_sql {
         $status = '';
         if ($data->status) {
             $status .= \html_writer::link($templateurl->out(false,
-            array('action' => 'disable', 'template' => $data->id)),
-            $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', array('class' => 'iconsmall')),
-                array('id' => "sort-template-up-action")). '';
+            ['action' => 'disable', 'template' => $data->id]),
+            $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', ['class' => 'iconsmall']),
+                ['id' => "sort-template-up-action"]). '';
         } else {
             $status .= \html_writer::link($templateurl->out(false,
-            array('action' => 'enable', 'template' => $data->id)),
-            $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', array('class' => 'iconsmall')),
-                array('id' => "sort-template-up-action")). '';
+            ['action' => 'enable', 'template' => $data->id]),
+            $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', ['class' => 'iconsmall']),
+                ['id' => "sort-template-up-action"]). '';
         }
         return $status;
     }
@@ -173,21 +173,21 @@ class template_table extends \table_sql {
         $updown = '';
         $strup = get_string('up');
         $strdown = get_string('down');
-        $spacer = $OUTPUT->pix_icon('spacer', '', 'moodle', array('class' => 'iconsmall'));
+        $spacer = $OUTPUT->pix_icon('spacer', '', 'moodle', ['class' => 'iconsmall']);
         if ($this->cnt) {
             $updown .= \html_writer::link($templateurl->out(false,
-            array('action' => 'up', 'template' => $data->id)),
-            $OUTPUT->pix_icon('t/up', $strup, 'moodle', array('class' => 'iconsmall')),
-                array('id' => "sort-template-up-action")). '';
+            ['action' => 'up', 'template' => $data->id]),
+            $OUTPUT->pix_icon('t/up', $strup, 'moodle', ['class' => 'iconsmall']),
+                ['id' => "sort-template-up-action"]). '';
         } else {
             $updown .= $spacer;
         }
 
         if ($this->cnt < ($this->totaltemplates - 1)) {
             $updown .= '&nbsp;'. \html_writer::link($templateurl->out(false,
-            array('action' => 'down', 'template' => $data->id)),
+            ['action' => 'down', 'template' => $data->id]),
             $OUTPUT->pix_icon('t/down', $strdown, 'moodle',
-                array('class' => 'iconsmall')), array('id' => "sort-template-down-action"));
+                ['class' => 'iconsmall']), ['id' => "sort-template-down-action"]);
         } else {
             $updown .= $spacer;
         }

@@ -148,7 +148,7 @@ class course_template_list implements \templatable, \renderable {
                 $template->hashtags = implode(' ', $tags);
                 $template->link = new \moodle_url('/course/format/kickstart/confirm.php', [
                     'template_id' => $template->id,
-                    'course_id' => $COURSE->id
+                    'course_id' => $COURSE->id,
                 ]);
                 if (!$template->courseformat) {
                     $templatecount++;
@@ -198,7 +198,7 @@ class course_template_list implements \templatable, \renderable {
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
-            'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php')
+            'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php'),
         ];
     }
 
