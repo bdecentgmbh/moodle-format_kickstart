@@ -51,7 +51,7 @@ class template_table_settings_form extends \moodleform {
             -1 => get_string('all'),
             25 => '25',
             50 => '50',
-            100 => '100'
+            100 => '100',
         ]);
         $mform->setType('pagesize', PARAM_INT);
         $mform->setDefault('pagesize', 25);

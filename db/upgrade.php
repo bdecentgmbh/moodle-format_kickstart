@@ -233,7 +233,7 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     if ($oldversion < 2023040300) {
         $DB->set_field('tag_instance', 'itemtype', 'format_kickstart_template',
-            array('itemtype' => 'kickstart_template', 'component' => 'format_kickstart'));
+            ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
         // Kickstart savepoint reached.
         upgrade_plugin_savepoint(true, 2023040300, 'format', 'kickstart');
     }

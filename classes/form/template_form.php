@@ -57,7 +57,7 @@ class template_form extends \moodleform {
         $attributes = [];
         $checkformat = !empty($template) && isset($template['courseformat']) && $template['courseformat'];
         if ($checkformat) {
-            $attributes = array('disabled' => true);
+            $attributes = ['disabled' => true];
         }
         $mform->addElement('text', 'title', get_string('title', 'format_kickstart'), $attributes);
         $mform->setType('title', PARAM_TEXT);
@@ -77,7 +77,7 @@ class template_form extends \moodleform {
                 'subdirs' => 0,
                 'maxfiles' => 1,
                 'accepted_types' => ['.mbz'],
-                'return_types' => FILE_INTERNAL | FILE_EXTERNAL
+                'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
                 ]);
             $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
             $mform->addRule('course_backup', get_string('required'), 'required');
@@ -108,7 +108,7 @@ class template_form extends \moodleform {
             }
 
             $mform->addElement('autocomplete', 'cohortids', get_string('cohorts', 'cohort'), $options, [
-                'multiple' => true
+                'multiple' => true,
             ]);
             $mform->hideIf('cohortids', 'restrictcohort');
 

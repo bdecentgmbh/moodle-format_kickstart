@@ -31,7 +31,7 @@ function xmldb_format_kickstart_uninstall() {
     $DB->delete_records_select(
         'course_format_options',
         "courseid = :siteid AND format != :site",
-        array("siteid" => $SITE->id, 'site' => 'site')
+        ["siteid" => $SITE->id, 'site' => 'site'],
     );
     unset_config('kickstart_templates');
     return true;

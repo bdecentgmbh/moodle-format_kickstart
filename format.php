@@ -41,7 +41,7 @@ course_create_sections_if_missing($course, 0);
 $output = $PAGE->get_renderer('format_kickstart');
 
 $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
-    array('contextid' => $context->id, 'courseid' => $course->id));
+    ['contextid' => $context->id, 'courseid' => $course->id]);
 
 if (has_capability('format/kickstart:import_from_template', $context)) {
     // Check the template add or remove.

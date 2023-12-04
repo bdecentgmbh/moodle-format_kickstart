@@ -47,7 +47,7 @@ if ($ADMIN->fulltree) {
             get_string('automatictemplate_desc', 'format_kickstart'),
             1));
         if (function_exists('local_kickstart_pro_get_template_backimages')) {
-            $templatebgoptions = array('maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']);
+            $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
             $settings->add(new admin_setting_configstoredfile(
                 'format_kickstart/templatebackimages',
                 get_string('default_templatebackground', 'format_kickstart'),
@@ -64,7 +64,7 @@ if ($ADMIN->fulltree) {
         get_string('importtarget_desc', 'format_kickstart'),
         \backup::TARGET_EXISTING_DELETING, [
             \backup::TARGET_EXISTING_DELETING => get_string('restoretoexistingcoursedeleting', 'format_kickstart'),
-            \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart')
+            \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart'),
         ]));
 
     $settings->add(new admin_setting_configselect('format_kickstart/defaulttemplatesview',
@@ -72,7 +72,7 @@ if ($ADMIN->fulltree) {
         get_string('defaulttemplatesview_desc', 'format_kickstart'),
         'tile', [
             'tile' => get_string('strtile', 'format_kickstart'),
-            'list' => get_string('strlist', 'format_kickstart')
+            'list' => get_string('strlist', 'format_kickstart'),
         ]));
 
     $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
@@ -88,13 +88,13 @@ if ($ADMIN->fulltree) {
     $options = [
         0 => get_string('no'),
         1 => get_string('yes'),
-        2 => get_string('usedefault', 'format_kickstart')
+        2 => get_string('usedefault', 'format_kickstart'),
     ];
 
     $settings->add(new admin_setting_heading(
         'restoresettings',
         get_string('generalrestoresettings', 'backup'),
-        get_string('usedefault_help', 'format_kickstart')
+        get_string('usedefault_help', 'format_kickstart'),
     ));
 
     $settings->add(new admin_setting_configselect(

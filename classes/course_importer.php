@@ -74,7 +74,7 @@ class course_importer {
 
             self::import('template' . $templateid, $courseid);
         } else {
-            $course = (array) $DB->get_record('course', array('id' => $courseid));
+            $course = (array) $DB->get_record('course', ['id' => $courseid]);
             $course['format'] = $template->format;
             // Get format opitions.
             $params['format'] = $template->format;
@@ -166,12 +166,16 @@ class course_importer {
             throw $e;
         } finally {
             // Reset some settings.
+            $fullname = $course->fullname;
+            $shortname = $course->shortname;
             $summary = $course->summary;
             $summaryformat = $course->summaryformat;
             $enddate = $course->enddate;
             $timecreated = $course->timecreated;
             // Reload course.
             $course = $DB->get_record('course', ['id' => $courseid]);
+            $course->fullname = $fullname;
+            $course->shortname = $shortname;
             $course->summary = $summary;
             $course->summaryformat = $summaryformat;
             $course->enddate = $enddate;

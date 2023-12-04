@@ -39,26 +39,26 @@ class observer {
         $data = $event->get_data();
         $plugin = $data['other']['plugin'];
         $name = isset($data['other']['name']) ? $data['other']['name'] : '';
-        if (preg_match("/^format_/", $plugin) && $name == 'disabled') {
+        if (preg_match("/^format_/", $plugin ?? '') && $name == 'disabled') {
             $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
             $disable = ($data['other']['value'] == 1) ? true : false;
             $format = substr($plugin, 7);
             if ($disable) {
                 $removetemplates = $DB->get_records_menu('format_kickstart_template',
-                    array('format' => $format, 'courseformat' => 1), '', 'id,id');
+                    ['format' => $format, 'courseformat' => 1], '', 'id,id');
                 if ($removetemplates) {
                     $removetemplates = array_keys($removetemplates);
                     $templates = array_diff($templates, $removetemplates);
                 }
-                $DB->set_field('format_kickstart_template', 'visible', 0, array('format' => $format, 'courseformat' => 1));
+                $DB->set_field('format_kickstart_template', 'visible', 0, ['format' => $format, 'courseformat' => 1]);
             } else {
                 $addtemplates = $DB->get_records_menu('format_kickstart_template',
-                    array('format' => $format, 'courseformat' => 1), '', 'id,id');
+                    ['format' => $format, 'courseformat' => 1], '', 'id,id');
                 if ($addtemplates) {
                     $addtemplates = array_keys($addtemplates);
                     $templates = array_merge($templates, $addtemplates);
                 }
-                $DB->set_field('format_kickstart_template', 'visible', 1, array('format' => $format, 'courseformat' => 1));
+                $DB->set_field('format_kickstart_template', 'visible', 1, ['format' => $format, 'courseformat' => 1]);
             }
             set_config('kickstart_templates', implode(',', $templates));
         }

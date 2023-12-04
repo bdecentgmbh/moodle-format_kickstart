@@ -130,6 +130,11 @@ body.format-kickstart .form-control .fa-search {
 .format-kickstart .course-content > .card .card-body {
     text-align: right;
 }
+.format-kickstart .course-content > .card .card-body > .img-responsive + .card-title {
+    text-align: center;
+    float: none;
+    margin: 1rem 0;
+}
 .format-kickstart .course-content > .card .card-body .card-title {
     text-align: left;
     margin-top: 5px;
@@ -147,13 +152,14 @@ body.format-kickstart .form-control .fa-search {
 }
 
 @media (min-width: 576px) {
-    .mform > .form-group {
+    .format-kickstart .mform > .form-group {
         margin-left: 1.5rem;
     }
     .format-kickstart .course-content > .card .card-body .card-title {
         float: left;
     }
 }
+
 body#page-course-format-kickstart-template.template-designer-format #fitem_id_coursetype {
     display: none;
 }

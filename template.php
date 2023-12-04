@@ -37,7 +37,7 @@ $PAGE->set_url(new moodle_url('/course/format/kickstart/template.php', ['action'
 $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'), new moodle_url('/course/format/kickstart/templates.php'));
 
 // Prepare the template images.
-$templatebgoptions = array('maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']);
+$templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
 require_login();
 require_capability('format/kickstart:manage_templates', $context);
 $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
@@ -45,8 +45,9 @@ if (format_kickstart_has_pro()) {
     require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
 }
 
-$editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
-'trusttext' => false, 'noclean' => true, 'context' => $context);
+$editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
+    'trusttext' => false, 'noclean' => true, 'context' => $context,
+];
 
 
 switch ($action) {
@@ -54,12 +55,13 @@ switch ($action) {
         $PAGE->set_title(get_string('create_template', 'format_kickstart'));
         $PAGE->set_heading(get_string('create_template', 'format_kickstart'));
         $PAGE->navbar->add(get_string('create_template', 'format_kickstart'));
-        if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template', array('courseformat' => 0)) >= 2 * 2) {
+        if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template', ['courseformat' => 0]) >= 2 * 2) {
             redirect(new moodle_url('/course/format/kickstart/buypro.php'));
         }
 
         $form = new \format_kickstart\form\template_form($PAGE->url, ['templatebgoptions' => $templatebgoptions,
-            'editoroptions' => $editoroptions]);
+            'editoroptions' => $editoroptions,
+        ]);
 
         if ($data = $form->get_data()) {
             $data->description = $data->description_editor['text'];
@@ -100,7 +102,7 @@ switch ($action) {
             $template = new stdClass();
             // Get global settings bg and set the images.
             if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
-                $templateoptions = array('maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']);
+                $templateoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
                 $draftitem = file_get_submitted_draft_itemid('templatebackimages');
                 file_prepare_draft_area($draftitem, \context_system::instance()->id,
                     'format_kickstart', 'templatebackimages', 0, $templateoptions);
@@ -125,7 +127,8 @@ switch ($action) {
         $template->tags = core_tag_tag::get_item_tags_array('format_kickstart', 'format_kickstart_template', $template->id);
 
         $form = new \format_kickstart\form\template_form($PAGE->url, ['templatebgoptions' => $templatebgoptions,
-            'template' => (array) $template, 'editoroptions' => $editoroptions]);
+            'template' => (array) $template, 'editoroptions' => $editoroptions,
+        ]);
 
         if ($data = $form->get_data()) {
             if (isset($data->courseformatoptions)) {
@@ -173,9 +176,9 @@ switch ($action) {
                         'templatebackimg', $id, $templatebgoptions);
                     $template->templatebackimg = $drafteditor;
                 }
-                $template->cohortids = json_decode($template->cohortids, true);
-                $template->categoryids = json_decode($template->categoryids, true);
-                $template->roleids = json_decode($template->roleids, true);
+                $template->cohortids = isset($template->cohortids) ? json_decode($template->cohortids, true) : [];
+                $template->categoryids = isset($template->categoryids) ? json_decode($template->categoryids, true) : [];
+                $template->roleids = isset($template->roleids) ? json_decode($template->roleids, true) : [];
             }
             // Check the template is normal or course format.
             if (!$template->courseformat) {
