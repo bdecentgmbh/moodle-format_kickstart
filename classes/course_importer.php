@@ -106,13 +106,12 @@ class course_importer {
      *
      * @param string $backuptempdir
      * @param int $courseid
-     * @param int $templateid
      * @throws \base_plan_exception
      * @throws \base_setting_exception
      * @throws \dml_exception
      * @throws \restore_controller_exception
      */
-    public static function import($backuptempdir, $courseid, $templateid) {
+    public static function import($backuptempdir, $courseid) {
         global $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);
