@@ -129,7 +129,6 @@ body.format-kickstart .form-control .fa-search {
 }
 .format-kickstart .course-content > .card .card-body {
     text-align: right;
-    padding: 0;
     display: flex;
     align-items: center;
 }
@@ -184,7 +183,6 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     align-items: center;
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body {
-    padding: 0;
     display: flex;
     align-items: center;
 }
