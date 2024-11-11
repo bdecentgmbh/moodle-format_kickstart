@@ -81,7 +81,8 @@ body.format-kickstart .form-control .fa-search {
 
 #page-course-view-kickstart.kickstart-icon:before {
     content: '\f1ce';
-    font-family: fontawesome;
+    font-family: var(--fa-style-family, "Font Awesome 6 Free", "Font Awesome 6 Brands", fontawesome);
+    font-weight: 700;
     font-size: 40px;
     position: fixed;
     top: 50%;
@@ -123,12 +124,21 @@ body.format-kickstart .form-control .fa-search {
     flex: 1 1 auto;
     padding: 1.25rem;
 }
-.format-kickstart .card-body .card-title {
-    margin-top: 10px;
+.format-kickstart .card-body .card-title,
+.format-kickstart .card-body .card-text,
+.format-kickstart .card-body p {
     margin-bottom: 0;
+}
+.format-kickstart .card-body .text-muted {
+    margin-top: 5px;
+}
+.format-kickstart .card-body .card-text:empty,
+.format-kickstart .card-body .text-muted:empty {
+    display: none;
 }
 .format-kickstart .course-content > .card .card-body {
     text-align: right;
+    padding: 0;
     display: flex;
     align-items: center;
 }
@@ -137,19 +147,19 @@ body.format-kickstart .form-control .fa-search {
     float: none;
     margin: 1rem 0;
 }
-.format-kickstart .course-content > .card .card-body {
-    .card-title {
-        text-align: left;
-        margin-top: 5px;
-        margin-bottom: 9px;
-        margin-right: 5px;
-    }
-    a.btn {
-        margin-right: 5px;
-        &:not(.btn-outline-dark) {
-            margin-left: auto;
-        }
-    }
+.format-kickstart .course-content > .card .card-body .card-title {
+    width: 50%;
+    text-align: left;
+    margin-top: 5px;
+    margin-bottom: 9px;
+    margin-right: 5px;
+}
+.format-kickstart .course-content > .card .card-body a.btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.format-kickstart .course-content > .card .card-body a.btn:not(.btn-outline-dark) {
+    margin-left: auto;
 }
 .format-kickstart .card-footer {
     padding: .75rem 1.25rem;
@@ -162,13 +172,11 @@ body.format-kickstart .form-control .fa-search {
 }
 
 @media (min-width: 576px) {
-    .mform > .form-group {
+    .format-kickstart .mform > .form-group {
         margin-left: 1.5rem;
     }
-    .format-kickstart .course-content > .card .card-body .card-title {
-        width: 66%;
-    }
 }
+
 body#page-course-format-kickstart-template.template-designer-format #fitem_id_coursetype {
     display: none;
 }
@@ -183,6 +191,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     align-items: center;
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body {
+    padding: 0;
     display: flex;
     align-items: center;
 }
@@ -225,9 +234,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     text-align: right;
     border: 0;
     background: none;
-}
-.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a {
-    margin-bottom: 10px;
+    padding: 0;
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
     margin-left: 10px;
@@ -238,3 +245,24 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 #page-admin-course-format-kickstart-templates .generaltable tbody tr td .singlebutton + .singlebutton {
     margin: 10px 0;
 }
+
+/* Content Migration from course block */
+.format-kickstart.path-course-view .course-content .card {
+    padding: 15px;
+}
+/* Teacher profile block */
+.format-kickstart.path-course-view .course-content .card .card-header,
+.format-kickstart.path-course-view .course-content .card .card-header img {
+    border-radius: 50%;
+}
+/* End of Teacher profile block */
+.format-kickstart.path-course-view .course-content .card .card-block a.btn {
+    margin-right: 10px;
+}
+.format-kickstart.path-course-view .input-group-append {
+    border: 0;
+}
+.format-kickstart.path-course-view .input-group-append button i.icon {
+    margin: 0;
+}
+/* End of  Content Migration from course block */
