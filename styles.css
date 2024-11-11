@@ -246,6 +246,11 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     margin: 10px 0;
 }
 
+/* Tile view */
+.format-kickstart .course-content .kickstart-tile-view .templates-block .card {
+    padding: 0;
+}
+
 /* Content Migration from course block */
 .format-kickstart.path-course-view .course-content .card {
     padding: 15px;
