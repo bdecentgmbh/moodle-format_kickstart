@@ -26,6 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot. '/course/format/lib.php');
 
+
+use format_kickstart\output\course_template_list;
+
 /**
  * Main class for the Kickstart course format
  *

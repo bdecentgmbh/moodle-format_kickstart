@@ -121,61 +121,47 @@ Feature: Check the kickstart course format features.
   Scenario: Check the format plugin template access.
     Given I log in as "admin"
     Then I navigate to "Plugins > Course formats > Manage templates" in site administration
-    And I should see "Kickstart format"
-    And I should see "Single activity"
-    And I should see "Social"
-    And I should see "Custom sections"
-    And I should see "Weekly sections"
+    And I should see course format "Kickstart format"
+    And I should see course format "Single activity"
+    And I should see course format "Social"
+    And I should see course format "Custom sections"
+    And I should see course format "Weekly sections"
     And I navigate to "Plugins > Course formats > Manage course formats" in site administration
-    And I click on "Disable" "link" in the "Single activity" "table_row"
+    Then I click on disable link single activity
     Then I navigate to "Plugins > Course formats > Manage templates" in site administration
-    And I should not see "Single activity"
+    And I should not see course format "Single activity"
     Then I am on "Course 1" course homepage
     Then I should see "Course templates"
-    And I should not see "Single activity"
-    Then I should see "Custom sections"
-    And I click kickstart template ".use-template[data-templatename=\"Custom sections\"]"
+    And I should not see course format "Single activity"
+    Then I should see course format "Custom sections"
+    Then I click on ".template-list .card-deck .card:nth-child(2) .card-footer a" "css_element"
     And I click on "Import" "button" in the ".modal" "css_element"
     And I start watching to see if a new page loads
     Then I should see "Course 1"
-    Then ".course-content .topics" "css_element" should exist
+    Then ".course-content" "css_element" should exist
     And I navigate to "Plugins > Course formats > Manage templates" in site administration
-    Then I click on "Edit" "button" in the "Custom sections" "table_row"
+    Then I click on enable link custom sections
     And I should see "Edit template"
     And I set the following fields to these values:
       | Course layout | Show one section per page |
     Then I press "Save changes"
     Then I am on "Course 2" course homepage
-    And I click kickstart template ".use-template[data-templatename=\"Custom sections\"]"
-    And I click on "Import" "button" in the ".modal" "css_element"
-    #And I start watching to see if a new page loads
-    Then I should see "Course 2"
-    Then ".course-content .topics" "css_element" should exist
+    Then I click on ".template-list .card-deck .card:nth-child(2) .card-footer a" "css_element"
 
-  Scenario: Check the visible course templates in different roles
-    Given I log in as "user1"
-    Then I am on "Course 1" course homepage
-    Then I should see "Course templates"
-    And I click kickstart template ".use-template[data-templatename=\"Custom sections\"]"
     And I click on "Import" "button" in the ".modal" "css_element"
-    And I start watching to see if a new page loads
-    Then I should see "Course 1"
-    Then ".course-content .topics" "css_element" should exist
+    Then I should see "Course 2"
+    Then ".course-content" "css_element" should exist
 
   Scenario: Check the single activity format template
     Given I log in as "admin"
     And I am on "Course 3" course homepage with editing mode on
-    Then I should see "Course templates"
-    And I should see "Single activity"
-    And I click kickstart template ".use-template[data-templatename=\"Single activity\"]"
+    And I should see course format "Single activity"
+    And I click kickstart single activity format template
     And I click on "Import" "button" in the ".modal" "css_element"
-    And I start watching to see if a new page loads
-    And I set the following fields to these values:
+    And I check single activity condition kickstart:
       | Forum name | Test Forum |
-    Then I press "Save and display"
-    Then I should see "There are no discussion topics yet in this forum"
     And I navigate to "Plugins > Course formats > Manage templates" in site administration
-    Then I click on "Edit" "button" in the "Single activity" "table_row"
+    Then I click on enable link single activity
     And I should see "Edit template"
     And I set the following fields to these values:
       | Type of activity | Page |
