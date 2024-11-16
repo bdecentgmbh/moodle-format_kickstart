@@ -150,13 +150,10 @@ body.format-kickstart .form-control .fa-search {
 .format-kickstart .course-content > .card .card-body .card-title {
     width: 50%;
     text-align: left;
-    margin-top: 5px;
-    margin-bottom: 9px;
-    margin-right: 5px;
+    margin: 5px 5px 5px 0;
 }
 .format-kickstart .course-content > .card .card-body a.btn {
-    margin-right: 5px;
-    margin-bottom: 5px;
+    margin: 5px 5px 5px 0;
 }
 .format-kickstart .course-content > .card .card-body a.btn:not(.btn-outline-dark) {
     margin-left: auto;
@@ -189,6 +186,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     margin-bottom: 20px;
     flex-direction: row;
     align-items: center;
+    padding: 1.25rem;
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-body {
     padding: 0;
@@ -234,7 +232,10 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     text-align: right;
     border: 0;
     background: none;
-    padding: 0;
+    padding: 0 0 0 1.25rem;
+}
+.format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a {
+    margin: 5px 0;
 }
 .format-kickstart .course-content .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
     margin-left: 10px;
@@ -253,7 +254,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 
 /* Content Migration from course block */
 .format-kickstart.path-course-view .course-content .card {
-    padding: 15px;
+    padding: 1.25rem;
 }
 /* Teacher profile block */
 .format-kickstart.path-course-view .course-content .card .card-header,
