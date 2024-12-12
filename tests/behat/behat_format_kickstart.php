@@ -38,6 +38,109 @@ use Behat\Gherkin\Node\TableNode as TableNode;
 class behat_format_kickstart extends behat_base {
 
     /**
+     * Click the disable link for single activity course format.
+     * @Given /^I click on disable link single activity$/
+     */
+    public function i_click_on_disable_link_single_activity() {
+        global $CFG;
+        if ($CFG->branch <= '403') {
+            $this->execute('behat_general::i_click_on_in_the', ["Disable", "link", "Single activity format", "table_row"]);
+        } else {
+            $this->execute('behat_general::i_click_on_in_the', ["Disable", "link", "Single activity", "table_row"]);
+        }
+    }
+
+    /**
+     * Click the ecit link for custom sections course format.
+     * @Given /^I click on enable link custom sections$/
+     */
+    public function i_click_on_edit_link_custom_sections() {
+        global $CFG;
+        if ($CFG->branch <= '403') {
+            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Topics format", "table_row"]);
+        } else {
+            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Custom sections", "table_row"]);
+        }
+    }
+
+    /**
+     * Click the edit link for single activity course format.
+     * @Given /^I click on enable link single activity$/
+     */
+    public function i_click_on_edit_link_single_activity() {
+        global $CFG;
+        if ($CFG->branch <= '403') {
+            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Single activity format", "table_row"]);
+        } else {
+            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Single activity", "table_row"]);
+        }
+    }
+
+    /**
+     * Check the single activity condition.
+     * @Given /^I check single activity condition kickstart:$/
+     * @param TableNode $table The course data
+     */
+    public function i_check_single_activity_condition_kickstart(TableNode $table) {
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $table);
+        $this->execute('behat_forms::press_button', "Save and display");
+        $this->execute('behat_general::assert_page_contains_text', "There are no discussion topics yet in this forum");
+    }
+
+    /**
+     * I should see the course format.
+     * @Given /^I should see course format "(?P<element_string>(?:[^"]|\\")*)"$/
+     * @param string $format The course data
+     */
+    public function i_should_see_define_course_format($format) {
+        global $CFG;
+        if ($CFG->branch <= '403') {
+            switch($format) {
+                case 'Single activity':
+                    $format = 'Single activity format';
+                    break;
+                case 'Social':
+                    $format = 'Social format';
+                    break;
+                case 'Custom sections':
+                    $format = 'Topics format';
+                    break;
+                case 'Weekly sections':
+                    $format = 'Weekly format';
+                    break;
+            }
+        }
+        $this->execute('behat_general::assert_page_contains_text', [$format]);
+    }
+
+
+    /**
+     * I should not see the course format.
+     * @Given /^I should not see course format "(?P<element_string>(?:[^"]|\\")*)"$/
+     * @param string $format The course data
+     */
+    public function i_should_not_see_define_course_format($format) {
+        global $CFG;
+        if ($CFG->branch <= '403') {
+            switch($format) {
+                case 'Single activity':
+                    $format = 'Single activity format';
+                    break;
+                case 'Social':
+                    $format = 'Social format';
+                    break;
+                case 'Custom sections':
+                    $format = 'Topics format';
+                    break;
+                case 'Weekly sections':
+                    $format = 'Weekly format';
+                    break;
+            }
+        }
+        $this->execute('behat_general::assert_page_not_contains_text', [$format]);
+    }
+
+    /**
      * Creates a new template with the provided table data matching template settings names with the desired values.
      *
      * @Given /^I create a kickstart template with:$/
@@ -82,6 +185,21 @@ class behat_format_kickstart extends behat_base {
         $config = $this->evaluate_script($script);
         if ($config === false) {
             throw new ExpectationException("Doesn't working correct", $this->getSession());
+        }
+    }
+
+
+    /**
+     * Set the kickstart course format plugins settings.
+     *
+     * @Given /^I click kickstart single activity format template$/
+     */
+    public function i_click_kickstart_single_activity_format_template() {
+        global $CFG;
+        if ($CFG->branch <= '403') {
+            $this->i_click_kickstart_template(".use-template[data-templatename=\"Single activity format\"]");
+        } else {
+            $this->i_click_kickstart_template(".use-template[data-templatename=\"Single activity\"]");
         }
     }
 }

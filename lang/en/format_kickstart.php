@@ -67,6 +67,7 @@ $string['manage_templates'] = 'Manage templates';
 $string['migratefromcourses'] = 'Migrate content from other courses';
 $string['notemplates'] = 'No templates are available yet.';
 $string['pluginname'] = 'Kickstart format';
+$string['plugin_description'] = 'Create courses faster and make them more consistent across your organization using course templates.';
 $string['previewurl'] = 'Preview URL';
 $string['previewurl_help'] = 'If provided a button will display on the template that will open this URL in a new tab';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
