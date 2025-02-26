@@ -35,6 +35,12 @@ use renderer_base;
  */
 class import_course_list implements \templatable, \renderable {
 
+    public $filtercustomfields;
+
+    public function __construct(array $filtercustomfields = []) {
+        $this->filtercustomfields = $filtercustomfields;
+    }
+
     /**
      * Get variables for template.
      *
@@ -46,19 +52,17 @@ class import_course_list implements \templatable, \renderable {
     public function export_for_template(renderer_base $output) {
         global $CFG, $COURSE, $PAGE, $OUTPUT, $SITE;
 
-        // Require both the backup and restore libs.
-        require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
-        require_once($CFG->dirroot . '/backup/moodle2/backup_plan_builder.class.php');
-        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-        require_once($CFG->dirroot . '/backup/util/ui/import_extensions.php');
-
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
-        $component = new \import_course_search(['url' => $url]);
-
+        $component = new import_courselibrary_search(['url' => $url], null, $this->filtercustomfields);
         $courses = [];
         $html = '';
 
+        $displaycourselibraryfields = get_config('format_kickstart', 'displaycourselibraryfields');
+        $displaycourselibraryfields = explode(",", $displaycourselibraryfields);
+
+
+        $tagrenderer = $PAGE->get_renderer('core', 'tag');
         if ($component->get_count() === 0) {
             $html .= $OUTPUT->notification(get_string('nomatchingcourses', 'backup'));
         } else {
@@ -68,17 +72,64 @@ class import_course_list implements \templatable, \renderable {
                     continue;
                 }
                 $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
-                $course->fullname = format_string($course->fullname, true, [
-                    'context' => \context_course::instance($course->id),
-                ]);
-                $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
-                    'id' => $COURSE->id,
-                    'importid' => $course->id,
-                    'target' => $target,
-                ]);
+                if (in_array("fullname", $displaycourselibraryfields)) {
+                    $course->fullname = format_string($course->fullname, true, [
+                        'context' => \context_course::instance($course->id),
+                    ]);
+                }
+
+                $courseinfo = new \core_course_list_element($course);
+                $customfields = [];
+                if ($courseinfo->has_custom_fields()) {
+                    $fieldsdata = $courseinfo->get_custom_fields();
+                    $customfieldoutput = $PAGE->get_renderer('core_customfield');
+                    foreach ($fieldsdata as $data) {
+                        if (in_array('customfield_' . $data->get_field()->get('shortname'), $displaycourselibraryfields)) {
+                            $fd = new \core_customfield\output\field_data($data);
+                            $customfields[] = ["value" => $customfieldoutput->render($fd)];
+                        }
+                    }
+                }
+                $course->customfields = $customfields;
+
+                if (in_array("importcourse", $displaycourselibraryfields)) {
+                    $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
+                        'id' => $COURSE->id,
+                        'importid' => $course->id,
+                        'target' => $target,
+                    ]);
+                }
+
+                $coursetags = \core_tag_tag::get_item_tags_array('core', 'course', $course->id);
+                if (in_array("tags", $displaycourselibraryfields)) {
+                    $course->tags = implode(', ', $coursetags);
+                }
+
+                if (in_array("idnumber", $displaycourselibraryfields)) {
+                    $course->idnumber = $courseinfo->idnumber;
+                }
+
+                if (in_array("startdate", $displaycourselibraryfields)) {
+                    $course->startdate = userdate($courseinfo->startdate, get_string('strftimedatetime', 'langconfig'));
+                }
+
+                // Get category path.
+                $category = \core_course_category::get($courseinfo->category);
+                $categorypath = $category->get_nested_name(false);
+
+                $path = $categorypath. " / ".$courseinfo->get_formatted_fullname();
+                if (in_array("categorypath", $displaycourselibraryfields)) {
+                    $course->categorypath = $path;
+                }
+
+                $course->contents = $this->get_course_contents($course->id);
                 $courses[] = $course;
             }
         }
+        $page = optional_param("page", 0, PARAM_INT);
+        $paginationurl = new \moodle_url($PAGE->url, ['page' => $page]);
+
+        $pagination =  $OUTPUT->paging_bar($component->get_total_course_count(), $page, 10, $PAGE->url);
 
         return [
             'searchterm' => $component->get_search() ?
@@ -91,6 +142,104 @@ class import_course_list implements \templatable, \renderable {
             'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
             'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id]),
+            'pagination' => $pagination,
         ];
+    }
+
+    public function sectionsummary_trim_char($summary, $trimchar = 25) {
+        if (str_word_count($summary) < $trimchar) {
+            return $summary;
+        }
+        $trimmed = substr($summary, 0, $trimchar);
+        $trimmed = substr($trimmed, 0, strrpos($trimmed, ' '));
+        return $trimmed . '...';
+    }
+
+
+    public function get_course_contents($courseid) {
+        global $CFG;
+        require_once($CFG->dirroot . '/lib/externallib.php');
+        // Create return value.
+        $coursecontents = [];
+        $course = get_course($courseid);
+        $coursecontext = \context_course::instance($course->id);
+        $modinfo = get_fast_modinfo($course);
+        $modinfosections = $modinfo->get_sections();
+        $sections = $modinfo->get_section_info_all();
+        $hassections = count($sections) > 1; // More than 1 because the general section is always present.
+        foreach ($sections as $key => $section) {
+            $sectioncontents = [];
+            $sectionvalues = [
+                'id' => $section->id,
+                'name' => get_string("section") . " " . $section->section + 1 . ": " .get_section_name($course, $section),
+                'visible' => $section->visible,
+                'section' => $section->section,
+                'uservisible' => $section->uservisible,
+                'notgeneral' => $section->section != 0 ? 1 : 0,
+                'expanded' => (!$hassections && $section->section == 0) ? 1 : 0,
+                'collapsible' => ($hassections || $section->section != 0),
+            ];
+
+            $options = (object) ['noclean' => true];
+
+            list($sectionvalues['summary'], $sectionvalues['summaryformat']) =
+            external_format_text($section->summary, $section->summaryformat,$coursecontext->id,
+                'course', 'section', $section->id, $options);
+            $modtrimlength = !empty(get_config('format_kickstart', 'modtrimlength')) ? get_config('format_kickstart', 'modtrimlength') : 80;
+            $sectionvalues['trimsummary'] = $this->sectionsummary_trim_char($sectionvalues['summary'], $modtrimlength);
+            $sectionmodulenames = [];
+            if (!empty($modinfosections[$section->section])) {
+                foreach ($modinfosections[$section->section] as $cmid) {
+                    $cm = $modinfo->cms[$cmid];
+                    if (!$cm->uservisible) {
+                        continue;
+                    }
+
+                    $module = [];
+                    $modcontext = \context_module::instance($cm->id);
+
+                    $module['id'] = $cm->id;
+                    $module['name'] = external_format_string($cm->name, $modcontext->id);
+                    $module['instance'] = $cm->instance;
+                    $module['contextid'] = $modcontext->id;
+                    $module['modname'] = (string) $cm->modname;
+                    $module['modplural'] = (string) $cm->modplural;
+                    $module['modicon'] = $cm->get_icon_url()->out(false);
+                    $moduleplugname = get_string('pluginname', $module['modname']);
+                    $sectionmodulenames[$moduleplugname] = isset($sectionmodulenames[$moduleplugname]) ? $sectionmodulenames[$moduleplugname] + 1 : 1;
+                    // Url of the module.
+                    $url = $cm->url;
+                    if ($url) {
+                        $module['url'] = $url->out(false);
+                    } else {
+                        $module['url'] = (new \moodle_url('/mod/'.$cm->modname.'/view.php', ['id' => $cm->id]))->out(false);
+                    }
+
+                    $module['editurl'] = (new \moodle_url('/course/modedit.php', ['update' => $cm->id]))->out(false);
+
+                    $canviewhidden = has_capability('moodle/course:viewhiddenactivities', $modcontext);
+
+                    $module['visible'] = $cm->visible;
+                    $module['visibleoncoursepage'] = $cm->visibleoncoursepage;
+                    $module['uservisible'] = $cm->uservisible;
+
+                    // Availability date (also send to user who can see hidden module).
+                    if ($CFG->enableavailability && ($canviewhidden || $canupdatecourse)) {
+                        $module['availability'] = $cm->availability;
+                    }
+
+                    $sectioncontents[] = $module;
+                }
+            }
+
+            $formattedString = [];
+            foreach ($sectionmodulenames as $module => $count) {
+                $formattedString[] = $count . ' ' . $module;
+            }
+            $sectionvalues['sectionmodulenames'] = implode(', ', $formattedString);
+            $sectionvalues['modules'] = $sectioncontents;
+            $coursecontents[$key] = $sectionvalues;
+        }
+        return $coursecontents;
     }
 }

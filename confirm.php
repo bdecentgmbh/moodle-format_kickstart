@@ -31,7 +31,7 @@ $courseid = required_param('course_id', PARAM_INT);
 $templateid = required_param('template_id', PARAM_INT);
 
 $PAGE->set_context(\context_course::instance($courseid));
-$PAGE->set_url(new moodle_url('/course/format/confirm.php', ['template_id' => $templateid, 'course_id' => $courseid]));
+$PAGE->set_url(new moodle_url('/course/format/kickstart/confirm.php', ['template_id' => $templateid, 'course_id' => $courseid]));
 require_login();
 
 require_capability('format/kickstart:import_from_template', $PAGE->context);

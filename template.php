@@ -71,6 +71,7 @@ switch ($action) {
                 $data->cohortids = json_encode($data->cohortids);
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
+                $data->userids = json_encode($data->userids);
             }
             $data->sort = (!empty($counttemplate)) ? $counttemplate + 1 : 1;
             $data->courseformat = 0;
@@ -144,6 +145,7 @@ switch ($action) {
                 $data->cohortids = json_encode($data->cohortids);
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
+                $data->userids = json_encode($data->userids);
             }
             $DB->update_record('format_kickstart_template', $data);
 
@@ -179,6 +181,7 @@ switch ($action) {
                 $template->cohortids = isset($template->cohortids) ? json_decode($template->cohortids, true) : [];
                 $template->categoryids = isset($template->categoryids) ? json_decode($template->categoryids, true) : [];
                 $template->roleids = isset($template->roleids) ? json_decode($template->roleids, true) : [];
+                $template->userids = isset($template->userids) ? json_decode($template->userids, true) : [];
             }
             // Check the template is normal or course format.
             if (!$template->courseformat) {

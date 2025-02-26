@@ -1,0 +1,15 @@
+<div class="search-kickstart-template">
+    <input type="text" class="form-control" id="search-template" placeholder="{{#str}}search_templates, format_kickstart{{/str}}">
+</div>
+
+<div class="listing-view-block">
+    <a class="{{^listview}}active{{/listview}}" id="tile-view" data-value='tile' href="javascript::void(0)" title="{{#str}} strtile, format_kickstart {{/str}}"><i class="fa fa-th-large"> </i></a></li>
+    <a class="{{#listview}}active{{/listview}}" id="list-view" data-value='list' href="javascript::void(0)" title=""><i class="fa fa-list-ul"> </i></a></li>
+</div>
+
+
+{{#canmanage}}<a href="{{managetemplateurl}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}manage_templates, format_kickstart{{/str}}</a>{{/canmanage}}
+<h3 class=" d-none">{{#str}}welcometoyourcourse, format_kickstart{{/str}}</h3>
+{{{teacherinstructions}}}
+<hr>
+<h4 class="text-muted d-none">{{#str}}course_templates, format_kickstart{{/str}}</h4>

@@ -632,3 +632,124 @@ function format_kickstart_pluginfile($course, $cm, $context, $filearea, $args, $
     }
     send_stored_file($file, 0, 0, 0, $options);
 }
+
+
+/**
+ * Add the link in course secondary navigation menu to open the automation instance list page.
+ *
+ * @param  navigation_node $navigation
+ * @param  stdClass $course
+ * @param  context_course $context
+ * @return void
+ */
+function format_kickstart_extend_navigation_course(navigation_node $navigation, stdClass $course, $context) {
+    global $PAGE;
+    $addnode = $context->contextlevel === CONTEXT_COURSE;
+    $addnode = $addnode && has_capability('format/kickstart:import_from_template', $context);
+    if ($addnode &&  $PAGE->course->format !== 'kickstart') {
+        $id = $context->instanceid;
+        $url = new moodle_url('/course/format/kickstart/list.php', [
+            'id' => $id,
+        ]);
+        $node = $navigation->create(get_string('strkickstart', 'format_kickstart'), $url, navigation_node::TYPE_SETTING, null, null);
+        $node->add_class('kickstart-nav');
+        $node->set_force_into_more_menu(false);
+        $node->set_show_in_secondary_navigation(true);
+        $node->key = 'kickstart-nav';
+        $navigation->add_node($node);
+        $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'instanceMenuLink', []);
+    }
+}
+
+
+function format_kickstart_get_breadcump_menus() {
+    global $CFG;
+    $menus = [
+        'coursetemplate' => get_string('coursetemplate', 'format_kickstart'),
+        'studentview' => get_string('studentview', 'format_kickstart'),
+        'help' => get_string('help', 'format_kickstart')
+    ];
+
+    if (format_kickstart_has_pro()) {
+        require_once($CFG->dirroot. "/local/kickstart_pro/lib.php");
+        $menus += local_kickstart_pro_get_breadcump_menus();
+    }
+    return $menus;
+}
+
+
+function format_kickstart_get_action_selector_menus($courseid, $pageurl) {
+    global $CFG;
+
+    $activeurl = new moodle_url($pageurl);
+    $activeurl->remove_params(['nav']);
+
+    $coursetemplateurl = new moodle_url($activeurl, ['nav' => 'coursetemplate']);
+    $studentviewurl = new moodle_url($activeurl, ['nav' => 'studentview']);
+    $helpurl = new moodle_url($activeurl, ['nav' => 'help']);
+
+    $menus[$coursetemplateurl->out(false)] = get_string('coursetemplate', 'format_kickstart');
+    $menus[$studentviewurl->out(false)] = get_string('studentview', 'format_kickstart');
+    $menus[$helpurl->out(false)] = get_string('help' , 'format_kickstart');
+
+    if (format_kickstart_has_pro()) {
+        require_once($CFG->dirroot. "/local/kickstart_pro/lib.php");
+        $menus += local_kickstart_pro_get_action_selector_menus($courseid, $activeurl);
+    }
+    return $menus;
+}
+
+function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
+    global $PAGE, $DB, $USER;
+    $course = get_course($args['courseid']);
+    $action = $args['action'];
+
+    $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
+    ['contextid' => $args['contextid'], 'courseid' => $course->id, 'nav' => $args['menuid'], 'filteroptions' => false]);
+
+    $params = ['action' => $action, 'value' => $args['value']];
+
+    // Modify the actions related to the kickstart page.
+    if ($action == 'changetemplate') {
+        if (!empty($args['search'])) {
+            $params['action'] = "searchtemplate";
+            $params['value'] = $args['search'];
+        }
+
+        if ($DB->record_exists('course_format_options', ['courseid' => $course->id, 'name' => 'templatesview'])) {
+            $DB->set_field('course_format_options', 'value', $args['value'], ['courseid' => $course->id, 'name' => 'templatesview']);
+        } else {
+            $record = new stdClass();
+            $record->courseid = $course->id;
+            $record->format = 'kickstart';
+            $record->name = 'templatesview';
+            $record->sectionid = 0;
+            $record->value = $args['value'];
+            $DB->insert_record('course_format_options', $record);
+        }
+    }
+    $renderer = $PAGE->get_renderer('format_kickstart');
+
+    return $renderer->render(new course_template_list($course, $USER->id, $params));
+}
+
+
+function format_kickstart_output_fragment_get_library_courselist($args) {
+    global $PAGE;
+
+    $_GET['search'] = $args['searchcourse'];
+
+    $customvalues = json_decode($args['customvalues']);
+    $course = get_course($args['courseid']);
+    $context = \context::instance_by_id($args['contextid']);
+    $nav = $args['menuid'];
+
+    $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
+    ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => false]);
+
+
+    $renderer = $PAGE->get_renderer('format_kickstart');
+
+    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues));
+
+}

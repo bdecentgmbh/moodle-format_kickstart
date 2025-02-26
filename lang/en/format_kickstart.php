@@ -65,7 +65,7 @@ $string['kickstart:manage_templates'] = 'Manage templates';
 $string['learnmore'] = 'Learn more';
 $string['manage_templates'] = 'Manage templates';
 $string['migratefromcourses'] = 'Migrate content from other courses';
-$string['notemplates'] = 'No templates are available yet.';
+$string['notemplates'] = 'No templates are available.';
 $string['pluginname'] = 'Kickstart format';
 $string['plugin_description'] = 'Create courses faster and make them more consistent across your organization using course templates.';
 $string['previewurl'] = 'Preview URL';
@@ -116,4 +116,47 @@ $string['strlist'] = "List";
 $string['defaulttemplatesview'] = 'Default templates view';
 $string['defaulttemplatesview_desc'] = 'Default templates displayed to tiles or list view.';
 $string['disable'] = "Disable";
+$string['strkickstart'] = "Kickstart";
 
+$string['coursetemplate'] = "Course template";
+$string['courselibrary'] = "Course library";
+$string['studentview'] = "Student view";
+$string['createcoursefromtemplate'] = "Create course from template";
+$string['help'] = "Help";
+$string['kickstartnavigationmenu'] = 'Kickstart navigation menu';
+$string['coursetemplatesearchbox'] = "Search for template name, tag or description";
+$string['studentviewnotavailable'] = "Student view is not available for this course.";
+$string['search_templates'] = "Search for template name, tag or description";
+$string['displaycourselibraryfields'] = "Display course library fields";
+$string['displaycourselibraryfields_desc'] = "With this setting, you can enable or disable the course library fields.";
+$string['course_fullname'] = "Course full name";
+$string['categorypath'] = "Category path";
+$string['courseidnumber'] = "Course idnumber";
+$string['coursestartdate'] = "Course start date";
+$string['coursetags'] = "Course tags";
+$string['importcourse'] = "Button import course";
+$string['showcontents'] = "Button show contents";
+$string['coursetags'] = "Course Tags";
+$string['generalsettings'] = "General settings";
+$string['showcontents'] = "Show contents";
+$string['searchcourselibrary'] = "Search for courses and activities by name, tag or description";
+
+$string['selectvalue'] = "Select option";
+$string['restrictuser'] = "Restrict by user";
+$string['coursetemplateexistsuser'] = "The current user already has a template for this course.";
+
+$string['coursetemplatecreated'] = "Course template successfully created";
+$string['importactivity'] = "Import activity";
+$string['editactivity'] = "Edit activity";
+$string['viewactivity'] = "View activity";
+
+$string['less'] = "Less";
+
+$string['modtrimlength'] = "Module Trim Length on Course Library";
+$string['modtrimlength_desc'] = 'This is a numeric input field that allows you to specify how much text should be displayed in the collapsed state. Enter the desired character count to control the length of the trimmed description.';
+
+$string['courselibraryperpage'] = "Course Library per page";
+$string['courselibraryperpage_desc'] = "This is a numeric input field that allows you to specify how many courses should be displayed per page in the course library.";
+
+
+$string['waitingadhoctasktemplate'] = "The template is currently being processed under cron task. Please wait.";

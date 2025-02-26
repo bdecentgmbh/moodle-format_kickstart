@@ -15,38 +15,50 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Kickstart course format.
+ * Confirm user template selection.
  *
  * @package    format_kickstart
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use format_kickstart\output\course_template_list;
+require(__DIR__.'/../../../config.php');
+require_once(__DIR__.'/lib.php');
+require_once($CFG->dirroot . '/course/format/kickstart/classes/output/general_action_bar.php');
 
-defined('MOODLE_INTERNAL') || die();
+global $USER, $DB;
 
-require_once($CFG->libdir.'/filelib.php');
-require_once($CFG->libdir.'/completionlib.php');
-
+$id = required_param('id', PARAM_INT);
 $nav = optional_param('nav', 'coursetemplate', PARAM_TEXT);
 
-$context = context_course::instance($course->id);
-// Retrieve course format option fields and add them to the $course object.
-$course = course_get_format($course)->get_course();
+$context = \context_course::instance($id);
+$PAGE->set_context($context);
+$pageurl = new moodle_url('/course/format/kickstart/list.php', ['id' => $id, 'nav' => $nav]);
+$PAGE->set_url($pageurl);
 
-// Make sure section 0 is created.
-course_create_sections_if_missing($course, 0);
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
-$output = $PAGE->get_renderer('format_kickstart');
-
-$pageurl = new moodle_url($PAGE->url, ['nav' => $nav]);
+require_login($course);
 
 $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
-    ['contextid' => $context->id, 'courseid' => $course->id, 'menuid' => $nav, 'filteroptions' => true]);
+    ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => true]);
 
 // Print header.
 $actionbar = new format_kickstart\output\general_action_bar($context, $pageurl, 'kickstart', 'coursetemplate');
+
+$PAGE->set_secondary_active_tab('kickstart-nav');
+
+$menus = format_kickstart_get_breadcump_menus();
+$uniquetitle = $menus[$nav];
+
+$titlecomponents = [
+    $uniquetitle,
+    $context->get_context_name(false),
+];
+$PAGE->set_title(implode(moodle_page::TITLE_SEPARATOR, $titlecomponents));
+$PAGE->set_heading($PAGE->course->fullname);
+
+echo $OUTPUT->header();
 
 $renderer = $PAGE->get_renderer('format_kickstart');
 
@@ -64,4 +76,6 @@ if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartPr
 echo $renderer->render_kickstart_page($kickstartpage);
 
 echo html_writer::end_div();
+
+echo $OUTPUT->footer();
 

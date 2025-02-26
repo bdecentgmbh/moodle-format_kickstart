@@ -57,6 +57,46 @@ if ($ADMIN->fulltree) {
                 $templatebgoptions
             ));
         }
+
+        $settings->add(new admin_setting_configtext('format_kickstart/modtrimlength',
+                get_string('modtrimlength', 'format_kickstart'),
+                get_string('modtrimlength_desc', 'format_kickstart'),
+                23, PARAM_INT));
+
+        $settings->add(new admin_setting_configtext('format_kickstart/courselibraryperpage',
+        get_string('courselibraryperpage', 'format_kickstart'),
+        get_string('courselibraryperpage_desc', 'format_kickstart'),
+        10, PARAM_INT));
+
+        $options = [
+            "fullname" => get_string('course_fullname', 'format_kickstart'),
+            "categorypath" => get_string('categorypath', 'format_kickstart'),
+            "tags" => get_string('coursetags', 'format_kickstart'),
+            "idnumber" => get_string('courseidnumber', 'format_kickstart'),
+            "startdate" => get_string('coursestartdate', 'format_kickstart'),
+            "importcourse" => get_string('importcourse', 'format_kickstart'),
+            "showcontents" => get_string('showcontents', 'format_kickstart'),
+        ];
+
+        if (class_exists('\core_course\customfield\course_handler')) {
+            $handler = \core_course\customfield\course_handler::create();
+            $fields = $handler->get_fields();
+            foreach ($fields as $field) {
+                $options["customfield_{$field->get('shortname')}"] = $field->get('name');
+            }
+        }
+    
+        $defaultoptions = [
+            "fullname" => 1,
+            "categorypath" => 1,
+            "importcourse" => 1,
+            "showcontents" => 1,
+        ];
+    
+        $settings->add(new admin_setting_configmulticheckbox('format_kickstart/displaycourselibraryfields',
+                get_string('displaycourselibraryfields', 'format_kickstart'),
+                get_string('displaycourselibraryfields_desc', 'format_kickstart'),
+                $defaultoptions, $options));
     }
 
     $settings->add(new admin_setting_configselect('format_kickstart/importtarget',
