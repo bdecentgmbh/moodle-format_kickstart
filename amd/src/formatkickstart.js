@@ -20,8 +20,8 @@
  * @copyright 2021, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates'],
- function($, str, notification, Config, Ajax, Fragment, Templates) {
+ define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates', 'core/modal_events', 'core/modal_factory', 'core/toast'],
+ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalFactory, Toast) {
 
     /**
      * Controls kicstart javascript.
@@ -65,6 +65,46 @@
                     element.addEventListener('change', self.libraryCourseHandler.bind(this));
                 });
             }
+
+            var librarysort = document.querySelectorAll(".kickstart-courselibrary-sort.sort-options a");
+            if (librarysort) {
+                librarysort.forEach((element) => {
+                    element.addEventListener('click', (e) => {
+                        // Remove active class from all sort links
+                        librarysort.forEach(link => link.classList.remove('sort-active'));
+                        // Add active class to clicked element
+                        element.classList.add('sort-active');
+                        // Call the original handler
+                        self.libraryCourseHandler.bind(this)(e);
+                    });
+                });
+            }
+
+            var showcontentHandler = document.querySelectorAll(".import-course-list-section .import-button");
+            if (showcontentHandler) {
+                showcontentHandler.forEach((element) => {
+                    element.addEventListener('click', (e) => {
+                        str.get_strings([
+                            {key: 'showcontents', component: 'format_kickstart'},
+                            {key: 'hidecontents', component: 'format_kickstart'}
+                        ]).then(function(strings) {
+                            if (element.textContent.trim() === strings[0]) {
+                                element.textContent = strings[1];
+                            } else if (element.textContent.trim() === strings[1]) {
+                                element.textContent = strings[0];
+                            }
+                        });
+                    });
+                });
+            }
+
+        }
+
+        var importActivity = document.querySelectorAll(".import-course-list-section .activity-items .import-activity");
+        if (importActivity) {
+            importActivity.forEach((element) => {
+                element.addEventListener('click', self.importActivityHandler.bind(this));
+            });
         }
 
         $('body').delegate(self.fullDescription, "click", self.fullmodcontentHandler.bind(this));
@@ -88,13 +128,73 @@
     Formatkickstart.prototype.menuid = null;
 
 
+    Formatkickstart.prototype.importActivityHandler = function(event) {
+        event.preventDefault();
+        let self = this;
+        var courseid = event.currentTarget.getAttribute('data-course');
+        var cmid = event.currentTarget.getAttribute('data-module');
+        var maincourse = event.currentTarget.getAttribute('data-maincourse');
+        var modname = event.currentTarget.getAttribute('data-modname');
+        var args = {
+            courseid: courseid,
+            cmid: cmid,
+            maincourse: maincourse,
+            modname: modname,
+        };
+
+        ModalFactory.create({
+            type: ModalFactory.types.SAVE_CANCEL,
+            title: str.get_string('importactivity', 'format_kickstart'),
+            body: Fragment.loadFragment('format_kickstart', 'get_import_module_box', self.contextId, args),
+        }).then(function(modal) {
+            modal.setButtonText('save', str.get_string('importandview', 'format_kickstart'));
+            modal.setButtonText('cancel', str.get_string('importandreturn', 'format_kickstart'));
+            // Handle form submission.
+            modal.getRoot().on(ModalEvents.save, function(e) {
+                var sectionId = $('#import-module-section').val();
+                args.sectionid = sectionId;
+                args.action = 'view';
+                // Perform import.
+                self.importCourse(args);
+                modal.destroy();
+            }.bind(this));
+
+            modal.getRoot().on(ModalEvents.cancel, function(e) {
+                var sectionId = $('#import-module-section').val();
+                args.sectionid = sectionId;
+                args.action = 'return';
+                // Perform import.
+                self.importCourse(args);
+                modal.destroy();
+            }.bind(this));
+
+            modal.show();
+        }.bind(this));
+    };
+
+
+    Formatkickstart.prototype.importCourse = function(args) {
+        var self = this;
+        var promise = Fragment.loadFragment('format_kickstart', 'import_activity_courselib', self.contextId, args);
+        promise.then((cmid, js) => {
+            if (args.action == 'view') {
+                window.location.href = M.cfg.wwwroot + '/mod/' + args.modname + '/view.php?id=' + cmid;
+            } else {
+                str.get_string('importactivitysuccessfully', 'format_kickstart').then(function(string) {
+                    Toast.add(string, {type: 'success'});
+                });
+            }
+        }).catch();
+    };
+
+
     Formatkickstart.prototype.fullmodcontentHandler = function(event) {
         var THIS = $(event.currentTarget);
         let fullContent = $(THIS).closest('.accordion-item').find('.fullcontent-summary');
         let trimcontent = $(THIS).closest('.accordion-item').find('.trim-summary');
-        if (trimcontent.hasClass('summary-hide')) {
-            trimcontent.removeClass('summary-hide');
-            fullContent.addClass('summary-hide');
+        if (trimcontent.hasClass('summary-show')) {
+            trimcontent.removeClass('summary-show');
+            fullContent.addClass('summary-show');
         }
     };
 
@@ -102,13 +202,14 @@
         var THIS = $(event.currentTarget);
         let fullContent = $(THIS).closest('.accordion-item').find('.fullcontent-summary');
         let trimcontent = $(THIS).closest('.accordion-item').find('.trim-summary');
-        if (fullContent.hasClass('summary-hide')) {
-            fullContent.removeClass('summary-hide');
-            trimcontent.addClass('summary-hide');
+        if (fullContent.hasClass('summary-show')) {
+            fullContent.removeClass('summary-show');
+            trimcontent.addClass('summary-show');
         }
     };
 
     Formatkickstart.prototype.libraryCourseHandler = function(event) {
+        let sort = event.currentTarget.getAttribute('data-sort');
         let searchcourse = document.querySelector("#search-course-library").value;
         let customfieldsitems = document.querySelectorAll(".librarycourse-filter .customfield-filter .filter-item");
         let customvalues = {};
@@ -117,12 +218,12 @@
                 customvalues[element.getAttribute("data-value")] = element.value;
             });
         }
-        this.getlibarycourse(searchcourse, customvalues);
+        this.getlibarycourse(searchcourse, customvalues, sort);
     };
 
 
-    Formatkickstart.prototype.getlibarycourse = function(searchcourse, customvalues) {
-        let courselist = document.querySelector(".list-library-courses");
+    Formatkickstart.prototype.getlibarycourse = function(searchcourse, customvalues, sort) {
+        let courselist = document.querySelector(".import-course-list-section");
         if (courselist) {
             let self = this;
             let args = {
@@ -131,6 +232,7 @@
                 menuid: self.menuid,
                 searchcourse: searchcourse,
                 customvalues : JSON.stringify(customvalues),
+                sort: sort
             };
 
             const promise = Fragment.loadFragment(

@@ -54,6 +54,8 @@ trait kickstart_page {
 
     public function get_help_content() {
         global $OUTPUT;
-        echo "help content";
+        $content = \html_writer::start_div('summary-view-block');
+        $content .= \html_writer::end_div();
+        return $content;
     }
 }

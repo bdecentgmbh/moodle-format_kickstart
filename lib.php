@@ -738,6 +738,7 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
     global $PAGE;
 
     $_GET['search'] = $args['searchcourse'];
+    $sorttype = is_null($args['sort']) ? 'relevance' : $args['sort'];
 
     $customvalues = json_decode($args['customvalues']);
     $course = get_course($args['courseid']);
@@ -750,6 +751,66 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
 
     $renderer = $PAGE->get_renderer('format_kickstart');
 
-    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues));
+    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype));
+}
 
+
+function format_kickstart_output_fragment_get_import_module_box($args) {
+    global $PAGE, $OUTPUT;
+    $template = [];
+    $template['information'] = get_string('importmoduleinformation', 'format_kickstart');
+    $modinfo = get_fast_modinfo($args['maincourse']);
+    $course = course_get_format($args['maincourse'])->get_course();
+    $modinfosections = $modinfo->get_sections();
+    $sections = $modinfo->get_section_info_all();
+    $sectionsdata = [];
+    foreach ($sections as $section) {
+        $list['id'] = $section->id;
+        $list['name'] = get_section_name($course, $section->section);
+        $list['number'] = $section->section;
+        $sectionsdata[] = $list;
+    }
+    $template['sections'] = $sectionsdata;
+    return $OUTPUT->render_from_template('format_kickstart/import_module_list', $template);
+}
+
+
+function format_kickstart_output_fragment_import_activity_courselib($args) {
+    global $USER, $CFG, $DB, $PAGE;
+    require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+    require_once($CFG->dirroot . '/course/format/classes/base.php');
+    // Security checks.
+    $context = \context_course::instance($args['maincourse']);
+    require_capability('moodle/course:manageactivities', $context);
+
+    // Use Moodle's backup/restore functionality
+    $bc = new backup_controller(backup::TYPE_1ACTIVITY, $args['cmid'], backup::FORMAT_MOODLE,
+        backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+    $bc->execute_plan();
+    $backupid = $bc->get_backupid();
+    $bc->destroy();
+
+    $rc = new restore_controller($backupid, $args['maincourse'],
+        backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id, backup::TARGET_EXISTING_ADDING);
+    // Set target section using settings
+    $plan = $rc->get_plan();
+    $rc->execute_precheck();
+    $rc->execute_plan();
+
+    // Get mapping data from restore
+    $rc->destroy();
+
+    $record = $DB->get_record_sql("SELECT * FROM {course_modules} WHERE course = ? ORDER BY id DESC", [$args['maincourse']], IGNORE_MULTIPLE);
+
+    $courseformat = course_get_format($args['maincourse']);
+    $maincourserecord = $courseformat->get_course();
+    $modinfo = get_fast_modinfo($maincourserecord);
+    $cm = $modinfo->get_cm($record->id);
+    $targetsection = $modinfo->get_section_info_by_id($args['sectionid'], MUST_EXIST);
+
+    moveto_module($cm, $targetsection);
+    // Any state action mark the state cache as dirty.
+    core_courseformat\base::session_cache_reset($maincourserecord);
+
+    return $record->id;
 }

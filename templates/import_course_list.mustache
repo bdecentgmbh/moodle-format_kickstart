@@ -65,7 +65,9 @@
                     <p class="category-path">{{categorypath}}</p>
                     {{#customfields}}
                         {{#.}}
-                        <p>{{value}}</p>
+                        <div class="custom-field-section">
+                            <p>{{value}}</p>
+                        </div>
                         {{/.}}
                     {{/customfields}}
                     <a href="#" class="btn btn-dark disabled pull-right">{{#str}}importcourse, format_kickstart{{/str}}</a>

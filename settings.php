@@ -46,7 +46,7 @@ if ($ADMIN->fulltree) {
             get_string('automatictemplate', 'format_kickstart'),
             get_string('automatictemplate_desc', 'format_kickstart'),
             1));
-        if (function_exists('local_kickstart_pro_get_template_backimages')) {
+        if (function_exists('format_kickstart_get_template_backimages')) {
             $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
             $settings->add(new admin_setting_configstoredfile(
                 'format_kickstart/templatebackimages',
@@ -77,26 +77,34 @@ if ($ADMIN->fulltree) {
             "importcourse" => get_string('importcourse', 'format_kickstart'),
             "showcontents" => get_string('showcontents', 'format_kickstart'),
         ];
-
+        $customfields = [];
         if (class_exists('\core_course\customfield\course_handler')) {
             $handler = \core_course\customfield\course_handler::create();
             $fields = $handler->get_fields();
             foreach ($fields as $field) {
                 $options["customfield_{$field->get('shortname')}"] = $field->get('name');
+                if ($field->get('type') == 'select' || $field->get('type') == 'text') {
+                    $customfields["customfield_{$field->get('shortname')}"] = $field->get('name');
+                }
             }
         }
-    
+
         $defaultoptions = [
             "fullname" => 1,
             "categorypath" => 1,
             "importcourse" => 1,
             "showcontents" => 1,
         ];
-    
+
         $settings->add(new admin_setting_configmulticheckbox('format_kickstart/displaycourselibraryfields',
                 get_string('displaycourselibraryfields', 'format_kickstart'),
                 get_string('displaycourselibraryfields_desc', 'format_kickstart'),
                 $defaultoptions, $options));
+
+        $settings->add(new admin_setting_configmultiselect('format_kickstart/courselibraryfilterscf',
+        get_string('courselibraryfilterscf', 'format_kickstart'),
+        get_string('courselibraryfilterscf_desc', 'format_kickstart'),
+        $defaultoptions, $customfields));
     }
 
     $settings->add(new admin_setting_configselect('format_kickstart/importtarget',
@@ -130,6 +138,66 @@ if ($ADMIN->fulltree) {
         1 => get_string('yes'),
         2 => get_string('usedefault', 'format_kickstart'),
     ];
+
+    $settings->add(new admin_setting_heading(
+        'courselibsortsettings',
+        get_string('courselibsortsettings', 'format_kickstart'),
+        get_string('courselibsortsettings_help', 'format_kickstart'),
+    ));
+
+
+    // Settings for the course library sort weight.
+    // Add relevance weight settings
+    $settings->add(new admin_setting_configtext(
+        'format_kickstart/weight_fullname',
+        get_string('weight_fullname', 'format_kickstart'),
+        get_string('weight_fullname_desc', 'format_kickstart'),
+        5, // default value
+        PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'format_kickstart/weight_shortname',
+        get_string('weight_shortname', 'format_kickstart'),
+        get_string('weight_shortname_desc', 'format_kickstart'),
+        5,
+        PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'format_kickstart/weight_tags',
+        get_string('weight_tags', 'format_kickstart'),
+        get_string('weight_tags_desc', 'format_kickstart'),
+        5,
+        PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'format_kickstart/weight_starred',
+        get_string('weight_starred', 'format_kickstart'),
+        get_string('weight_starred_desc', 'format_kickstart'),
+        5,
+        PARAM_INT
+    ));
+
+
+    if (class_exists('\core_course\customfield\course_handler')) {
+        $handler = \core_course\customfield\course_handler::create();
+        $fields = $handler->get_fields();
+        foreach ($fields as $field) {
+            if ($field->get('type') == 'text' || $field->get('type') == 'select') {
+                $fieldname = $field->get('name');
+                $fieldshortname = $field->get('shortname');
+                $settings->add(new admin_setting_configtext(
+                    'format_kickstart/weight_customfield_' . $fieldshortname,
+                    get_string('weight_customfield', 'format_kickstart', $fieldname),
+                    get_string('weight_customfield_desc', 'format_kickstart', $fieldname),
+                    5, // Default value.
+                    PARAM_INT
+                ));
+            }
+        }
+    }
 
     $settings->add(new admin_setting_heading(
         'restoresettings',

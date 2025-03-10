@@ -37,7 +37,7 @@ $string['coursebackupnotset'] = 'Template has no course backup set.';
 $string['coursecreatorredirect'] = 'Course creator redirect';
 $string['coursecreatorredirect_desc'] = 'Force course creators to use Kickstart\'s "create from template" page when creating new courses. For example, when a course creator clicks "Add new course", they will be redirected to Kickstart.';
 $string['create_template'] = 'Create template';
-$string['createcoursefromtemplate'] = 'Create course from template';
+$string['createcoursefromtemplate'] = 'Create template from course';
 $string['defaultteacherinstructions'] = 'Default teacher instructions';
 $string['defaultteacherinstructions_default'] = '<p>Currently, there\'s nothing in here, so start adding your content. We\'ve made creating courses really easy for you. First, you choose a template that suits your course, then you can start adding content.</p>';
 $string['defaultteacherinstructions_desc'] = 'Default content displayed to teachers before a template has been chosen.';
@@ -121,7 +121,7 @@ $string['strkickstart'] = "Kickstart";
 $string['coursetemplate'] = "Course template";
 $string['courselibrary'] = "Course library";
 $string['studentview'] = "Student view";
-$string['createcoursefromtemplate'] = "Create course from template";
+$string['createcoursefromtemplate'] = "Create template from course";
 $string['help'] = "Help";
 $string['kickstartnavigationmenu'] = 'Kickstart navigation menu';
 $string['coursetemplatesearchbox'] = "Search for template name, tag or description";
@@ -134,11 +134,10 @@ $string['categorypath'] = "Category path";
 $string['courseidnumber'] = "Course idnumber";
 $string['coursestartdate'] = "Course start date";
 $string['coursetags'] = "Course tags";
-$string['importcourse'] = "Button import course";
-$string['showcontents'] = "Button show contents";
 $string['coursetags'] = "Course Tags";
 $string['generalsettings'] = "General settings";
 $string['showcontents'] = "Show contents";
+$string['hidecontents'] = "Hide contents";
 $string['searchcourselibrary'] = "Search for courses and activities by name, tag or description";
 
 $string['selectvalue'] = "Select option";
@@ -160,3 +159,41 @@ $string['courselibraryperpage_desc'] = "This is a numeric input field that allow
 
 
 $string['waitingadhoctasktemplate'] = "The template is currently being processed under cron task. Please wait.";
+$string['courselibraryfilterscf'] = "Course Library custom fields filters";
+$string['courselibraryfilterscf_desc'] = "This is a multi-select field that allows you to specify up to three custom course fields to be displayed in the course library.";
+$string['importmoduleinformation'] = "Import activity into the sections";
+
+$string['importandview'] = "Import and view";
+$string['importandreturn'] = "Import and return";
+$string['choosesectionimportactivity'] = "Choose the section to import the activity";
+
+$string['sortby'] = "Sort by:";
+$string['sortbyrelevance'] = 'Relevance';
+$string['sortbyalpha'] = 'Alphabetically';
+$string['sortbylastaccessed'] = 'Last accessed';
+
+// Weight settings strings
+$string['weight_fullname'] = 'Course full name weight';
+$string['weight_fullname_desc'] = 'Weight for course full name relevance (0-10). Higher values give more importance to full name matching.';
+
+$string['weight_shortname'] = 'Course short name weight';
+$string['weight_shortname_desc'] = 'Weight for course short name relevance (0-10). Higher values give more importance to short name matching.';
+
+$string['weight_tags'] = 'Course tags weight';
+$string['weight_tags_desc'] = 'Weight for course tags relevance (0-10). Higher values give more importance to tag matching.';
+
+$string['weight_starred'] = 'Starred course weight';
+$string['weight_starred_desc'] = 'Weight for starred courses (0-10). Higher values give more importance to starred courses.';
+
+$string['weight_customfields'] = 'Custom fields weight';
+$string['weight_customfields_desc'] = 'Weight for custom fields relevance (0-10). Higher values give more importance to custom field matching.';
+
+$string['weight_customfield'] = 'Custom field {$a} weight';
+$string['weight_customfield_desc'] = 'Weight for custom field {$a} (0-10). Higher values increase this field\'s importance in relevance sorting.';
+
+$string['importactivitysuccessfully'] = 'Activity imported successfully';
+$string['nocoursesexists'] = 'No courses exist';
+
+$string['courselibsortsettings'] = "Course library sort weight settings";
+$string['courselibsortsettings_help'] = " The admin shall be able to select how important the following criteria to determine the similarity on a scale from 0 (not taken into account) to 10 (very important):
+";

@@ -37,8 +37,11 @@ class import_course_list implements \templatable, \renderable {
 
     public $filtercustomfields;
 
-    public function __construct(array $filtercustomfields = []) {
+    public $sorttype;
+
+    public function __construct(array $filtercustomfields = [], string $sorttype = '') {
         $this->filtercustomfields = $filtercustomfields;
+        $this->sorttype = $sorttype;
     }
 
     /**
@@ -54,7 +57,7 @@ class import_course_list implements \templatable, \renderable {
 
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
-        $component = new import_courselibrary_search(['url' => $url], null, $this->filtercustomfields);
+        $component = new import_courselibrary_search(['url' => $url], null, $this->filtercustomfields, $this->sorttype);
         $courses = [];
         $html = '';
 
@@ -72,8 +75,9 @@ class import_course_list implements \templatable, \renderable {
                     continue;
                 }
                 $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+
                 if (in_array("fullname", $displaycourselibraryfields)) {
-                    $course->fullname = format_string($course->fullname, true, [
+                    $course->fullnamecourse = format_string($course->fullname, true, [
                         'context' => \context_course::instance($course->id),
                     ]);
                 }
@@ -81,10 +85,12 @@ class import_course_list implements \templatable, \renderable {
                 $courseinfo = new \core_course_list_element($course);
                 $customfields = [];
                 if ($courseinfo->has_custom_fields()) {
-                    $fieldsdata = $courseinfo->get_custom_fields();
+                    $handler = \core_customfield\handler::get_handler('core_course', 'course');
+                    $fieldsdata = $handler->get_instance_data($course->id);
                     $customfieldoutput = $PAGE->get_renderer('core_customfield');
                     foreach ($fieldsdata as $data) {
-                        if (in_array('customfield_' . $data->get_field()->get('shortname'), $displaycourselibraryfields)) {
+                        $field = $data->get_field();
+                        if (in_array('customfield_' . $field->get('shortname'), $displaycourselibraryfields)) {
                             $fd = new \core_customfield\output\field_data($data);
                             $customfields[] = ["value" => $customfieldoutput->render($fd)];
                         }
@@ -115,44 +121,49 @@ class import_course_list implements \templatable, \renderable {
 
                 // Get category path.
                 $category = \core_course_category::get($courseinfo->category);
-                $categorypath = $category->get_nested_name(false);
+                $categorypath = $category->get_nested_name(false, ' > ');
 
-                $path = $categorypath. " / ".$courseinfo->get_formatted_fullname();
+                $path = $categorypath. " > ".$courseinfo->get_formatted_shortname();
                 if (in_array("categorypath", $displaycourselibraryfields)) {
                     $course->categorypath = $path;
                 }
 
                 $course->contents = $this->get_course_contents($course->id);
+                $course->maincourse = $COURSE->id;
                 $courses[] = $course;
             }
         }
         $page = optional_param("page", 0, PARAM_INT);
         $paginationurl = new \moodle_url($PAGE->url, ['page' => $page]);
 
-        $pagination =  $OUTPUT->paging_bar($component->get_total_course_count(), $page, 10, $PAGE->url);
-
+        $pagination =  $OUTPUT->paging_bar($component->get_total_course_count(), $page, get_config('format_kickstart', 'courselibraryperpage'), $PAGE->url);
         return [
             'searchterm' => $component->get_search() ?
                 get_string('searchterm', 'format_kickstart', ['term' => $component->get_search()]) : null,
             'searchurl' => $PAGE->url,
             'html' => $html,
             'courses' => $courses,
+            'nocourseslabel' => $OUTPUT->notification(get_string('nocoursesexists', 'format_kickstart'), 'info', false),
             'haspro' => format_kickstart_has_pro(),
             'searchlabel' => get_string('showing', 'format_kickstart', ['count' => $component->get_count()]),
             'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
             'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id]),
             'pagination' => $pagination,
+            'showcontents' => in_array("showcontents", $displaycourselibraryfields) ? true : false
         ];
     }
 
     public function sectionsummary_trim_char($summary, $trimchar = 25) {
+
         if (str_word_count($summary) < $trimchar) {
             return $summary;
         }
-        $trimmed = substr($summary, 0, $trimchar);
-        $trimmed = substr($trimmed, 0, strrpos($trimmed, ' '));
-        return $trimmed . '...';
+        $arrstr = explode(" ", $summary);
+        $slicearr = array_slice($arrstr, 0, $trimchar);
+        $strarr = implode(" ", $slicearr);
+        $strarr .= '...';
+        return $strarr;
     }
 
 
@@ -185,8 +196,8 @@ class import_course_list implements \templatable, \renderable {
             list($sectionvalues['summary'], $sectionvalues['summaryformat']) =
             external_format_text($section->summary, $section->summaryformat,$coursecontext->id,
                 'course', 'section', $section->id, $options);
-            $modtrimlength = !empty(get_config('format_kickstart', 'modtrimlength')) ? get_config('format_kickstart', 'modtrimlength') : 80;
-            $sectionvalues['trimsummary'] = $this->sectionsummary_trim_char($sectionvalues['summary'], $modtrimlength);
+            $modtrimlength = !empty(get_config('format_kickstart', 'modtrimlength')) ? get_config('format_kickstart', 'modtrimlength') : 25;
+            $sectionvalues['trimsummary'] = $this->sectionsummary_trim_char(format_string($sectionvalues['summary']), $modtrimlength);
             $sectionmodulenames = [];
             if (!empty($modinfosections[$section->section])) {
                 foreach ($modinfosections[$section->section] as $cmid) {
@@ -234,10 +245,13 @@ class import_course_list implements \templatable, \renderable {
 
             $formattedString = [];
             foreach ($sectionmodulenames as $module => $count) {
-                $formattedString[] = $count . ' ' . $module;
+                $formattedString[]['value'] = $count . ' ' . $module;
             }
-            $sectionvalues['sectionmodulenames'] = implode(', ', $formattedString);
+
+            $sectionvalues['sectionmodulenames'] = $formattedString;
             $sectionvalues['modules'] = $sectioncontents;
+            $sectionvalues['nomdoules'] = count($sectioncontents) == 0 ? true : false;
+            $sectionvalues['courseid'] = $courseid;
             $coursecontents[$key] = $sectionvalues;
         }
         return $coursecontents;
