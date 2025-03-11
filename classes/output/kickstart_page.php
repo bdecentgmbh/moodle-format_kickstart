@@ -55,6 +55,7 @@ trait kickstart_page {
     public function get_help_content() {
         global $OUTPUT;
         $content = \html_writer::start_div('summary-view-block');
+        $content .= $OUTPUT->render_from_template('format_kickstart/help', null);
         $content .= \html_writer::end_div();
         return $content;
     }
