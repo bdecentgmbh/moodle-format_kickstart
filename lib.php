@@ -71,7 +71,9 @@ class format_kickstart extends core_courseformat\base {
         global $CFG;
         if (format_kickstart_has_pro()) {
             require_once($CFG->dirroot. "/local/kickstart_pro/lib.php");
-            local_kickstart_pro_redirect_automatictemplate();
+            if (function_exists('local_kickstart_pro_redirect_automatictemplate')) {
+                local_kickstart_pro_redirect_automatictemplate();
+            }
         }
     }
 
@@ -461,7 +463,7 @@ function format_kickstart_update_template_format_options($template) {
         }
         foreach ($records as $record) {
             if (!$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
-                'templateid' => $template->id, 'name' => $record->name, ])) {
+                'templateid' => $template->id, 'name' => $record->name ])) {
                 $data = new stdClass();
                 $data->templateid = $template->id;
                 $data->displayname = $template->title;
@@ -667,7 +669,7 @@ function format_kickstart_get_breadcump_menus() {
     $menus = [
         'coursetemplate' => get_string('coursetemplate', 'format_kickstart'),
         'studentview' => get_string('studentview', 'format_kickstart'),
-        'help' => get_string('help', 'format_kickstart')
+        'help' => get_string('help', 'format_kickstart'),
     ];
 
     if (format_kickstart_has_pro()) {
