@@ -82,7 +82,9 @@ if ($action && $templateid) {
     redirect($PAGE->url);
 }
 
-admin_externalpage_setup('kickstarttemplates');
+if (is_siteadmin()) {
+    admin_externalpage_setup('kickstarttemplates');
+}
 
 $PAGE->set_title(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_heading(get_string('manage_templates', 'format_kickstart'));

@@ -59,7 +59,7 @@
                 });
             }
 
-            var librarycourse = document.querySelectorAll(".librarycourse-filter .filter-item");
+            var librarycourse = document.querySelectorAll(".librarycourse-filter-item .filter-item");
             if (librarycourse) {
                 librarycourse.forEach((element) => {
                     element.addEventListener('change', self.libraryCourseHandler.bind(this));
@@ -211,7 +211,7 @@
     Formatkickstart.prototype.libraryCourseHandler = function(event) {
         let sort = event.currentTarget.getAttribute('data-sort');
         let searchcourse = document.querySelector("#search-course-library").value;
-        let customfieldsitems = document.querySelectorAll(".librarycourse-filter .customfield-filter .filter-item");
+        let customfieldsitems = document.querySelectorAll(".library-customfield-field.librarycourse-filter-item .filter-item");
         let customvalues = {};
         if (customfieldsitems) {
             customfieldsitems.forEach((element) => {

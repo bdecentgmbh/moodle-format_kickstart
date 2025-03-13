@@ -140,7 +140,7 @@ $string['showcontents'] = "Show contents";
 $string['hidecontents'] = "Hide contents";
 $string['searchcourselibrary'] = "Search for courses and activities by name, tag or description";
 
-$string['selectvalue'] = "Select option";
+$string['selectvalue'] = "Choose option";
 $string['restrictuser'] = "Restrict by user";
 $string['coursetemplateexistsuser'] = "The current user already has a template for this course.";
 

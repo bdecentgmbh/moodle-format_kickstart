@@ -669,7 +669,7 @@ function format_kickstart_get_breadcump_menus() {
     $menus = [
         'coursetemplate' => get_string('coursetemplate', 'format_kickstart'),
         'studentview' => get_string('studentview', 'format_kickstart'),
-        'help' => get_string('help', 'format_kickstart'),
+        'help' => get_string('help', 'format_kickstart')
     ];
 
     if (format_kickstart_has_pro()) {
