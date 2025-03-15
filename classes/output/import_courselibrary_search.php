@@ -95,7 +95,9 @@ class import_courselibrary_search {
 
     public $sorttype = '';
 
-    public function __construct(array $config = array(), $currentcouseid = null, $customfields = array(), $sorttype = '') {
+    public $page = 0;
+
+    public function __construct(array $config = array(), $currentcouseid = null, $customfields = array(), $sorttype = '', $page = 0) {
         $this->search = optional_param('search', '', PARAM_NOTAGS);
         $this->search = trim($this->search);
         $this->maxresults = get_config('format_kickstart', 'courselibraryperpage');
@@ -106,6 +108,8 @@ class import_courselibrary_search {
         $this->sorttype = $sorttype;
         $this->weights = $this->get_relevance_weights();
         $this->sqlparams = [];
+
+        $this->page = $page;
 
         foreach ($config as $name => $value) {
             $method = 'set_'.$name;
@@ -244,7 +248,7 @@ class import_courselibrary_search {
                     LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
                     LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid ";
 
-        $where  = " WHERE (".$DB->sql_like('c.fullname', ':fullnamesearch', false)." OR ".
+        $where  = " WHERE c.id > 1 AND (".$DB->sql_like('c.fullname', ':fullnamesearch', false)." OR ".
                 $DB->sql_like('c.shortname', ':shortnamesearch', false). " OR ".
                 $DB->sql_like('c.summary', ':descriptionsearch', false). " OR ".
                 $DB->sql_like('t.name', ':tagsearch', false). " OR ".
@@ -288,7 +292,7 @@ class import_courselibrary_search {
 
         $limit = '';
 
-        $limitfrom = optional_param('page', 0, PARAM_INT);
+        $limitfrom = $this->page;
         $perpage = get_config("format_kickstart", "courselibraryperpage");
         list($limitfrom, $limitnum) = $this->normalise_limit_from_num($limitfrom * $perpage, $perpage);
 

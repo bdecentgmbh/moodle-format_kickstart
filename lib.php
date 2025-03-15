@@ -463,7 +463,7 @@ function format_kickstart_update_template_format_options($template) {
         }
         foreach ($records as $record) {
             if (!$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
-                'templateid' => $template->id, 'name' => $record->name ])) {
+                'templateid' => $template->id, 'name' => $record->name, ])) {
                 $data = new stdClass();
                 $data->templateid = $template->id;
                 $data->displayname = $template->title;
@@ -746,6 +746,7 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
     $course = get_course($args['courseid']);
     $context = \context::instance_by_id($args['contextid']);
     $nav = $args['menuid'];
+    $page = $args['page'];
 
     $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
     ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => false]);
@@ -753,7 +754,7 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
 
     $renderer = $PAGE->get_renderer('format_kickstart');
 
-    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype));
+    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype, $page));
 }
 
 

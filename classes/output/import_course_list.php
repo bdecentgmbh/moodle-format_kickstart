@@ -39,9 +39,12 @@ class import_course_list implements \templatable, \renderable {
 
     public $sorttype;
 
-    public function __construct(array $filtercustomfields = [], string $sorttype = '') {
+    public $page;
+
+    public function __construct(array $filtercustomfields = [], string $sorttype = '', int $page = 0) {
         $this->filtercustomfields = $filtercustomfields;
         $this->sorttype = $sorttype;
+        $this->page = $page;
     }
 
     /**
@@ -57,7 +60,7 @@ class import_course_list implements \templatable, \renderable {
 
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
-        $component = new import_courselibrary_search(['url' => $url], null, $this->filtercustomfields, $this->sorttype);
+        $component = new import_courselibrary_search(['url' => $url], null, $this->filtercustomfields, $this->sorttype, $this->page);
         $courses = [];
         $html = '';
 
@@ -133,9 +136,8 @@ class import_course_list implements \templatable, \renderable {
                 $courses[] = $course;
             }
         }
-        $page = optional_param("page", 0, PARAM_INT);
+        $page = $this->page;
         $paginationurl = new \moodle_url($PAGE->url, ['page' => $page]);
-
         $pagination =  $OUTPUT->paging_bar($component->get_total_course_count(), $page, get_config('format_kickstart', 'courselibraryperpage'), $PAGE->url);
         return [
             'searchterm' => $component->get_search() ?

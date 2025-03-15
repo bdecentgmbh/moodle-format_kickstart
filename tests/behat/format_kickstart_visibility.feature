@@ -131,14 +131,14 @@ Feature: Check the kickstart course format features.
     Then I navigate to "Plugins > Course formats > Manage templates" in site administration
     And I should not see course format "Single activity"
     Then I am on "Course 1" course homepage
-    Then I should see "Course templates"
+    And I should see "Course template" in the ".tertiary-navigation-selector .dropdown-toggle" "css_element"
     And I should not see course format "Single activity"
-    Then I should see course format "Custom sections"
-    Then I click on ".template-list .card-deck .card:nth-child(2) .card-footer a" "css_element"
-    And I click on "Import" "button" in the ".modal" "css_element"
+    Then I should see "Custom sections" in the ".template-list .card-deck:nth-child(6) .card" "css_element"
+    And I click on ".use-template[data-templatename=\"Custom sections\"]" "css_element" in the ".template-list" "css_element"
+    And I click on "Import" "button" in the ".modal-dialog" "css_element"
     And I start watching to see if a new page loads
     Then I should see "Course 1"
-    Then ".course-content" "css_element" should exist
+    Then ".course-content ul.section" "css_element" should exist
     And I navigate to "Plugins > Course formats > Manage templates" in site administration
     Then I click on enable link custom sections
     And I should see "Edit template"
@@ -146,11 +146,10 @@ Feature: Check the kickstart course format features.
       | Course layout | Show one section per page |
     Then I press "Save changes"
     Then I am on "Course 2" course homepage
-    Then I click on ".template-list .card-deck .card:nth-child(2) .card-footer a" "css_element"
-
+    And I click on ".use-template[data-templatename=\"Weekly sections\"]" "css_element" in the ".template-list" "css_element"
     And I click on "Import" "button" in the ".modal" "css_element"
     Then I should see "Course 2"
-    Then ".course-content" "css_element" should exist
+    Then ".course-content ul.weeks" "css_element" should exist
 
   Scenario: Check the single activity format template
     Given I log in as "admin"

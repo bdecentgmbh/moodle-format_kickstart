@@ -80,7 +80,17 @@
                 });
             }
 
-            var showcontentHandler = document.querySelectorAll(".import-course-list-section .import-button");
+        }
+
+
+        var pagination = document.querySelectorAll(".kickstart-page .pagination li");
+        if (pagination) {
+            pagination.forEach((element) => {
+                element.addEventListener('click', self.libraryCourseHandler.bind(this));
+            });
+        }
+
+        var showcontentHandler = document.querySelectorAll(".import-course-list-section .show-content-button");
             if (showcontentHandler) {
                 showcontentHandler.forEach((element) => {
                     element.addEventListener('click', (e) => {
@@ -97,8 +107,6 @@
                     });
                 });
             }
-
-        }
 
         var importActivity = document.querySelectorAll(".import-course-list-section .activity-items .import-activity");
         if (importActivity) {
@@ -209,7 +217,16 @@
     };
 
     Formatkickstart.prototype.libraryCourseHandler = function(event) {
+        event.preventDefault();
+        let page = event.currentTarget.getAttribute('data-page-number');
+        page = page ? page - 1 : 0;
         let sort = event.currentTarget.getAttribute('data-sort');
+        if (!sort) {
+           var sorthandler = document.querySelector(".kickstart-courselibrary-sort .sort-link.sort-active");
+           if (sorthandler) {
+                sort = sorthandler.getAttribute('data-sort');
+           }
+        }
         let searchcourse = document.querySelector("#search-course-library").value;
         let customfieldsitems = document.querySelectorAll(".library-customfield-field.librarycourse-filter-item .filter-item");
         let customvalues = {};
@@ -218,11 +235,11 @@
                 customvalues[element.getAttribute("data-value")] = element.value;
             });
         }
-        this.getlibarycourse(searchcourse, customvalues, sort);
+        this.getlibarycourse(searchcourse, customvalues, sort, page);
     };
 
 
-    Formatkickstart.prototype.getlibarycourse = function(searchcourse, customvalues, sort) {
+    Formatkickstart.prototype.getlibarycourse = function(searchcourse, customvalues, sort, page) {
         let courselist = document.querySelector(".import-course-list-section");
         if (courselist) {
             let self = this;
@@ -232,7 +249,8 @@
                 menuid: self.menuid,
                 searchcourse: searchcourse,
                 customvalues : JSON.stringify(customvalues),
-                sort: sort
+                sort: sort,
+                page: page,
             };
 
             const promise = Fragment.loadFragment(
