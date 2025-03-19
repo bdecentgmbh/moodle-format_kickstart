@@ -1,10 +1,41 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+{{!
+    @template format_kickstart/course_template_header
+
+    Template for the course template header displayed to teachers.
+
+    Example context (json):
+    {
+        "canmanage": true,
+        "managetemplateurl": "http://moodleurl/course/format/kickstart/format.php",
+        "teacherinstructions": "<p>Teacher instructions</p>",
+        "listview": false
+    }
+}}
+
 <div class="search-kickstart-template">
     <input type="text" class="form-control" id="search-template" placeholder="{{#str}}search_templates, format_kickstart{{/str}}">
 </div>
 
 <div class="listing-view-block">
-    <a class="{{^listview}}active{{/listview}}" id="tile-view" data-value='tile' href="javascript::void(0)" title="{{#str}} strtile, format_kickstart {{/str}}"><i class="fa fa-th-large"> </i></a></li>
-    <a class="{{#listview}}active{{/listview}}" id="list-view" data-value='list' href="javascript::void(0)" title=""><i class="fa fa-list-ul"> </i></a></li>
+    <a class="{{^listview}}active{{/listview}}" id="tile-view" data-value='tile' href="javascript::void(0)" title="{{#str}} strtile, format_kickstart {{/str}}"><i class="fa fa-th-large"> </i></a>
+    <a class="{{#listview}}active{{/listview}}" id="list-view" data-value='list' href="javascript::void(0)" title=""><i class="fa fa-list-ul"> </i></a>
 </div>
 
 

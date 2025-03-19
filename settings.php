@@ -46,17 +46,15 @@ if ($ADMIN->fulltree) {
             get_string('automatictemplate', 'format_kickstart'),
             get_string('automatictemplate_desc', 'format_kickstart'),
             1));
-        if (function_exists('format_kickstart_get_template_backimages')) {
-            $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
-            $settings->add(new admin_setting_configstoredfile(
-                'format_kickstart/templatebackimages',
-                get_string('default_templatebackground', 'format_kickstart'),
-                get_string('default_templatebackground_desc', 'format_kickstart'),
-                'templatebackimages',
-                0,
-                $templatebgoptions
-            ));
-        }
+        $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
+        $settings->add(new admin_setting_configstoredfile(
+            'format_kickstart/templatebackimages',
+            get_string('default_templatebackground', 'format_kickstart'),
+            get_string('default_templatebackground_desc', 'format_kickstart'),
+            'templatebackimages',
+            0,
+            $templatebgoptions
+        ));
 
         $settings->add(new admin_setting_configtext('format_kickstart/modtrimlength',
                 get_string('modtrimlength', 'format_kickstart'),
@@ -147,12 +145,12 @@ if ($ADMIN->fulltree) {
 
 
     // Settings for the course library sort weight.
-    // Add relevance weight settings
+    // Add relevance weight settings.
     $settings->add(new admin_setting_configtext(
         'format_kickstart/weight_fullname',
         get_string('weight_fullname', 'format_kickstart'),
         get_string('weight_fullname_desc', 'format_kickstart'),
-        5, // default value
+        5,
         PARAM_INT
     ));
 

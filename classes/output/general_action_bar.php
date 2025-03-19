@@ -24,8 +24,8 @@ use core\output\select_menu;
  *
  * This class is responsible for rendering the general navigation select menu in the gradebook pages.
  *
- * @package    core_grades
- * @copyright  2021 Mihail Geshoski <mihail@moodle.com>
+ * @package    format_kickstart
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class general_action_bar {
@@ -43,6 +43,10 @@ class general_action_bar {
     /** @var string $activeplugin The plugin of the current gradebook page (grader, fullview, ...). */
     protected $activeplugin;
 
+    /**
+     * Summary of context
+     * @var \context
+     */
     protected $context;
 
     /**

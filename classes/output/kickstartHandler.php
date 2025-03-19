@@ -14,9 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Kickstart page handler.
+ *
+ * @package    format_kickstart
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace format_kickstart\output;
+
 use context_course;
-class kickstartHandler  {
+
+
+/**
+ * Implements the kickstart page handler.
+ */
+class kickstartHandler {
 
     use kickstart_page;
 
@@ -25,17 +39,35 @@ class kickstartHandler  {
      */
     public $courseid;
 
+    /**
+     * Course object
+     * @var object
+     */
     public $course;
 
     /**
-     *
+     * @var int
      */
     public $menuid;
 
+    /**
+     * Summary of context
+     * @var \context
+     */
     public $context;
 
+    /**
+     * parameters
+     * @var array
+     */
     public $params;
 
+    /**
+     * Constructor kickstar Handler.
+     * @param object $course
+     * @param string $menuid
+     * @param array $params
+     */
     public function __construct(object $course, string $menuid, array $params = []) {
         $this->courseid = $course->id;
         $this->course = $course;
@@ -44,8 +76,11 @@ class kickstartHandler  {
         $this->context = context_course::instance($this->courseid);
     }
 
+    /**
+     * Get the kicstart page content.
+     */
     public function get_content() {
-        // get menu id based the called function
+        // Get menu id based the called function.
         $method = 'get_' .$this->menuid . '_content';
         if (method_exists($this, $method)) {
             return $this->$method();

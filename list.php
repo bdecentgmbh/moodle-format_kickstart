@@ -36,7 +36,7 @@ $PAGE->set_context($context);
 $pageurl = new moodle_url('/course/format/kickstart/list.php', ['id' => $id, 'nav' => $nav]);
 $PAGE->set_url($pageurl);
 
-$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_login($course);
 

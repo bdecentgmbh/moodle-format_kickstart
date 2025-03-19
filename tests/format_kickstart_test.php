@@ -31,7 +31,7 @@ namespace format_kickstart;
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_kickstart_test extends \advanced_testcase {
+final class format_kickstart_test extends \advanced_testcase {
     /**
      * Set the admin user as User.
      *
@@ -47,8 +47,9 @@ class format_kickstart_test extends \advanced_testcase {
     /**
      * Testing the import template in the course.
      * @covers ::import_from_template
+     * @return mixed
      */
-    public function test_importing() {
+    public function test_importing(): void {
         global $DB, $CFG;
         $course = $this->getDataGenerator()->create_course([
             'startdate' => 1000,
@@ -108,7 +109,7 @@ class format_kickstart_test extends \advanced_testcase {
      * @covers ::format_kickstart_create_template
      * @return void
      */
-    public function test_create_template() {
+    public function test_create_template(): void {
         global $DB;
         $prevcount = $DB->count_records('format_kickstart_template');
         $template = $this->format_format_kickstart_template_info();
@@ -122,7 +123,7 @@ class format_kickstart_test extends \advanced_testcase {
      * Case to check the availablity of kickstart pro.
      * @covers ::format_kickstart_has_pro
      */
-    public function test_check_kickstart_has_pro() {
+    public function test_check_kickstart_has_pro(): void {
         $pluginman = \core_plugin_manager::instance();
         $plugininfo = $pluginman->get_plugin_info('local_kickstart_pro');
         $pluginstatus = false;
@@ -135,7 +136,7 @@ class format_kickstart_test extends \advanced_testcase {
     /**
      * Get the template info.
      */
-    public function format_format_kickstart_template_info() {
+    public function format_format_kickstart_template_info(): object {
         $template = [
             'id' => 0,
             'title' => 'demo test 1',
@@ -159,7 +160,7 @@ class format_kickstart_test extends \advanced_testcase {
      * Case to check the add new course format template.
      * @covers ::format_kickstart_add_couseformat_template
      */
-    public function test_format_kickstart_add_couseformat_template() {
+    public function test_format_kickstart_add_couseformat_template(): void {
         global $DB;
         $templatename = "Proline Format";
         $format = "proline";
@@ -173,7 +174,7 @@ class format_kickstart_test extends \advanced_testcase {
      * Case to check the update course format template.
      * @covers ::format_kickstart_update_template_format_options
      */
-    public function test_format_kickstart_update_template_format_options() {
+    public function test_format_kickstart_update_template_format_options(): void {
         global $DB;
         $this->create_kickstart_template_options();
         $format = 'topics';
@@ -190,7 +191,7 @@ class format_kickstart_test extends \advanced_testcase {
      * Create course template options.
      * @return void
      */
-    public function create_kickstart_template_options() {
+    public function create_kickstart_template_options(): void {
         global $DB;
         $format = 'topics';
         $params['format'] = $format;
@@ -201,7 +202,7 @@ class format_kickstart_test extends \advanced_testcase {
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
         $courseformat = course_get_format((object) $params);
         $courseformat->update_course_format_options($data);
-        return format_kickstart_update_template_format_options($template);
+        format_kickstart_update_template_format_options($template);
     }
 
     /**
@@ -209,7 +210,7 @@ class format_kickstart_test extends \advanced_testcase {
      * @covers ::format_kickstart_update_template_format_options
      * @return void
      */
-    public function test_format_kickstart_get_template_format_options() {
+    public function test_format_kickstart_get_template_format_options(): void {
         global $DB;
         $format = 'topics';
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
@@ -224,7 +225,7 @@ class format_kickstart_test extends \advanced_testcase {
      * @covers ::format_kickstart_remove_kickstart_templates
      * @return void
      */
-    public function test_format_kickstart_remove_kickstart_templates() {
+    public function test_format_kickstart_remove_kickstart_templates(): void {
         global $DB, $CFG, $SITE;
         $format = 'topics';
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);

@@ -20,7 +20,8 @@
  * @copyright 2021, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates', 'core/modal_events', 'core/modal_factory', 'core/toast'],
+ define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates',
+    'core/modal_events', 'core/modal_factory', 'core/toast'],
  function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalFactory, Toast) {
 
     /**
@@ -28,6 +29,7 @@
      * @param {int} contextid
      * @param {int} courseid
      * @param {int} menuid
+     * @param {boolean} filteroptions
      * @return {void}
     */
     var Formatkickstart = function(contextid, courseid, menuid, filteroptions) {
@@ -93,7 +95,7 @@
         var showcontentHandler = document.querySelectorAll(".import-course-list-section .show-content-button");
             if (showcontentHandler) {
                 showcontentHandler.forEach((element) => {
-                    element.addEventListener('click', (e) => {
+                    element.addEventListener('click', () => {
                         str.get_strings([
                             {key: 'showcontents', component: 'format_kickstart'},
                             {key: 'hidecontents', component: 'format_kickstart'}
@@ -158,7 +160,7 @@
             modal.setButtonText('save', str.get_string('importandview', 'format_kickstart'));
             modal.setButtonText('cancel', str.get_string('importandreturn', 'format_kickstart'));
             // Handle form submission.
-            modal.getRoot().on(ModalEvents.save, function(e) {
+            modal.getRoot().on(ModalEvents.save, function() {
                 var sectionId = $('#import-module-section').val();
                 args.sectionid = sectionId;
                 args.action = 'view';
@@ -167,7 +169,7 @@
                 modal.destroy();
             }.bind(this));
 
-            modal.getRoot().on(ModalEvents.cancel, function(e) {
+            modal.getRoot().on(ModalEvents.cancel, function() {
                 var sectionId = $('#import-module-section').val();
                 args.sectionid = sectionId;
                 args.action = 'return';
@@ -184,7 +186,7 @@
     Formatkickstart.prototype.importCourse = function(args) {
         var self = this;
         var promise = Fragment.loadFragment('format_kickstart', 'import_activity_courselib', self.contextId, args);
-        promise.then((cmid, js) => {
+        promise.then((cmid) => {
             if (args.action == 'view') {
                 window.location.href = M.cfg.wwwroot + '/mod/' + args.modname + '/view.php?id=' + cmid;
             } else {

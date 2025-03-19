@@ -15,8 +15,26 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 
+{{!
+    @template format_kickstart/import_module_list
+
+    Template for the course template header displayed to teachers.
+
+    Example context (json):
+    {
+        "information": "Choose a section to import the activity",
+        "sections": [{
+            "id": "1",
+            "name": "Section 1"
+        }, {
+            "id": "2",
+            "name": "Section 2"
+        }]
+    }
+}}
+
 <p data-for="sectionname"> {{information}}: </p>
-<nav class="import-section-tree" id="destination-selector" role="tree">
+<nav class="import-section-tree" id="destination-selector" role="navigation">
     <label>{{#str}} choosesectionimportactivity, format_kickstart {{/str}}</label>
     <select class="custom-select section-list-item d-flex" name="import-module-section" id="import-module-section">
         {{#sections}}
@@ -26,22 +44,3 @@
         {{/sections}}
     </select>
 </nav>
-
-
-<!--
-            <div data-for="sectionnode" role="treeitem">
-                <div class="section-list-item d-flex"
-                    id="importmodalsection{{number}}"
-                    data-for="section_item"
-                >
-                    <a href="#"
-                    class="collapse-list-link text-truncate"
-                    data-for="section"
-                    data-id="{{id}}"
-                    data-number="{{number}}"
-                    >
-                        {{{name}}}
-                    </a>
-                </div>
-            </div>
-            !-->

@@ -653,7 +653,8 @@ function format_kickstart_extend_navigation_course(navigation_node $navigation, 
         $url = new moodle_url('/course/format/kickstart/list.php', [
             'id' => $id,
         ]);
-        $node = $navigation->create(get_string('strkickstart', 'format_kickstart'), $url, navigation_node::TYPE_SETTING, null, null);
+        $node = $navigation->create(get_string('strkickstart', 'format_kickstart'),
+            $url, navigation_node::TYPE_SETTING, null, null);
         $node->add_class('kickstart-nav');
         $node->set_force_into_more_menu(false);
         $node->set_show_in_secondary_navigation(true);
@@ -664,12 +665,21 @@ function format_kickstart_extend_navigation_course(navigation_node $navigation, 
 }
 
 
+/**
+ * Retrieves the available breadcrumb menu items for the Kickstart format.
+ *
+ * This function generates a list of menu items including course template,
+ * student view, and help. If the Kickstart Pro plugin is available,
+ * additional menu items are added.
+ *
+ * @return array An associative array of breadcrumb menu items
+ */
 function format_kickstart_get_breadcump_menus() {
     global $CFG;
     $menus = [
         'coursetemplate' => get_string('coursetemplate', 'format_kickstart'),
         'studentview' => get_string('studentview', 'format_kickstart'),
-        'help' => get_string('help', 'format_kickstart')
+        'help' => get_string('help', 'format_kickstart'),
     ];
 
     if (format_kickstart_has_pro()) {
@@ -680,6 +690,16 @@ function format_kickstart_get_breadcump_menus() {
 }
 
 
+/**
+ * Generates a list of action selector menu items for the Kickstart format.
+ *
+ * Creates URLs and menu labels for course template, student view, and help pages.
+ * If Kickstart Pro is available, additional menu items are added from the pro plugin.
+ *
+ * @param int $courseid The ID of the current course
+ * @param moodle_url $pageurl The base URL for the current page
+ * @return array An associative array of menu URLs and their corresponding labels
+ */
 function format_kickstart_get_action_selector_menus($courseid, $pageurl) {
     global $CFG;
 
@@ -701,6 +721,16 @@ function format_kickstart_get_action_selector_menus($courseid, $pageurl) {
     return $menus;
 }
 
+/**
+ * Retrieves and renders a list of course templates for the Kickstart format.
+ *
+ * Handles template-related actions such as changing or searching templates,
+ * and updates course format options accordingly. Initializes JavaScript
+ * and renders the template list using the Kickstart format renderer.
+ *
+ * @param array $args Arguments containing course, action, and template details
+ * @return string Rendered HTML for the course template list
+ */
 function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
     global $PAGE, $DB, $USER;
     $course = get_course($args['courseid']);
@@ -719,7 +749,8 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
         }
 
         if ($DB->record_exists('course_format_options', ['courseid' => $course->id, 'name' => 'templatesview'])) {
-            $DB->set_field('course_format_options', 'value', $args['value'], ['courseid' => $course->id, 'name' => 'templatesview']);
+            $DB->set_field('course_format_options', 'value', $args['value'], ['courseid' => $course->id,
+            'name' => 'templatesview']);
         } else {
             $record = new stdClass();
             $record->courseid = $course->id;
@@ -736,6 +767,15 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
 }
 
 
+/**
+ * Retrieves and renders a list of courses for the Kickstart format library.
+ *
+ * Handles course search, sorting, and pagination for the course library import feature.
+ * Initializes JavaScript and renders the course list using the Kickstart format renderer.
+ *
+ * @param array $args Arguments containing search parameters, course context, and pagination details
+ * @return string Rendered HTML for the course library list
+ */
 function format_kickstart_output_fragment_get_library_courselist($args) {
     global $PAGE;
 
@@ -751,13 +791,20 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
     $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
     ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => false]);
 
-
     $renderer = $PAGE->get_renderer('format_kickstart');
-
     return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype, $page));
 }
 
 
+/**
+ * Generates a template for importing modules with section information.
+ *
+ * Prepares a template containing module import information and a list of course sections
+ * to be rendered in the module import interface.
+ *
+ * @param array $args Arguments containing the main course ID
+ * @return string Rendered HTML template for module import
+ */
 function format_kickstart_output_fragment_get_import_module_box($args) {
     global $PAGE, $OUTPUT;
     $template = [];
@@ -778,6 +825,18 @@ function format_kickstart_output_fragment_get_import_module_box($args) {
 }
 
 
+/**
+ * Imports an activity module from one course to another using Moodle's backup and restore functionality.
+ *
+ * This function handles the process of importing a single course module to a specified section,
+ * performing necessary security checks and using Moodle's backup and restore controllers.
+ *
+ * @param array $args Arguments containing course and module information
+ *                    - maincourse: The destination course ID
+ *                    - cmid: The course module ID to be imported
+ *                    - sectionid: The target section ID for the imported module
+ * @return int The ID of the newly imported course module
+ */
 function format_kickstart_output_fragment_import_activity_courselib($args) {
     global $USER, $CFG, $DB, $PAGE;
     require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
@@ -786,7 +845,7 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     $context = \context_course::instance($args['maincourse']);
     require_capability('moodle/course:manageactivities', $context);
 
-    // Use Moodle's backup/restore functionality
+    // Use Moodle's backup/restore functionality.
     $bc = new backup_controller(backup::TYPE_1ACTIVITY, $args['cmid'], backup::FORMAT_MOODLE,
         backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
     $bc->execute_plan();
@@ -795,15 +854,16 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
 
     $rc = new restore_controller($backupid, $args['maincourse'],
         backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id, backup::TARGET_EXISTING_ADDING);
-    // Set target section using settings
+    // Set target section using settings.
     $plan = $rc->get_plan();
     $rc->execute_precheck();
     $rc->execute_plan();
 
-    // Get mapping data from restore
+    // Get mapping data from restore.
     $rc->destroy();
 
-    $record = $DB->get_record_sql("SELECT * FROM {course_modules} WHERE course = ? ORDER BY id DESC", [$args['maincourse']], IGNORE_MULTIPLE);
+    $record = $DB->get_record_sql("SELECT * FROM {course_modules} WHERE course = ? ORDER BY id DESC",
+        [$args['maincourse']], IGNORE_MULTIPLE);
 
     $courseformat = course_get_format($args['maincourse']);
     $maincourserecord = $courseformat->get_course();

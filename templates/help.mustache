@@ -1,10 +1,37 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+{{!
+    @template format_kickstart/help
+    Template for the help page displayed to teachers.
+    Example context (json):
+    {
+        "has_pro": true,
+        "reactionurl_dislike": "http://moodleurl/course/format/kickstart/format.php"
+    }
+}}
+
 <div class="help-block mt-5 mb-5">
     <h1 class="mb-3">Kickstart: Feature Documentation</h1>
     <div class="kickstart-features ml-6 mb-5">
         <h2 class="mt-5 mb-3">Kickstart</h2>
 
         <div class="kickstart-block ml-5 mb-5">
-            <p>The Kickstart feature serves as a central platform for managing course layout views and templates, providing users with easy access to essential resources and tools, along with filtering, sorting, and search options.<br>
+            <p class="lh-base">The Kickstart feature serves as a central platform for managing course layout views and templates, providing users with easy access to essential resources and tools, along with filtering, sorting, and search options.<br>
             The kickstart serves as an interface page that provides access to various Kickstart functionalities, including:</p>
 
             <h3 class="mt-5 mb-3">Kickstart Features</h3>
@@ -20,7 +47,7 @@
 
     <div class="kickstart-features ml-6 mb-5 pl-5">
         <h2 class="mb-3">1. Course Template</h2>
-        <p class="ml-6">Course Templates are pre-built course structures designed to simplify the setup of new courses. The Course Templates feature displays a list or grid of available templates, allowing users to easily browse, search, and select the desired template.<br>
+        <p class="lh-base ml-6">Course Templates are pre-built course structures designed to simplify the setup of new courses. The Course Templates feature displays a list or grid of available templates, allowing users to easily browse, search, and select the desired template.<br>
         A <b>Manage Templates</b> button is available to users with management permissions, providing quick access to create and manage templates efficiently. This feature streamlines course setup by offering ready-made templates and flexible management options.</p>
 
         <h2 class="mt-5 mb-3 pl-5">Course Templates features</h2>
@@ -30,7 +57,7 @@
             <li class="mb-2">The Manage Templates button is available to users with template management permissions. It provides quick access to create, edit, and manage course templates efficiently. This feature allows administrators and authorized users to maintain and organize templates, ensuring that relevant and up-to-date templates are available for course creation.</li>
         </ul>
 
-        <h2 class="mt-5 mb-3 pl-5">How to Use Course Templates</h3>
+        <h2 class="mt-5 mb-3 pl-5">How to Use Course Templates</h2>
         <ol class="ml-4">
             <li class="mb-2">Navigate to the course view page.</li>
             <li class="mb-2">Click <b>Kickstart</b> in the secondary navigation menu.</li>
@@ -43,7 +70,7 @@
 
     <div class="kickstart-features ml-6 mb-5 pl-5">
         <h2 class="mb-3">2. Course Library (Pro)</h2>
-        <p class="ml-6">The Course Library provides a collection of available courses that users can easily import. It includes powerful search, sorting, and filtering options to help users quickly find relevant courses.<br>
+        <p class="lh-base ml-6">The Course Library provides a collection of available courses that users can easily import. It includes powerful search, sorting, and filtering options to help users quickly find relevant courses.<br>
         The library's header features a search bar for fast course discovery. When custom field filters are applied, the course list updates accordingly to display only the most relevant results.<br>
         Each course element displays important details, including the course title, category path, course start date, course ID number, and tags, giving users the information they need to select the right course efficiently.</p>
 
@@ -70,14 +97,14 @@
 
     <div class="kickstart-features ml-6 mb-5 pl-5">
         <h2 class="mb-3">3. Student View Feature</h2>
-        <p class="ml-6">The <b>Student View</b> feature allows both students and instructors to preview the given instructions in the Kickstart settings of a course as they appear to students, without access to management capabilities.</p>
+        <p class="lh-base ml-6">The <b>Student View</b> feature allows both students and instructors to preview the given instructions in the Kickstart settings of a course as they appear to students, without access to management capabilities.</p>
 
         <ul class="ml-4">
             <li class="mb-2">If the course format is not set to <b>Kickstart</b>, the <b>Student View</b> feature will be unavailable for students. In this case, instructors will receive a warning message indicating that <b>Student View</b> is not supported.
             <li class="mb-2">If the course is set to the <b>Kickstart</b> format, both students and instructors can access the <b>Student View</b> and review the instructions on the course page as specified in the course format settings.
         </ul>
 
-        <p class="ml-6">This feature ensures that users can accurately experience the course from a student’s perspective, facilitating a better understanding of the learning environment.</p>
+        <p class="lh-base ml-6">This feature ensures that users can accurately experience the course from a student’s perspective, facilitating a better understanding of the learning environment.</p>
 
         <h3 class="mt-5 pl-5 mb-3">Purpose</h3>
         <ul class="ml-4">
@@ -97,7 +124,7 @@
     <div class="kickstart-features ml-6 mb-5 pl-5">
         <h2 class="mb-3">4. Create Template from Course (Pro)</h2>
 
-        <p class="ml-6">The <b>Create Template from Course</b> feature provides a simple and efficient way to generate a reusable template from an existing course.
+        <p class="lh-base ml-6">The <b>Create Template from Course</b> feature provides a simple and efficient way to generate a reusable template from an existing course.
          This functionality enables administrators and authorized users to streamline course creation by preserving the structure, content, and settings of a course for future use. A template creation form will appear the first time you use this feature.<br></p>
 
         <h3 class="mt-5 pl-5 mb-3">Purpose</h3>
@@ -117,12 +144,6 @@
             <li class="mb-2">Once created, the template is added to the template list, making it accessible for future course development.</li>
         </ol>
         <h3 class="mt-5 pl-5">Summary</h3>
-        <p class="ml-6">The Kickstart project offers a comprehensive set of tools for course setup and management, enhancing efficiency and consistency in course delivery. By centralizing these features under a single menu item, the platform ensures a user-friendly experience for instructors and administrators.</p>
+        <p class="lh-base ml-6">The Kickstart project offers a comprehensive set of tools for course setup and management, enhancing efficiency and consistency in course delivery. By centralizing these features under a single menu item, the platform ensures a user-friendly experience for instructors and administrators.</p>
     </div>
 </div>
-
-<style>
-p {
-    line-height: 24px;
-}
-</style>

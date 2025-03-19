@@ -25,8 +25,8 @@
 namespace format_kickstart\output;
 
 use core_courseformat\output\section_renderer;
-use \format_kickstart\output\general_action_bar;
-use \format_kickstart\output\kickstartHandler;
+use format_kickstart\output\general_action_bar;
+use format_kickstart\output\kickstartHandler;
 use renderable;
 
 /**
@@ -69,7 +69,7 @@ class renderer extends section_renderer {
     /**
      * Renders the action bar for a given page.
      *
-     * @param action_bar $actionbar
+     * @param general_action_bar $actionbar
      * @return string The HTML output
      */
     public function render_action_bar(general_action_bar $actionbar): string {
@@ -78,6 +78,12 @@ class renderer extends section_renderer {
     }
 
 
+    /**
+     * Renders a kickstart page by retrieving its content.
+     *
+     * @param kickstartHandler $kickstartpage The kickstart page handler to render
+     * @return string The rendered content of the kickstart page
+     */
     public function render_kickstart_page(kickstartHandler $kickstartpage) {
         return $kickstartpage->get_content();
     }

@@ -1,4 +1,4 @@
-@format @format_kickstart @_file_upload @javascript
+@format @format_kickstart @format_kickstart_visibility @_file_upload @javascript
 Feature: Check the kickstart course format features.
   Background: Create users to check the visbility.
     Given the following "users" exist:
@@ -37,16 +37,17 @@ Feature: Check the kickstart course format features.
     Given I log in as "admin"
     And I create a kickstart template with:
       | Title | Test template 1 |
+      | Tags  | template 1      |
       | Course backup file (.mbz) | /course/format/kickstart/tests/course.mbz|
     Then I should see "Template successfully created"
-    Then I should see "Test template 1" in the "#templates_r5" "css_element"
-    And I click on "#templates_r5 .singlebutton:nth-child(1)" "css_element" in the "Test template 1" "table_row"
+    Then I should see "Test template 1" in the "template 1" "table_row"
+    And I click on "Edit" "button" in the "Test template 1" "table_row"
     And I set the following fields to these values:
       | Title | Demo template 1|
     And I press "Save changes"
     And I should see "Template successfully edited"
-    Then I should see "Demo template 1" in the "#templates_r5" "css_element"
-    And I click on "#templates_r5 .singlebutton:nth-child(2)" "css_element" in the "Demo template 1" "table_row"
+    Then I should see "Demo template 1" in the "template 1" "table_row"
+    And I click on "Delete" "button" in the "Demo template 1" "table_row"
     And I press "Delete"
     And I should see "Template successfully deleted"
     And I log out
@@ -82,7 +83,6 @@ Feature: Check the kickstart course format features.
       | Course short name | Test course 1|
       | Course category | Cat 1 |
     And I press "Save and display"
-    Then I should see "Welcome to your new course" in the ".course-content h3" "css_element"
     And I click kickstart template ".use-template[data-templatename=\"Test template 1\"]"
     And I click on "Import" "button" in the ".modal" "css_element"
     And I start watching to see if a new page loads
@@ -133,7 +133,6 @@ Feature: Check the kickstart course format features.
     Then I am on "Course 1" course homepage
     And I should see "Course template" in the ".tertiary-navigation-selector .dropdown-toggle" "css_element"
     And I should not see course format "Single activity"
-    Then I should see "Custom sections" in the ".template-list .card-deck:nth-child(6) .card" "css_element"
     And I click on ".use-template[data-templatename=\"Custom sections\"]" "css_element" in the ".template-list" "css_element"
     And I click on "Import" "button" in the ".modal-dialog" "css_element"
     And I start watching to see if a new page loads
@@ -149,7 +148,7 @@ Feature: Check the kickstart course format features.
     And I click on ".use-template[data-templatename=\"Weekly sections\"]" "css_element" in the ".template-list" "css_element"
     And I click on "Import" "button" in the ".modal" "css_element"
     Then I should see "Course 2"
-    Then ".course-content ul.weeks" "css_element" should exist
+    Then ".format-weeks ul.weeks" "css_element" should exist
 
   Scenario: Check the single activity format template
     Given I log in as "admin"

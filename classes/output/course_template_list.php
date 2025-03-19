@@ -50,6 +50,10 @@ class course_template_list implements \templatable, \renderable {
      */
     private $userid;
 
+    /**
+     *
+     * @var array
+     */
     private $params;
 
     /**
@@ -74,7 +78,6 @@ class course_template_list implements \templatable, \renderable {
      */
     public function get_templates() {
         global $DB, $COURSE, $CFG, $USER;
-
         $limit = format_kickstart_has_pro() ? 0 : 2 * 2;
         $cohorts = [];
         if (function_exists('cohort_get_user_cohorts')) {
@@ -92,7 +95,7 @@ class course_template_list implements \templatable, \renderable {
             $roleids[] = $role->roleid;
         }
 
-          // Add search conditions
+        // Add search conditions.
         $searchconditions = [];
         $searchparams = [];
         if (!empty($this->params)) {
@@ -104,7 +107,7 @@ class course_template_list implements \templatable, \renderable {
                 $searchparams['title'] = '%' . $search . '%';
                 $searchparams['description'] = '%' . $search . '%';
 
-                // Add tag search through a subquery
+                // Add tag search through a subquery.
                 $searchconditions[] = "EXISTS (
                     SELECT 1 FROM {tag_instance} ti
                     JOIN {tag} t ON ti.tagid = t.id
@@ -171,11 +174,11 @@ class course_template_list implements \templatable, \renderable {
                         }
                     }
 
-
                     if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
                         if (($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
                             ($template->restrictcategory && !in_array($this->course->category, $categoryids)) ||
-                            ($template->restrictuser && $template->userids && !in_array($USER->id, json_decode($template->userids, true))) ||
+                            ($template->restrictuser && $template->userids && !in_array($USER->id,
+                                json_decode($template->userids, true))) ||
                             ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))) {
                             continue;
                         }
@@ -221,8 +224,8 @@ class course_template_list implements \templatable, \renderable {
                     if (!isset($files[0]) && !$template->courseformat) {
                         $template->waitingadhoctask = true;
                     }
-                    $templates[] = $template;
                 }
+                $templates[] = $template;
             }
         }
         return $templates;
@@ -247,14 +250,14 @@ class course_template_list implements \templatable, \renderable {
             $template->link = 'https://bdecent.de/kickstart/';
             $templates[] = $template;
         }
-        $templateview = $DB->get_field('course_format_options', 'value', ['name' => 'templatesview', 'courseid' => $this->course->id]);
+        $templateview = $DB->get_field('course_format_options', 'value',
+            ['name' => 'templatesview', 'courseid' => $this->course->id]);
         return [
-            /* 'templates' => ['groups' => $this->get_groups($templates)], */
             'templates' => $templates,
             'has_pro' => format_kickstart_has_pro(),
             'ajaxscript' => (AJAX_SCRIPT) ? true : false,
-            'teacherinstructions' => isset($this->course->teacherinstructions) ? format_text($this->course->teacherinstructions['text'],
-                $this->course->teacherinstructions['format']) : '',
+            'teacherinstructions' => isset($this->course->teacherinstructions) ?
+                format_text($this->course->teacherinstructions['text'], $this->course->teacherinstructions['format']) : '',
             'templateclass' => isset($templateview) && ($templateview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),

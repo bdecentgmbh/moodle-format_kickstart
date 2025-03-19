@@ -69,12 +69,10 @@ class template_form extends \moodleform {
         $mform->addElement('tags', 'tags', get_string('tags'),
             ['itemtype' => 'format_kickstart_template', 'component' => 'format_kickstart']);
 
-
         if (!$courseautotemplate) {
             $mform->addElement('hidden', 'id');
             $mform->setType('id', PARAM_INT);
         }
-
 
         if (!$checkformat && !$courseautotemplate) {
 
@@ -105,7 +103,6 @@ class template_form extends \moodleform {
                     get_string('templatebackimg', 'format_kickstart'), null, $templatebgoptions);
                 $mform->addHelpButton('templatebackimg', 'templatebackimg', 'format_kickstart');
             }
-
 
             if (!$courseautotemplate) {
                 $mform->addElement('header', 'templateaccess', get_string('templateaccess', 'format_kickstart'));
@@ -166,10 +163,11 @@ class template_form extends \moodleform {
                 'valuehtmlcallback' => function($userid) {
                     $user = \core_user::get_user($userid);
                     return fullname($user, has_capability('moodle/site:viewfullnames', \context_system::instance()));
-                }
+                },
             ];
 
-            $userelement = $mform->addElement('autocomplete', 'userids', get_string('addusers', 'core_reportbuilder'), [], $options);
+            $userelement = $mform->addElement('autocomplete', 'userids', get_string('addusers', 'core_reportbuilder'),
+                [], $options);
             if ($courseautotemplate) {
                 $userelement->setValue($USER->id);
                 $mform->setDefault('restrictuser', 1);
