@@ -326,7 +326,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 5px;
+    gap: 10px 5px;
 }
 .kickstart-page .kickstart-block .tertiary-navigation {
     width: auto;
@@ -363,6 +363,29 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     width: 100%;
     border-right: 1px solid #ccc;
     padding: 0 15px 0 0;
+}
+
+@media (max-width: 500px) {
+    .kickstart-page .input-group {
+        min-width: 370px;
+        max-width: 370px;
+    }
+    .kickstart-page .input-group input {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .kickstart-page .input-group {
+        min-width: 320px;
+        max-width: 320px;
+    }
+    .kickstart-page .input-group input {
+        font-size: 9px;
+    }
+    .kickstart-page .search-kickstart-template input {
+        font-size: 12px;
+    }
 }
 
 /* Tile view */

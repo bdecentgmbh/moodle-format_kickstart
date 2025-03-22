@@ -273,8 +273,7 @@ class import_courselibrary_search {
         }
         $modulesql = implode(" UNION ALL ", $moduleunions);
 
-        $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
-            COALESCE(ul.timeaccess, 0) AS timeaccess ";
+        $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder, COALESCE(ul.timeaccess, 0) AS timeaccess ";
         $from   = " FROM {course} c
                     LEFT JOIN {user_lastaccess} ul ON ul.courseid = c.id AND ul.userid = :currentuser
                     LEFT JOIN {tag_instance} ti ON ti.itemid = c.id

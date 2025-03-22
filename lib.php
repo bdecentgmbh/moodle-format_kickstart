@@ -660,7 +660,6 @@ function format_kickstart_extend_navigation_course(navigation_node $navigation, 
         $node->set_show_in_secondary_navigation(true);
         $node->key = 'kickstart-nav';
         $navigation->add_node($node);
-        $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'instanceMenuLink', []);
     }
 }
 
