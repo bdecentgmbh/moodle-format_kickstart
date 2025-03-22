@@ -65,7 +65,8 @@ body.format-kickstart .form-control .fa-search {
     display: flex;
     margin-bottom: .5rem;
 }
-.format-kickstart .card-deck.templates-block .image-block {
+.format-kickstart .card-deck.templates-block .image-block,
+#page-course-format-kickstart-list .card-deck.templates-block .image-block {
     margin-bottom: 20px;
 }
 .format-kickstart .card-deck.templates-block .image-block .carousel-item {
@@ -76,6 +77,7 @@ body.format-kickstart .form-control .fa-search {
     width: 100%;
     min-height: 120px;
     object-fit: cover;
+    overflow-clip-margin: unset;
     border-radius: 5px;
     height: 100%;
 }
@@ -196,17 +198,13 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 .kickstart-page .template-list.kickstart-list-view .card-deck .card {
     flex-direction: row;
+    flex-wrap: wrap;
 }
 .kickstart-page .template-list.kickstart-list-view .card-deck .card .card-body {
+    width: 40%;
     display: flex;
     align-items: center;
-    gap: 30px;
-}
-.kickstart-page .template-list.kickstart-list-view .card-deck .card .card-body .card-content {
-    width: max-content;
-}
-.kickstart-page .template-list.kickstart-list-view .card-deck .card .card-body .image-block {
-    max-width: 200px;
+    gap: 10px;
 }
 .format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block {
     max-width: 150px;
@@ -250,6 +248,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     padding: 0 0 0 1.25rem;
 }
 .format-kickstart .kickstart-list-view .templates-block .card .card-footer a {
+    width: max-content;
     margin: 5px 0;
 }
 .format-kickstart .kickstart-list-view .templates-block .card .card-footer a.btn-outline-primary {
@@ -267,9 +266,36 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     padding: 0;
 }
 
+@media (max-width: 991px) {
+    .format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block .carousel-item {
+        width: 150px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    #page-course-view-kickstart #page-wrapper #page,
+    #page-course-format-kickstart-list #page-wrapper #page {
+        padding: 2rem;
+    }
+    #page-course-view-kickstart #page-wrapper #page.drawers div[role="main"],
+    #page-course-format-kickstart-list #page-wrapper #page.drawers div[role="main"] {
+        padding: 0;
+    }
+}
+
 @media (max-width: 767px) {
     .format-kickstart .card-footer {
         padding: .625rem;
+    }
+    .kickstart-page .template-list.kickstart-list-view .card-deck .card:has(.image-block) {
+        flex-direction: column;
+    }
+    .kickstart-page .template-list.kickstart-list-view .card-deck .card:has(.image-block) .card-body {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    .kickstart-page .template-list.kickstart-list-view .card-deck .card:has(.image-block) .card-footer {
+        margin-left: auto;
     }
 }
 
@@ -302,18 +328,11 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     align-items: center;
     gap: 5px;
 }
-/* .course-content > .kickstart-page {
-    align-items: normal;
-}
-.kickstart-page .kickstart-block {
-    margin-right: 15px;
-}*/
 .kickstart-page .kickstart-block .tertiary-navigation {
     width: auto;
     border: 0;
-    padding: 0;
-    padding-right: 15px;
-    margin: 0;
+    padding: 0 15px 0 0;
+    margin: 0 10px 0 0;
 }
 .kickstart-page:has(.search-kickstart-template) .kickstart-block .tertiary-navigation,
 .kickstart-page:has(.input-group) .kickstart-block .tertiary-navigation {
@@ -335,12 +354,8 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 .kickstart-page .search-kickstart-template {
     max-width: 390px;
     width: 100%;
-    padding-right: 30px;
-    border-right: 2px solid #eee;
-}
-.course-content > .kickstart-page .search-kickstart-template {
-    max-width: 360px;
     padding-right: 15px;
+    border-right: 2px solid #eee;
 }
 .kickstart-page .input-group {
     min-width: 450px;
@@ -349,9 +364,6 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     border-right: 1px solid #ccc;
     padding: 0 15px 0 0;
 }
-/* .course-content > .kickstart-page .listing-view-block + a {
-    margin-left: auto;
-} */
 
 /* Tile view */
 
@@ -365,7 +377,6 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     flex-basis: 19.5%;
 }
 .kickstart-page .template-list .card-deck .card .card-footer {
-    width: 100%;
     border: 0;
     background: none;
     display: flex;
@@ -373,8 +384,31 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     flex-direction: row-reverse;
     align-items: center;
 }
+.kickstart-page .template-list.kickstart-tile-view .card-deck .card .card-footer {
+    padding: 0 1.25rem 1.25rem;
+}
 
 /* End of Tile view */
+
+#page-course-view-kickstart.limitedwidth #page.drawers .main-inner:has(.kickstart-page .search-kickstart-template),
+#page-course-view-kickstart.limitedwidth #page.drawers .main-inner:has(.kickstart-page .librarycourse-filter-item) {
+    max-width: 100%;
+}
+#page-course-format-kickstart-list #page.drawers .main-inner:has(.kickstart-page .summary-view-block),
+#page-course-format-kickstart-list #page.drawers .main-inner:has(.kickstart-page .mform),
+#page-course-format-kickstart-list #page.drawers .main-inner:has(.kickstart-page .alert) {
+    max-width: 830px;
+}
+#page-course-view-kickstart .secondary-navigation .navigation,
+#page-course-format-kickstart-list .secondary-navigation .navigation {
+    margin: 0;
+}
+#page-course-view-kickstart #page.drawers div[role="main"],
+#page-course-format-kickstart-list #page.drawers div[role="main"] {
+    padding: 0;
+}
+
+
 
 .kickstart-page .listing-view-block {
     margin: 5px 10px 5px auto;
