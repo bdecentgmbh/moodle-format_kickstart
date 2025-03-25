@@ -41,7 +41,7 @@ body.format-kickstart .form-control .fa-search {
     border-top: 1px;
     border-bottom: 1px;
     border-right: 1px;
-    border-color: #ccc;
+    border-color: #dee2e6;
     border-style: solid;
 }
 
@@ -300,7 +300,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 
 /* Content Migration from course block */
-.format-kickstart.path-course-view .course-content .card {
+.format-kickstart.path-course-view .course-content .course-kickstart-block .card {
     padding: 1.25rem;
 }
 /* Teacher profile block */
@@ -328,6 +328,9 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     align-items: center;
     gap: 10px 5px;
 }
+.kickstart-page .search-kickstart-template ~ hr {
+    border-top: 1px solid #dee2e6;
+}
 .kickstart-page:has(.summary-view-block),
 .kickstart-page:has(.alert-block) {
     max-width: 830px;
@@ -341,7 +344,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 .kickstart-page:has(.search-kickstart-template) .kickstart-block .tertiary-navigation,
 .kickstart-page:has(.input-group) .kickstart-block .tertiary-navigation {
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #dee2e6;
 }
 .kickstart-page .kickstart-block .tertiary-navigation .navitem {
     margin-bottom: 0;
@@ -360,13 +363,13 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     max-width: 390px;
     width: 100%;
     padding-right: 15px;
-    border-right: 2px solid #eee;
+    border-right: 2px solid #dee2e6;
 }
 .kickstart-page .input-group {
     min-width: 450px;
     max-width: 450px;
     width: 100%;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #dee2e6;
     padding: 0 15px 0 0;
 }
 
