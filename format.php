@@ -52,7 +52,12 @@ $renderer = $PAGE->get_renderer('format_kickstart');
 
 echo html_writer::start_div('kickstart-page');
 
-echo $renderer->render_action_bar($actionbar);
+if (has_capability('format/kickstart:import_from_template', $context)) {
+    echo $renderer->render_action_bar($actionbar);
+} else {
+    $nav = 'studentview';
+}
+
 
 if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php')) {
     require_once($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php');
