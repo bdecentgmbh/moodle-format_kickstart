@@ -363,7 +363,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     max-width: 390px;
     width: 100%;
     padding-right: 15px;
-    border-right: 2px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
 }
 .kickstart-page .input-group {
     min-width: 450px;
