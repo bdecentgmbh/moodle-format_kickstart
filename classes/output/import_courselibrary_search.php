@@ -246,6 +246,7 @@ class import_courselibrary_search {
     public function get_searchsql() {
         global $DB, $CFG, $USER;
 
+        $context = \context_system::instance();
         $ctxselect = ', ' . \context_helper::get_preload_record_columns_sql('ctx');
         $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
         $params = [
@@ -272,7 +273,7 @@ class import_courselibrary_search {
             foreach ($this->requiredcapabilities as $cap) {
                 $capindex++;
                 $rolecapjoin = "LEFT JOIN {role_capabilities} rc{$capindex} ON rc{$capindex}.capability = :capability{$capindex}";
-                $roleassignjoin = "LEFT JOIN {role_assignments} ra{$capindex} ON ra{$capindex}.roleid = rc{$capindex}.roleid 
+                $roleassignjoin = "LEFT JOIN {role_assignments} ra{$capindex} ON ra{$capindex}.roleid = rc{$capindex}.roleid
                                 AND ra{$capindex}.contextid = ctx.id";
 
                 $capjoin .= " $rolecapjoin $roleassignjoin ";
@@ -291,10 +292,6 @@ class import_courselibrary_search {
                 $capwhere = " AND (" . implode(" OR ", $capconditions) . ")";
             }
         }
-
-
-
-
 
 
         $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
@@ -328,8 +325,6 @@ class import_courselibrary_search {
                     LEFT JOIN {tag} cmt ON cmt.id = cmti.tagid
                     LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
                     LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid ";
-        // Add capability joins
-        $from .= $capjoin;
 
         $where  = " WHERE c.id > 1 AND (".$DB->sql_like('c.fullname', ':fullnamesearch', false)." OR ".
                 $DB->sql_like('c.shortname', ':shortnamesearch', false). " OR ".
@@ -339,8 +334,12 @@ class import_courselibrary_search {
                 $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false). " OR ".
                 $DB->sql_like('cmt.name', ':activitytagsearch', false). ")";
 
-        // Add capability conditions
-        $where .= $capwhere;
+        if (!is_siteadmin()) {
+            // Add capability conditions
+            // Add capability joins
+            $from .= $capjoin;
+            $where .= $capwhere;
+        }
 
         if (!empty($this->customfields)) {
             $customfieldconditions = [];
@@ -369,7 +368,7 @@ class import_courselibrary_search {
                 break;
         }
 
-        if ($this->currentcourseid !== null && !$this->includecurrentcourse) {
+        if ($this->currentcourseid !== null) {
             $where .= " AND c.id <> :currentcourseid";
             $params['currentcourseid'] = $this->currentcourseid;
         }
@@ -422,26 +421,12 @@ class import_courselibrary_search {
         // Get total number, to avoid some incorrect iterations.
         $countsql = preg_replace('/ORDER BY.*/', '', $sql);
         $totalcourses = $DB->count_records_sql("SELECT COUNT(*) FROM ($countsql) sel", $params);
+
         if ($totalcourses > 0) {
-            // User to be checked is always the same (usually null, get it from first element).
-            $firstcap = reset($this->requiredcapabilities);
-            $userid = isset($firstcap['user']) ? $firstcap['user'] : null;
-            // Extract caps to check, this saves us a bunch of iterations.
-            /* $requiredcaps = [];
-            foreach ($this->requiredcapabilities as $cap) {
-                $requiredcaps[] = $cap['capability'];
-            } */
             // Iterate while we have records and haven't reached $this->maxresults.
             $resultset = $DB->get_recordset_sql($sql, $params);
             foreach ($resultset as $result) {
                 \context_helper::preload_from_record($result);
-                $classname = \context_helper::get_class_for_level($contextlevel);
-                $context = $classname::instance($result->id);
-                /* if (count($requiredcaps) > 0) {
-                    if (!has_all_capabilities($requiredcaps, $context, $userid)) {
-                        continue;
-                    }
-                } */
                 // Check if we are over the limit.
                 if ($this->totalcount + 1 > $this->maxresults) {
                     $this->hasmoreresults = true;

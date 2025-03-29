@@ -393,8 +393,16 @@ function check_record_exsist($filerecord) {
 function format_kickstart_import_courseformat_template() {
     global $DB, $CFG;
     $formats = core_plugin_manager::instance()->get_plugins_of_type('format');
+
+    // Delete the kickstart format.
+    if ($DB->record_exists('format_kickstart_template', ['format' => 'kickstart', 'courseformat' => 1])) {
+        $DB->delete_records('format_kickstart_template', ['format' => 'kickstart', 'courseformat' => 1]);
+    }
     $counttemplate = $DB->count_records("format_kickstart_template");
     foreach ($formats as $format) {
+        if ($format->name == 'kickstart') {
+            continue;
+        }
         $counttemplate++;
         if ($format->name == 'designer') {
             require_once($CFG->dirroot."/course/format/designer/lib.php");

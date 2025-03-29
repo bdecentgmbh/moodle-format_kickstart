@@ -64,16 +64,27 @@ trait kickstart_page {
      * Get the student view content.
      */
     public function get_studentview_content() {
-        global $OUTPUT;
+        global $OUTPUT, $PAGE;
         $content = \html_writer::start_div('summary-view-block');
         if ($this->course->format == 'kickstart') {
-            $course = course_get_format($this->course)->get_course();
-            $content .= format_text($course->userinstructions['text'], $course->userinstructions['format']);
-            $content .= \html_writer::end_div();
+
+            if (has_capability('format/kickstart:import_from_template', $this->context)) {
+                $content .= $OUTPUT->notification(get_string('teacherstudentview', 'format_kickstart'), 'info');
+            }
+
+            if (format_kickstart_has_pro()) {
+                $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
+                $content .= $prorenderer->render(new \local_kickstart_pro\output\default_view($this->course));
+            } else {
+                $course = course_get_format($this->course)->get_course();
+                $content .= html_writer::tag('h2', get_string('welcometo', 'format_kickstart') . " " . $this->course->fullname, ['class' => '"mt-3']);
+                $content .= format_text($course->userinstructions['text'], $course->userinstructions['format']);
+                $content .= \html_writer::end_div();
+            }
             return $content;
         }
 
-        $content .= $OUTPUT->notification(get_string('studentviewnotavailable', 'format_kickstart'), 'warning');
+        $content .= $OUTPUT->notification(get_string('studentviewnotavailable', 'format_kickstart'), 'info');
         $content .= \html_writer::end_div();
         return $content;
     }

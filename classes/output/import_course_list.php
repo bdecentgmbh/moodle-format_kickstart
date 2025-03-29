@@ -78,7 +78,7 @@ class import_course_list implements \templatable, \renderable {
 
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
-        $component = new import_courselibrary_search(['url' => $url], null,
+        $component = new import_courselibrary_search(['url' => $url], $COURSE->id,
             $this->filtercustomfields, $this->sorttype, $this->page);
         $courses = [];
         $html = '';
@@ -155,7 +155,6 @@ class import_course_list implements \templatable, \renderable {
             }
         }
         $page = $this->page;
-        $paginationurl = new \moodle_url($PAGE->url, ['page' => $page]);
         $pagination = $OUTPUT->paging_bar($component->get_total_course_count(), $page,
             get_config('format_kickstart', 'courselibraryperpage'), $PAGE->url);
         return [
@@ -278,7 +277,11 @@ class import_course_list implements \templatable, \renderable {
 
             $formattedstring = [];
             foreach ($sectionmodulenames as $module => $count) {
-                $formattedstring[]['value'] = $count . ' ' . $module;
+                if ($count == 1) {
+                    $formattedstring[]['value'] = $count . ' ' . $module;
+                } else {
+                    $formattedstring[]['value'] = $count . ' ' . $module . get_string('moduleplural', 'format_kickstart');
+                }
             }
 
             $sectionvalues['sectionmodulenames'] = $formattedstring;
