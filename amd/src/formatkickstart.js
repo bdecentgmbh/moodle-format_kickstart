@@ -186,9 +186,9 @@
     Formatkickstart.prototype.importCourse = function(args) {
         var self = this;
         var promise = Fragment.loadFragment('format_kickstart', 'import_activity_courselib', self.contextId, args);
-        promise.then((cmid) => {
+        promise.then((viewurl) => {
             if (args.action == 'view') {
-                window.location.href = M.cfg.wwwroot + '/mod/' + args.modname + '/view.php?id=' + cmid;
+                window.location.href = viewurl;
             } else {
                 str.get_string('importactivitysuccessfully', 'format_kickstart').then(function(string) {
                     Toast.add(string, {type: 'success'});

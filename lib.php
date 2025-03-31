@@ -842,7 +842,7 @@ function format_kickstart_output_fragment_get_import_module_box($args) {
  *                    - maincourse: The destination course ID
  *                    - cmid: The course module ID to be imported
  *                    - sectionid: The target section ID for the imported module
- * @return int The ID of the newly imported course module
+ * @return url The ID of the newly imported course module
  */
 function format_kickstart_output_fragment_import_activity_courselib($args) {
     global $USER, $CFG, $DB, $PAGE;
@@ -863,24 +863,46 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
         backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id, backup::TARGET_EXISTING_ADDING);
     // Set target section using settings.
     $plan = $rc->get_plan();
-    $rc->execute_precheck();
+    $cmcontext = \context_module::instance($args['cmid']);
+
+    if (!$rc->execute_precheck()) {
+        $precheckresults = $rc->get_precheck_results();
+        if (is_array($precheckresults) && !empty($precheckresults['errors'])) {
+            if (empty($CFG->keeptempdirectoriesonbackup)) {
+                fulldelete($backupbasepath);
+            }
+        }
+    }
+
     $rc->execute_plan();
 
+    $newcmid = null;
+    $tasks = $rc->get_plan()->get_tasks();
+    foreach ($tasks as $task) {
+        if (is_subclass_of($task, 'restore_activity_task')) {
+            if ($task->get_old_contextid() == $cmcontext->id) {
+                $newcmid = $task->get_moduleid();
+                break;
+            }
+        }
+    }
     // Get mapping data from restore.
     $rc->destroy();
-
-    $record = $DB->get_record_sql("SELECT * FROM {course_modules} WHERE course = ? ORDER BY id DESC",
-        [$args['maincourse']], IGNORE_MULTIPLE);
 
     $courseformat = course_get_format($args['maincourse']);
     $maincourserecord = $courseformat->get_course();
     $modinfo = get_fast_modinfo($maincourserecord);
-    $cm = $modinfo->get_cm($record->id);
+    $cm = $modinfo->get_cm($newcmid);
     $targetsection = $modinfo->get_section_info_by_id($args['sectionid'], MUST_EXIST);
 
     moveto_module($cm, $targetsection);
     // Any state action mark the state cache as dirty.
     core_courseformat\base::session_cache_reset($maincourserecord);
+    $viewurl = new \moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);
+    if ($subsection = $DB->get_record('modules', ['name' => 'subsection']) && $subsection->id == $cm->module) {
+        $subsectionid = $DB->get_field('course_modules', 'id', ['itemid' => $newcmid, 'course' => $cm->course]);
+        $viewurl = new \moodle_url('/course/section.php', ['id' => $subsectionid]);
+    }
 
-    return $record->id;
+    return $viewurl->out(false);
 }
