@@ -58,6 +58,9 @@ body.format-kickstart .form-control .fa-search {
     display: flex;
     flex-direction: column;
 }
+.format-kickstart .summary-view-block .card {
+    padding: 1.5rem;
+}
 .format-kickstart .course-content > a {
     float: right;
 }
@@ -322,7 +325,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 
 /* Kickstart Interface template */
 .kickstart-page {
-    padding-top: 15px;
+    padding-top: 10px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -330,9 +333,15 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 .kickstart-page .search-kickstart-template ~ hr {
     border-top: 1px solid #dee2e6;
+    margin-top: 14px;
 }
-.kickstart-page:has(.summary-view-block),
-.kickstart-page:has(.alert-block) {
+.kickstart-page .mform {
+    width: 100%;
+}
+.kickstart-page .summary-view-block,
+/* .kickstart-page:not(:has(.mform)) .alert-block, */
+.kickstart-page:has(.summary-view-block) .kickstart-block .tertiary-navigation,
+.kickstart-page:has(.alert-block):not(:has(.mform)) .kickstart-block .tertiary-navigation {
     max-width: 830px;
     margin: 0 auto;
 }
@@ -347,7 +356,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 .kickstart-page:has(.alert-success) .kickstart-block {
     width: 100%;
     border-bottom: 1px solid #dee2e6;
-    padding-bottom: 26px;
+    padding-bottom: 24px;
     margin-bottom: 30px;
 }
 .kickstart-page:has(.search-kickstart-template) .kickstart-block .tertiary-navigation,
@@ -449,7 +458,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 
 
 .kickstart-page .listing-view-block {
-    margin: 5px 10px 5px auto;
+    margin: 0 10px 0 auto;
     margin-left: auto;
     margin-right: 10px;
     display: flex;
