@@ -174,5 +174,4 @@ $string['weight_tags'] = 'Course tags weight';
 $string['weight_tags_desc'] = 'Weight for course tags relevance (0-10). Higher values give more importance to tag matching.';
 $string['welcometo'] = 'Welcome to';
 $string['welcometoyourcourse'] = 'Welcome to your new course';
-$string['moduleplural'] = "s";
 $string['teacherstudentview'] = "This page shows how students will view the current course when no template is applied.";

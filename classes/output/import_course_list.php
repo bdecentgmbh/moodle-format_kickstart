@@ -247,9 +247,8 @@ class import_course_list implements \templatable, \renderable {
                     $module['modname'] = (string) $cm->modname;
                     $module['modplural'] = (string) $cm->modplural;
                     $module['modicon'] = $cm->get_icon_url()->out(false);
-                    $moduleplugname = get_string('pluginname', $module['modname']);
-                    $sectionmodulenames[$moduleplugname] = isset($sectionmodulenames[$moduleplugname]) ?
-                        $sectionmodulenames[$moduleplugname] + 1 : 1;
+                    $sectionmodulenames[$cm->modname] = isset($sectionmodulenames[$cm->modname]) ?
+                        $sectionmodulenames[$cm->modname] + 1 : 1;
                     // Url of the module.
                     $url = $cm->url;
                     if ($url) {
@@ -278,9 +277,9 @@ class import_course_list implements \templatable, \renderable {
             $formattedstring = [];
             foreach ($sectionmodulenames as $module => $count) {
                 if ($count == 1) {
-                    $formattedstring[]['value'] = $count . ' ' . $module;
+                    $formattedstring[]['value'] = $count . ' ' . get_string('pluginname', $module);
                 } else {
-                    $formattedstring[]['value'] = $count . ' ' . $module . get_string('moduleplural', 'format_kickstart');
+                    $formattedstring[]['value'] = $count . ' ' . get_string('modulenameplural', $module);
                 }
             }
 
