@@ -366,9 +366,6 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 .kickstart-page .kickstart-block .tertiary-navigation .navitem {
     margin-bottom: 0;
 }
-.kickstart-page .kickstart-block .tertiary-navigation .navitem .dropdown .dropdown-toggle:focus {
-    box-shadow: none;
-}
 .kickstart-page .kickstart-block + .mform {
     width: 100%;
 }
