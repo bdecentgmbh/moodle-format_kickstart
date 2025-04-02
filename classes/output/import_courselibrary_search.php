@@ -262,9 +262,7 @@ class import_courselibrary_search {
             'currentuserid' => $USER->id,
         ];
 
-
-
-        // Extract capability requirements
+        // Extract capability requirements.
         $capjoin = '';
         $capwhere = '';
         if (!empty($this->requiredcapabilities)) {
@@ -279,7 +277,7 @@ class import_courselibrary_search {
                 $capjoin .= " $rolecapjoin $roleassignjoin ";
                 $params["capability{$capindex}"] = $cap['capability'];
 
-                // Check if a specific user is required
+                // Check if a specific user is required.
                 if (isset($cap['user']) && is_int($cap['user'])) {
                     $capconditions[] = "(ra{$capindex}.userid = :capuser{$capindex})";
                     $params["capuser{$capindex}"] = $cap['user'];
@@ -292,7 +290,6 @@ class import_courselibrary_search {
                 $capwhere = " AND (" . implode(" OR ", $capconditions) . ")";
             }
         }
-
 
         $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
         $moduleunions = [];
@@ -307,10 +304,11 @@ class import_courselibrary_search {
         }
         $modulesql = implode(" UNION ALL ", $moduleunions);
 
-        $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder, COALESCE(ul.timeaccess, 0) AS timeaccess ";
+        $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
+            COALESCE(ul.timeaccess, 0) AS timeaccess ";
         $from   = " FROM {course} c ";
 
-        // Add context join immediately after the course table
+        // Add context join immediately after the course table.
         $from .= $ctxjoin;
 
         $from .= " LEFT JOIN {user_lastaccess} ul ON ul.courseid = c.id AND ul.userid = :currentuser
@@ -335,8 +333,8 @@ class import_courselibrary_search {
                 $DB->sql_like('cmt.name', ':activitytagsearch', false). ")";
 
         if (!is_siteadmin()) {
-            // Add capability conditions
-            // Add capability joins
+            // Add capability conditions.
+            // Add capability joins.
             $from .= $capjoin;
             $where .= $capwhere;
         }
