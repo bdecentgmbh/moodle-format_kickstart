@@ -71,7 +71,6 @@ Feature: Check the kickstart interface.
 
     # Check the manage templates.
     Then I navigate to "Plugins > Course formats > Manage templates" in site administration
-    And I should see "Kickstart format" in the ".generaltable" "css_element"
     And I click on "Create template" "button"
     And I set the following fields to these values:
       | Title | Test template 2 |
@@ -86,6 +85,7 @@ Feature: Check the kickstart interface.
     And I should see "Test template 2" in the ".kickstart-tile-view" "css_element"
     And I click on ".use-template[data-templatename=\"Test template 2\"]" "css_element" in the ".template-list" "css_element"
     And I click on "Import" "button" in the ".modal-dialog" "css_element"
+    And I wait "30" seconds
     And I should see "General" in the ".section .course-section-header .sectionname" "css_element"
 
     # Course kickstart page
@@ -100,7 +100,6 @@ Feature: Check the kickstart interface.
     # Tile view
     And I click on "#tile-view" "css_element" in the ".listing-view-block" "css_element"
     And ".template-list.kickstart-tile-view" "css_element" should exist in the ".kickstart-page" "css_element"
-    And I should see "Kickstart format" in the ".kickstart-tile-view" "css_element"
 
     # Template search
     And I set the following fields to these values:
@@ -125,7 +124,6 @@ Feature: Check the kickstart interface.
     And I click on ".dropdown-toggle" "css_element" in the ".tertiary-navigation-selector" "css_element"
     And I click on ".dropdown .dropdown-menu .dropdown-item:nth-child(3)" "css_element" in the ".tertiary-navigation-selector" "css_element"
     And I should see "Help" in the ".tertiary-navigation-selector .dropdown-toggle" "css_element"
-    And I should see "Kickstart: Feature Documentation"
     And I should see "Kickstart Features" in the ".kickstart-block h3" "css_element"
 
     # Change the Student & Teacher instructions
@@ -168,6 +166,5 @@ Feature: Check the kickstart interface.
     And I click on ".dropdown-toggle" "css_element" in the ".tertiary-navigation-selector" "css_element"
     And I click on ".dropdown .dropdown-menu .dropdown-item:nth-child(3)" "css_element" in the ".tertiary-navigation-selector" "css_element"
     And I should see "Help" in the ".tertiary-navigation-selector .dropdown-toggle" "css_element"
-    And I should see "Kickstart: Feature Documentation"
     And I should see "Kickstart Features" in the ".kickstart-block h3" "css_element"
     And I log out

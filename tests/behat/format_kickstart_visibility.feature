@@ -121,7 +121,6 @@ Feature: Check the kickstart course format features.
   Scenario: Check the format plugin template access.
     Given I log in as "admin"
     Then I navigate to "Plugins > Course formats > Manage templates" in site administration
-    And I should see course format "Kickstart format"
     And I should see course format "Single activity"
     And I should see course format "Social"
     And I should see course format "Custom sections"

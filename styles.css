@@ -438,7 +438,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 
 /* End of Tile view */
 
-#page-course-view-kickstart.limitedwidth #page.drawers .main-inner:has(:not(.kickstart-page .summary-view-block)) {
+#page-course-view-kickstart.limitedwidth #page.drawers .main-inner:not(:has(.kickstart-page .summary-view-block)):not(:has(.kickstart-page .alert-block)) {
     max-width: 100%;
 }
 #page-course-format-kickstart-list #page.drawers .main-inner:has(.kickstart-page .summary-view-block),
@@ -454,8 +454,6 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 #page-course-format-kickstart-list #page.drawers div[role="main"] {
     padding: 0;
 }
-
-
 
 .kickstart-page .listing-view-block {
     margin: 0 10px 0 auto;
