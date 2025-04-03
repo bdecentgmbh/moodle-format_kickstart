@@ -471,7 +471,7 @@ function format_kickstart_update_template_format_options($template) {
         }
         foreach ($records as $record) {
             if (!$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
-                'templateid' => $template->id, 'name' => $record->name, ])) {
+                'templateid' => $template->id, 'name' => $record->name])) {
                 $data = new stdClass();
                 $data->templateid = $template->id;
                 $data->displayname = $template->title;
@@ -899,7 +899,8 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     // Any state action mark the state cache as dirty.
     core_courseformat\base::session_cache_reset($maincourserecord);
     $viewurl = new \moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);
-    if ($subsection = $DB->get_record('modules', ['name' => 'subsection']) && $subsection->id == $cm->module) {
+    if ($subsection = $DB->get_record('modules', ['name' => 'subsection']) && !empty($subsection) &&
+        $subsection->id == $cm->module) {
         $subsectionid = $DB->get_field('course_modules', 'id', ['itemid' => $newcmid, 'course' => $cm->course]);
         $viewurl = new \moodle_url('/course/section.php', ['id' => $subsectionid]);
     }
