@@ -36,6 +36,7 @@ require_login();
 $context = context_system::instance();
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
+
 require_capability('format/kickstart:manage_templates', $context);
 
 // Check the template add or not.

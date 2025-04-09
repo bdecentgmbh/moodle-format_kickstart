@@ -1,0 +1,46 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+{{!
+    @template format_kickstart/import_module_list
+
+    Template for the course template header displayed to teachers.
+
+    Example context (json):
+    {
+        "information": "Choose a section to import the activity",
+        "sections": [{
+            "id": "1",
+            "name": "Section 1"
+        }, {
+            "id": "2",
+            "name": "Section 2"
+        }]
+    }
+}}
+
+<p data-for="sectionname"> {{information}}: </p>
+<nav class="import-section-tree" id="destination-selector" role="navigation">
+    <label>{{#str}} choosesectionimportactivity, format_kickstart {{/str}}</label>
+    <select class="custom-select section-list-item d-flex" name="import-module-section" id="import-module-section">
+        {{#sections}}
+        {{#.}}
+            <option value="{{id}}">{{name}}</option>
+        {{/.}}
+        {{/sections}}
+    </select>
+</nav>

@@ -39,71 +39,69 @@
         }]
     }
 }}
-{{#canmanage}}<a href="{{managetemplateurl}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}manage_templates, format_kickstart{{/str}}</a>{{/canmanage}}
-<h3>{{#str}}welcometoyourcourse, format_kickstart{{/str}}</h3>
-{{{teacherinstructions}}}
 
-<hr>
+{{^ajaxscript}}
+    {{{teacherinstructions}}}
+{{/ajaxscript}}
 
-<h4 class="text-muted">{{#str}}course_templates, format_kickstart{{/str}}</h4>
 <div class="template-list {{templateclass}}">
     {{#notemplates}}
         <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
     {{/notemplates}}
     {{#templates}}
-        {{#groups}}
             <div class="card-deck mb-2 templates-block">
-                {{#templates}}
-                    {{^isplaceholder}}
-                        <div class="card" data-templatename="{{title}}">
-                            <div class="card-body">
-                                {{#isbackimages}}
-                                <div class="image-block">
-                                    <div id="carousel-template-{{id}}" class="carousel slide" data-ride="carousel" data-interval="2000">
-                                        {{#showimageindicators}}
-                                        <ol class="carousel-indicators">
-                                            {{#backimages}}
-                                            <li data-target="#carousel-template-{{id}}" data-slide-to="{{pos}}" class="{{#active}} active{{/active}}"></li>
-                                            {{/backimages}}
-                                        </ol>
-                                        {{/showimageindicators}}
-                                        <div class="carousel-inner">
-                                            {{#backimages}}
-                                            <div class="carousel-item {{#active}}active{{/active}}">
-                                                <img class="d-block w-100" src="{{{image}}}">
-                                            </div>
-                                            {{/backimages}}
+                {{^isplaceholder}}
+                    <div class="card" data-templatename="{{title}}">
+                        <div class="card-body">
+                            {{#isbackimages}}
+                            <div class="image-block">
+                                <div id="carousel-template-{{id}}" class="carousel slide" data-ride="carousel" data-interval="2000">
+                                    {{#showimageindicators}}
+                                    <ol class="carousel-indicators">
+                                        {{#backimages}}
+                                        <li data-target="#carousel-template-{{id}}" data-slide-to="{{pos}}" class="{{#active}} active{{/active}}"></li>
+                                        {{/backimages}}
+                                    </ol>
+                                    {{/showimageindicators}}
+                                    <div class="carousel-inner">
+                                        {{#backimages}}
+                                        <div class="carousel-item {{#active}}active{{/active}}">
+                                            <img class="d-block w-100" src="{{{image}}}">
                                         </div>
+                                        {{/backimages}}
                                     </div>
                                 </div>
-                                {{/isbackimages}}
-                                <div class="card-content">
-                                    <h5 class="card-title">{{{title}}}</h5>
-                                    <p class="card-text">{{{description_formatted}}}</p>
-                                    <small class="text-muted">{{hashtags}}</small>
-                                </div>
                             </div>
-                            <div class="card-footer">
-                                <a href="{{{link}}}" data-template={{id}} data-templatename="{{title}}" class="btn btn-primary use-template">{{#str}}usetemplate, format_kickstart{{/str}}</a>
-                                {{#preview_url}}
-                                    <a href="{{preview_url}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}preview{{/str}}</a>
-                                {{/preview_url}}
+                            {{/isbackimages}}
+                            <div class="card-content">
+                                <h5 class="card-title">{{title}}</h5>
+                                <p class="card-text">{{{description_formatted}}}</p>
+                                <small class="text-muted">{{hashtags}}</small>
                             </div>
                         </div>
-                    {{/isplaceholder}}
-                    {{#isplaceholder}}
-                        <div class="card bg-secondary">
-
-                            <div class="card-body d-flex">
-                                <div class="align-self-center text-center" style="width: 100%">
-                                    <p class="card-text">{{title}}</p>
-                                    <a href="{{{link}}}" target="_blank" class="btn btn-dark">{{#str}}learnmore, format_kickstart{{/str}}</a>
-                                </div>
+                        <div class="card-footer">
+                            {{^waitingadhoctask}}
+                                <a href="{{{link}}}" data-template="{{id}}" data-templatename="{{title}}" class="btn btn-primary use-template">{{#str}}usetemplate, format_kickstart{{/str}}</a>
+                            {{/waitingadhoctask}}
+                            {{#waitingadhoctask}}
+                                <span class="template-wait-info"> {{#str}} waitingadhoctasktemplate, format_kickstart {{/str}}</span>
+                            {{/waitingadhoctask}}
+                            {{#preview_url}}
+                                <a href="{{preview_url}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}preview{{/str}}</a>
+                            {{/preview_url}}
+                        </div>
+                    </div>
+                {{/isplaceholder}}
+                {{#isplaceholder}}
+                    <div class="card bg-secondary">
+                        <div class="card-body d-flex">
+                            <div class="align-self-center text-center w-100">
+                                <p class="card-text">{{title}}</p>
+                                <a href="{{{link}}}" target="_blank" class="btn btn-dark">{{#str}}learnmore, format_kickstart{{/str}}</a>
                             </div>
                         </div>
-                    {{/isplaceholder}}
-                {{/templates}}
+                    </div>
+                {{/isplaceholder}}
             </div>
-        {{/groups}}
     {{/templates}}
 </div>

@@ -45,15 +45,14 @@ class template_form extends \moodleform {
      * @throws \coding_exception
      */
     public function definition() {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $USER;
 
         $mform = $this->_form;
         $templatebgoptions = $this->_customdata['templatebgoptions'];
+        $courseautotemplate = isset($this->_customdata['courseautotemplate']) ? true : false;
         $template = isset($this->_customdata['template']) ? $this->_customdata['template'] : [];
         $editoroptions = $this->_customdata['editoroptions'];
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
         $attributes = [];
         $checkformat = !empty($template) && isset($template['courseformat']) && $template['courseformat'];
         if ($checkformat) {
@@ -70,7 +69,12 @@ class template_form extends \moodleform {
         $mform->addElement('tags', 'tags', get_string('tags'),
             ['itemtype' => 'format_kickstart_template', 'component' => 'format_kickstart']);
 
-        if (!$checkformat) {
+        if (!$courseautotemplate) {
+            $mform->addElement('hidden', 'id');
+            $mform->setType('id', PARAM_INT);
+        }
+
+        if (!$checkformat && !$courseautotemplate) {
 
             $mform->addElement('filemanager', 'course_backup',
                 get_string('course_backup', 'format_kickstart'), null, [
@@ -83,12 +87,16 @@ class template_form extends \moodleform {
             $mform->addRule('course_backup', get_string('required'), 'required');
         }
 
-        $mform->addElement('text', 'preview_url', get_string('previewurl', 'format_kickstart'));
-        $mform->setType('preview_url', PARAM_URL);
-        $mform->addHelpButton('preview_url', 'previewurl', 'format_kickstart');
+        if (!$courseautotemplate) {
+
+            $mform->addElement('text', 'preview_url', get_string('previewurl', 'format_kickstart'));
+            $mform->setType('preview_url', PARAM_URL);
+            $mform->addHelpButton('preview_url', 'previewurl', 'format_kickstart');
+        }
 
         if (format_kickstart_has_pro() ) {
             require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+
             if (function_exists('local_kickstart_pro_get_template_backimages')) {
                 // Template background images.
                 $mform->addElement('filemanager', 'templatebackimg',
@@ -138,6 +146,29 @@ class template_form extends \moodleform {
 
             $mform->addElement('autocomplete', 'roleids', get_string('roles'), $roleoptions, ['multiple' => true]);
             $mform->hideIf('roleids', 'restrictrole');
+
+            $mform->addElement('html', '<hr>');
+
+            $mform->addElement('advcheckbox', 'restrictuser', get_string('restrictuser', 'format_kickstart'));
+            $mform->setType('restrictuser', PARAM_BOOL);
+
+            // Restrict userids.
+            $options = [
+                'ajax' => 'core_user/form_user_selector',
+                'multiple' => true,
+                'valuehtmlcallback' => function($userid) {
+                    $user = \core_user::get_user($userid);
+                    return fullname($user, has_capability('moodle/site:viewfullnames', \context_system::instance()));
+                },
+            ];
+
+            $userelement = $mform->addElement('autocomplete', 'userids', get_string('addusers', 'core_reportbuilder'),
+                [], $options);
+            if ($courseautotemplate) {
+                $userelement->setValue($USER->id);
+                $mform->setDefault('restrictuser', 1);
+            }
+            $mform->hideIf('userids', 'restrictuser');
         }
 
         if ($checkformat) {

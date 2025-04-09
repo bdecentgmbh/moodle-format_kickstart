@@ -248,6 +248,37 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2023071101, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2025022000) {
+        $table = new xmldb_table('format_kickstart_template');
+        $field = new xmldb_field('restrictuser', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'restrictrole');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('userids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'cohortids');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('coursefromtemplate', XMLDB_TYPE_INTEGER, '10', null, null, null, 0, 'courseformat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, 0, 'coursefromtemplate');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('userid', XMLDB_TYPE_INTEGER, '10', null, null, null, 0, 'courseid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2025022000, 'format', 'kickstart');
+    }
+
     format_kickstart_import_courseformat_template();
 
     return true;
