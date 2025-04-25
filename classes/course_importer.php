@@ -172,6 +172,7 @@ class course_importer {
             $summaryformat = $course->summaryformat;
             $enddate = $course->enddate;
             $timecreated = $course->timecreated;
+            $visible = $course->visible;
             // Reload course.
             $course = $DB->get_record('course', ['id' => $courseid]);
             $course->fullname = $fullname;
@@ -180,6 +181,7 @@ class course_importer {
             $course->summaryformat = $summaryformat;
             $course->enddate = $enddate;
             $course->timecreated = $timecreated;
+            $course->visible = $visible;
             $DB->update_record('course', $course);
         }
     }
