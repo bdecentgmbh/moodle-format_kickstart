@@ -291,18 +291,31 @@ class import_courselibrary_search {
             }
         }
 
+        // FIXED: Module union query with proper column handling
         $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
         $moduleunions = [];
         foreach ($modules as $module) {
             // Clean the module name and verify table exists.
             $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
             if ($DB->get_manager()->table_exists($tablename)) {
+                
+                // Check if the intro column exists in this table
+                $columns = $DB->get_columns($tablename);
+                $introColumn = isset($columns['intro']) ? 'intro' : "'' as intro";
+                
                 // Use proper Moodle DB table name formatting.
                 $moduleunions[] = "SELECT '".$DB->sql_compare_text($module->name).
-                    "' as modname, id, name, intro FROM {".$tablename."}";
+                    "' as modname, id, name, {$introColumn} FROM {".$tablename."}";
             }
         }
-        $modulesql = implode(" UNION ALL ", $moduleunions);
+        
+        // Only create the module SQL if we have unions to avoid empty UNION
+        if (!empty($moduleunions)) {
+            $modulesql = implode(" UNION ALL ", $moduleunions);
+        } else {
+            // Fallback empty result set with correct structure
+            $modulesql = "SELECT '' as modname, 0 as id, '' as name, '' as intro WHERE 1=0";
+        }
 
         $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
             COALESCE(ul.timeaccess, 0) AS timeaccess ";
@@ -324,12 +337,13 @@ class import_courselibrary_search {
                     LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
                     LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid ";
 
+        // FIXED: Updated WHERE clause to handle NULL intro values properly
         $where  = " WHERE c.id > 1 AND (".$DB->sql_like('c.fullname', ':fullnamesearch', false)." OR ".
                 $DB->sql_like('c.shortname', ':shortnamesearch', false). " OR ".
                 $DB->sql_like('c.summary', ':descriptionsearch', false). " OR ".
                 $DB->sql_like('t.name', ':tagsearch', false). " OR ".
                 $DB->sql_like('modinfo.name', ':activitynamesearch', false). " OR ".
-                $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false). " OR ".
+                $DB->sql_like('COALESCE(modinfo.intro, \'\')', ':activitydescriptionsearch', false). " OR ".
                 $DB->sql_like('cmt.name', ':activitytagsearch', false). ")";
 
         if (!is_siteadmin()) {
@@ -466,7 +480,7 @@ class import_courselibrary_search {
      * @return float|int
      */
     public function get_relevance_score($courseid) {
-        global $COURSE, $DB, $DB, $USER;
+        global $COURSE, $DB, $USER;
 
         $currentcourse = $DB->get_record('course', ['id' => $COURSE->id]);
 
