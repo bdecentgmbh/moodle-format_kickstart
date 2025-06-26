@@ -290,19 +290,34 @@ class import_courselibrary_search {
                 $capwhere = " AND (" . implode(" OR ", $capconditions) . ")";
             }
         }
-
         $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
         $moduleunions = [];
         foreach ($modules as $module) {
             // Clean the module name and verify table exists.
             $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
             if ($DB->get_manager()->table_exists($tablename)) {
-                // Use proper Moodle DB table name formatting.
-                $moduleunions[] = "SELECT '".$DB->sql_compare_text($module->name).
-                    "' as modname, id, name, intro FROM {".$tablename."}";
+                // Check if the intro column exists in this table.
+                $columns = $DB->get_columns($tablename);
+                $hasintro = isset($columns['intro']);
+
+                // Use proper Moodle DB table name formatting with conditional intro field.
+                if ($hasintro) {
+                    $moduleunions[] = "SELECT '".$DB->sql_compare_text($module->name).
+                        "' as modname, id, name, intro FROM {".$tablename."}";
+                } else {
+                    $moduleunions[] = "SELECT '".$DB->sql_compare_text($module->name).
+                        "' as modname, id, name, '' as intro FROM {".$tablename."}";
+                }
             }
         }
-        $modulesql = implode(" UNION ALL ", $moduleunions);
+
+        // Handle case where no valid module tables are found.
+        if (empty($moduleunions)) {
+            // Create a dummy union that will never match any records.
+            $modulesql = "SELECT '' as modname, 0 as id, '' as name, '' as intro WHERE 1=0";
+        } else {
+            $modulesql = implode(" UNION ALL ", $moduleunions);
+        }
 
         $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
             COALESCE(ul.timeaccess, 0) AS timeaccess ";
@@ -329,7 +344,7 @@ class import_courselibrary_search {
                 $DB->sql_like('c.summary', ':descriptionsearch', false). " OR ".
                 $DB->sql_like('t.name', ':tagsearch', false). " OR ".
                 $DB->sql_like('modinfo.name', ':activitynamesearch', false). " OR ".
-                $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false). " OR ".
+                $DB->sql_like('COALESCE(modinfo.intro, \'\')', ':activitydescriptionsearch', false). " OR ".
                 $DB->sql_like('cmt.name', ':activitytagsearch', false). ")";
 
         if (!is_siteadmin()) {
