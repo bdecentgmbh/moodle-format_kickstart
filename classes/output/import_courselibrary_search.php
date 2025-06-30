@@ -396,18 +396,33 @@ class import_courselibrary_search {
         foreach ($modules as $module) {
             $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
             if ($DB->get_manager()->table_exists($tablename)) {
-                $sql = "SELECT DISTINCT cm.course as courseid
+                $columns = $DB->get_columns($tablename);
+                $hasintro = isset($columns['intro']);
+                
+                // Build the SELECT clause based on whether intro field exists
+                $select = "SELECT DISTINCT cm.course as courseid" . ($hasintro ? ", m.intro" : ", '' as intro");
+                
+                // Build the WHERE clause - only search intro if it exists
+                $whereconditions = [$DB->sql_like('m.name', ':namesearch', false)];
+                if ($hasintro) {
+                    $whereconditions[] = $DB->sql_like('m.intro', ':introsearch', false);
+                }
+                
+                $sql = "$select
                         FROM {course_modules} cm
                         JOIN {" . $tablename . "} m ON m.id = cm.instance
                         WHERE cm.module = :moduleid
-                        AND (" . $DB->sql_like('m.name', ':namesearch', false) . " OR " . 
-                               $DB->sql_like('m.intro', ':introsearch', false) . ")";
+                        AND (" . implode(" OR ", $whereconditions) . ")";
                 
                 $params = [
                     'moduleid' => $module->id,
-                    'namesearch' => $searchterm,
-                    'introsearch' => $searchterm
+                    'namesearch' => $searchterm
                 ];
+                
+                // Only add intro search param if the field exists
+                if ($hasintro) {
+                    $params['introsearch'] = $searchterm;
+                }
                 
                 try {
                     $moduleresults = $DB->get_records_sql($sql, $params);
