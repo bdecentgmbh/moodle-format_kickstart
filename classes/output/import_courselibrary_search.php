@@ -33,8 +33,6 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once($CFG->dirroot . '/backup/util/ui/import_extensions.php');
 require_once($CFG->dirroot . '/backup/util/ui/restore_ui_components.php');
 
-
-
 /**
  * Widget that displays courses to import inside course.
  *
@@ -79,13 +77,11 @@ class import_courselibrary_search {
      */
     public $maxresults = null;
 
-
     /**
      * The URL for this page including required params to return to it
      * @var moodle_url
      */
     public $url = null;
-
 
     /**
      * The results of the search
@@ -105,7 +101,6 @@ class import_courselibrary_search {
      */
     public $sqlparams = [];
 
-
     /**
      * Indicates if we have more than maxresults found.
      * @var bool
@@ -123,6 +118,18 @@ class import_courselibrary_search {
      * @var int
      */
     public $page = 0;
+
+    /**
+     * Cache for search results
+     * @var array
+     */
+    private static $searchcache = [];
+
+    /**
+     * Cache for relevance scores
+     * @var array
+     */
+    private static $relevancecache = [];
 
     /**
      * The course library search object.
@@ -144,7 +151,6 @@ class import_courselibrary_search {
         $this->sorttype = $sorttype;
         $this->weights = $this->get_relevance_weights();
         $this->sqlparams = [];
-
         $this->page = $page;
 
         foreach ($config as $name => $value) {
@@ -160,27 +166,32 @@ class import_courselibrary_search {
      * @return array
      */
     private function get_relevance_weights() {
-        $weights = [
-            'fullname' => get_config('format_kickstart', 'weight_fullname'),
-            'shortname' => get_config('format_kickstart', 'weight_shortname'),
-            'tags' => get_config('format_kickstart', 'weight_tags'),
-            'starred' => get_config('format_kickstart', 'weight_starred'),
-        ];
+        // Cache weights to avoid repeated config calls.
+        static $cachedweights = null;
 
-        // Add weights for text and select type custom fields.
-        $handler = \core_customfield\handler::get_handler('core_course', 'course');
-        $fields = $handler->get_fields();
+        if ($cachedweights === null) {
+            $weights = [
+                'fullname' => get_config('format_kickstart', 'weight_fullname'),
+                'shortname' => get_config('format_kickstart', 'weight_shortname'),
+                'tags' => get_config('format_kickstart', 'weight_tags'),
+                'starred' => get_config('format_kickstart', 'weight_starred'),
+            ];
 
-        foreach ($fields as $field) {
-            if ($field->get('type') === 'text' || $field->get('type') === 'select') {
-                $shortname = $field->get('shortname');
-                $weights['customfield_' . $shortname] = get_config('format_kickstart', 'weight_customfield_' . $shortname);
+            // Add weights for text and select type custom fields.
+            $handler = \core_customfield\handler::get_handler('core_course', 'course');
+            $fields = $handler->get_fields();
+
+            foreach ($fields as $field) {
+                if ($field->get('type') === 'text' || $field->get('type') === 'select') {
+                    $shortname = $field->get('shortname');
+                    $weights['customfield_' . $shortname] = get_config('format_kickstart', 'weight_customfield_' . $shortname);
+                }
             }
+            $cachedweights = $weights;
         }
 
-        return $weights;
+        return $cachedweights;
     }
-
 
     /**
      * Sets the page URL
@@ -189,7 +200,6 @@ class import_courselibrary_search {
     public function set_url(\moodle_url $url) {
         $this->url = $url;
     }
-
 
     /**
      * Returns true if there are more search results.
@@ -204,8 +214,6 @@ class import_courselibrary_search {
 
     /**
      * Sets up any access restrictions for the courses to be displayed in the search.
-     *
-     * This will typically call $this->require_capability().
      */
     public function setup_restrictions() {
         $this->require_capability('moodle/backup:backuptargetimport');
@@ -237,7 +245,6 @@ class import_courselibrary_search {
         return $this->totalcount;
     }
 
-
     /**
      * Get the search SQL.
      *
@@ -246,38 +253,215 @@ class import_courselibrary_search {
     public function get_searchsql() {
         global $DB, $CFG, $USER;
 
-        $context = \context_system::instance();
-        $ctxselect = ', ' . \context_helper::get_preload_record_columns_sql('ctx');
-        $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
         $params = [
             'contextlevel' => CONTEXT_COURSE,
-            'fullnamesearch' => '%'.$this->get_search().'%',
-            'shortnamesearch' => '%'.$this->get_search().'%',
-            'descriptionsearch' => '%'.$this->get_search().'%',
-            'tagsearch' => '%'.$this->get_search().'%',
-            'activitynamesearch' => '%'.$this->get_search().'%',
-            'activitytagsearch' => '%'.$this->get_search().'%',
-            'activitydescriptionsearch' => '%'.$this->get_search().'%',
             'currentuser' => $USER->id,
             'currentuserid' => $USER->id,
         ];
 
-        // Extract capability requirements.
-        $capjoin = '';
-        $capwhere = '';
+        // Base course query - much simpler and faster.
+        $select = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
+                   COALESCE(ul.timeaccess, 0) AS timeaccess";
+
+        $from = "FROM {course} c
+                 LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)
+                 LEFT JOIN {user_lastaccess} ul ON ul.courseid = c.id AND ul.userid = :currentuser";
+
+        $where = "WHERE c.id > 1";
+
+        // Add current course exclusion.
+        if ($this->currentcourseid !== null) {
+            $where .= " AND c.id <> :currentcourseid";
+            $params['currentcourseid'] = $this->currentcourseid;
+        }
+
+        // Handle search terms efficiently.
+        if (!empty($this->search)) {
+            $searchconditions = [];
+            $searchterm = '%' . $this->search . '%';
+
+            // Direct course fields search.
+            $searchconditions[] = $DB->sql_like('c.fullname', ':fullnamesearch', false);
+            $searchconditions[] = $DB->sql_like('c.shortname', ':shortnamesearch', false);
+            $searchconditions[] = $DB->sql_like('c.summary', ':descriptionsearch', false);
+
+            $params['fullnamesearch'] = $searchterm;
+            $params['shortnamesearch'] = $searchterm;
+            $params['descriptionsearch'] = $searchterm;
+
+            // Get course IDs that match tags (separate query for performance).
+            $tagmatchids = $this->get_courses_matching_tags($this->search);
+            if (!empty($tagmatchids)) {
+                $tagids = array_keys($tagmatchids);
+                list($taginsql, $tagparams) = $DB->get_in_or_equal($tagids, SQL_PARAMS_NAMED, 'tagmatch');
+                $searchconditions[] = "c.id $taginsql";
+                $params = array_merge($params, $tagparams);
+            }
+
+            // Get course IDs that match activities (separate query for performance).
+            $activitymatchids = $this->get_courses_matching_activities($this->search);
+            if (!empty($activitymatchids)) {
+                $activityids = array_keys($activitymatchids);
+                list($actinsql, $actparams) = $DB->get_in_or_equal($activityids, SQL_PARAMS_NAMED, 'actmatch');
+                $searchconditions[] = "c.id $actinsql";
+                $params = array_merge($params, $actparams);
+            }
+
+            if (!empty($searchconditions)) {
+                $where .= " AND (" . implode(" OR ", $searchconditions) . ")";
+            } else {
+                // If no search conditions match, ensure we return no results.
+                $where .= " AND 1=0";
+            }
+        }
+
+        // Add capability restrictions.
+        if (!is_siteadmin() && !empty($this->requiredcapabilities)) {
+            list($capjoin, $capwhere, $capparams) = $this->get_capability_sql();
+            $from .= $capjoin;
+            $where .= $capwhere;
+            $params = array_merge($params, $capparams);
+        }
+
+        // Add custom field filters.
+        if (!empty($this->customfields)) {
+            list($cfjoin, $cfwhere, $cfparams) = $this->get_customfield_sql();
+            $from .= $cfjoin;
+            $where .= $cfwhere;
+            $params = array_merge($params, $cfparams);
+        }
+
+        // Add sorting.
+        $orderby = $this->get_orderby_sql();
+
+        // Add pagination.
+        $limit = $this->get_limit_sql();
+
+        $sql = $select . " " . $from . " " . $where . " " . $orderby . " " . $limit;
+
+        return [$sql, $params];
+    }
+
+    /**
+     * Get courses matching tags
+     * @param string $search
+     * @return array
+     */
+    private function get_courses_matching_tags($search) {
+        global $DB;
+
+        $cachekey = 'tags_' . md5($search);
+        if (isset(self::$searchcache[$cachekey])) {
+            return self::$searchcache[$cachekey];
+        }
+
+        $sql = "SELECT DISTINCT ti.itemid as courseid
+                FROM {tag} t
+                JOIN {tag_instance} ti ON ti.tagid = t.id
+                WHERE ti.itemtype = 'course'
+                AND ti.component = 'core'
+                AND " . $DB->sql_like('t.name', ':tagsearch', false);
+
+        $params = ['tagsearch' => '%' . $search . '%'];
+        $results = $DB->get_records_sql($sql, $params);
+
+        self::$searchcache[$cachekey] = $results;
+        return $results;
+    }
+
+    /**
+     * Get courses matching activities
+     * @param string $search
+     * @return array
+     */
+    private function get_courses_matching_activities($search) {
+        global $DB;
+
+        $cachekey = 'activities_' . md5($search);
+        if (isset(self::$searchcache[$cachekey])) {
+            return self::$searchcache[$cachekey];
+        }
+
+        $searchterm = '%' . $search . '%';
+        $results = [];
+
+        // Get visible modules (use cache if available).
+        if (isset(self::$searchcache['modules'])) {
+            $modules = self::$searchcache['modules'];
+        } else {
+            $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
+            self::$searchcache['modules'] = $modules;
+        }
+
+        foreach ($modules as $module) {
+            $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
+            if ($DB->get_manager()->table_exists($tablename)) {
+                $columns = $DB->get_columns($tablename);
+                $hasintro = isset($columns['intro']);
+
+                // Build the SELECT clause based on whether intro field exists.
+                $select = "SELECT DISTINCT cm.course as courseid" . ($hasintro ? ", m.intro" : ", '' as intro");
+
+                // Build the WHERE clause - only search intro if it exists.
+                $whereconditions = [$DB->sql_like('m.name', ':namesearch', false)];
+                if ($hasintro) {
+                    $whereconditions[] = $DB->sql_like('m.intro', ':introsearch', false);
+                }
+
+                $sql = "$select
+                        FROM {course_modules} cm
+                        JOIN {" . $tablename . "} m ON m.id = cm.instance
+                        WHERE cm.module = :moduleid
+                        AND (" . implode(" OR ", $whereconditions) . ")";
+
+                $params = [
+                    'moduleid' => $module->id,
+                    'namesearch' => $searchterm,
+                ];
+
+                // Only add intro search param if the field exists.
+                if ($hasintro) {
+                    $params['introsearch'] = $searchterm;
+                }
+
+                try {
+                    $moduleresults = $DB->get_records_sql($sql, $params);
+                    foreach ($moduleresults as $record) {
+                        $results[$record->courseid] = $record;
+                    }
+                } catch (Exception $e) {
+                    // Skip this module if there's an error (e.g., table structure issues).
+                    debugging("Error searching activities in module {$module->name}: " . $e->getMessage(), DEBUG_DEVELOPER);
+                    continue;
+                }
+            }
+        }
+
+        self::$searchcache[$cachekey] = $results;
+        return $results;
+    }
+
+    /**
+     * Get capability SQL components
+     * @return array [join, where, params]
+     */
+    private function get_capability_sql() {
+        $join = '';
+        $where = '';
+        $params = [];
+
         if (!empty($this->requiredcapabilities)) {
             $capconditions = [];
             $capindex = 0;
+
             foreach ($this->requiredcapabilities as $cap) {
                 $capindex++;
-                $rolecapjoin = "LEFT JOIN {role_capabilities} rc{$capindex} ON rc{$capindex}.capability = :capability{$capindex}";
-                $roleassignjoin = "LEFT JOIN {role_assignments} ra{$capindex} ON ra{$capindex}.roleid = rc{$capindex}.roleid
-                                AND ra{$capindex}.contextid = ctx.id";
+                $join .= " LEFT JOIN {role_capabilities} rc{$capindex} ON rc{$capindex}.capability = :capability{$capindex}
+                          LEFT JOIN {role_assignments} ra{$capindex} ON ra{$capindex}.roleid = rc{$capindex}.roleid
+                          AND ra{$capindex}.contextid = ctx.id";
 
-                $capjoin .= " $rolecapjoin $roleassignjoin ";
                 $params["capability{$capindex}"] = $cap['capability'];
 
-                // Check if a specific user is required.
                 if (isset($cap['user']) && is_int($cap['user'])) {
                     $capconditions[] = "(ra{$capindex}.userid = :capuser{$capindex})";
                     $params["capuser{$capindex}"] = $cap['user'];
@@ -287,59 +471,26 @@ class import_courselibrary_search {
             }
 
             if (!empty($capconditions)) {
-                $capwhere = " AND (" . implode(" OR ", $capconditions) . ")";
+                $where = " AND (" . implode(" OR ", $capconditions) . ")";
             }
         }
 
-        $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
-        $moduleunions = [];
-        foreach ($modules as $module) {
-            // Clean the module name and verify table exists.
-            $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
-            if ($DB->get_manager()->table_exists($tablename)) {
-                // Use proper Moodle DB table name formatting.
-                $moduleunions[] = "SELECT '".$DB->sql_compare_text($module->name).
-                    "' as modname, id, name, intro FROM {".$tablename."}";
-            }
-        }
-        $modulesql = implode(" UNION ALL ", $moduleunions);
+        return [$join, $where, $params];
+    }
 
-        $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
-            COALESCE(ul.timeaccess, 0) AS timeaccess ";
-        $from   = " FROM {course} c ";
-
-        // Add context join immediately after the course table.
-        $from .= $ctxjoin;
-
-        $from .= " LEFT JOIN {user_lastaccess} ul ON ul.courseid = c.id AND ul.userid = :currentuser
-                    LEFT JOIN {tag_instance} ti ON ti.itemid = c.id
-                    LEFT JOIN {tag} t ON t.id = ti.tagid
-                    LEFT JOIN {course_modules} cm ON cm.course = c.id
-                    LEFT JOIN {modules} m ON m.id = cm.module
-                    LEFT JOIN (
-                        ".$modulesql."
-                    ) modinfo ON modinfo.modname = m.name AND modinfo.id = cm.instance
-                    LEFT JOIN {tag_instance} cmti ON cmti.itemid = cm.id AND cmti.itemtype = 'course_modules'
-                    LEFT JOIN {tag} cmt ON cmt.id = cmti.tagid
-                    LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
-                    LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid ";
-
-        $where  = " WHERE c.id > 1 AND (".$DB->sql_like('c.fullname', ':fullnamesearch', false)." OR ".
-                $DB->sql_like('c.shortname', ':shortnamesearch', false). " OR ".
-                $DB->sql_like('c.summary', ':descriptionsearch', false). " OR ".
-                $DB->sql_like('t.name', ':tagsearch', false). " OR ".
-                $DB->sql_like('modinfo.name', ':activitynamesearch', false). " OR ".
-                $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false). " OR ".
-                $DB->sql_like('cmt.name', ':activitytagsearch', false). ")";
-
-        if (!is_siteadmin()) {
-            // Add capability conditions.
-            // Add capability joins.
-            $from .= $capjoin;
-            $where .= $capwhere;
-        }
+    /**
+     * Get custom field SQL components
+     * @return array [join, where, params]
+     */
+    private function get_customfield_sql() {
+        $join = '';
+        $where = '';
+        $params = [];
 
         if (!empty($this->customfields)) {
+            $join = " LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
+                      LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid";
+
             $customfieldconditions = [];
             foreach ($this->customfields as $fieldshortname => $value) {
                 if ($value) {
@@ -349,56 +500,60 @@ class import_courselibrary_search {
                     $params[$paramname . '_value'] = $value;
                 }
             }
+
             if ($customfieldconditions) {
-                $where .= " AND (" . implode(" OR ", $customfieldconditions) . ")";
+                $where = " AND (" . implode(" OR ", $customfieldconditions) . ")";
             }
         }
 
-        $orderby = " ORDER BY c.sortorder";
+        return [$join, $where, $params];
+    }
 
-        // Add sorting.
+    /**
+     * Get ORDER BY SQL
+     * @return string
+     */
+    private function get_orderby_sql() {
         switch($this->sorttype) {
             case 'alphabetical':
-                $orderby = " ORDER BY c.fullname ASC";
-                break;
+                return "ORDER BY c.fullname ASC";
             case 'lastaccessed':
-                $orderby = " ORDER BY timeaccess DESC";
-                break;
+                return "ORDER BY timeaccess DESC";
+            case 'relevance':
+                return "ORDER BY c.sortorder"; // Will be sorted after relevance calculation.
+            default:
+                return "ORDER BY c.sortorder";
         }
+    }
 
-        if ($this->currentcourseid !== null) {
-            $where .= " AND c.id <> :currentcourseid";
-            $params['currentcourseid'] = $this->currentcourseid;
-        }
+    /**
+     * Get LIMIT SQL
+     * @return string
+     */
+    private function get_limit_sql() {
+        global $CFG;
 
-        $limit = '';
-
-        $limitfrom = $this->page;
         $perpage = get_config("format_kickstart", "courselibraryperpage");
-        list($limitfrom, $limitnum) = $this->normalise_limit_from_num($limitfrom * $perpage, $perpage);
+        list($limitfrom, $limitnum) = $this->normalise_limit_from_num($this->page * $perpage, $perpage);
 
         if ($CFG->dbtype == 'pgsql') {
-
-            // If pgsql.
+            $limit = '';
             if ($limitnum) {
                 $limit .= " LIMIT $limitnum";
             }
             if ($limitfrom) {
                 $limit .= " OFFSET $limitfrom";
             }
+            return $limit;
         } else {
-            // If mysqli.
             if ($limitfrom || $limitnum) {
                 if ($limitnum < 1) {
                     $limitnum = "18446744073709551615";
                 }
-                $limit .= " LIMIT $limitfrom, $limitnum";
+                return " LIMIT $limitfrom, $limitnum";
             }
         }
-
-        $params += $this->sqlparams;
-
-        return [$select.$ctxselect.$from.$where.$orderby.$limit, $params];
+        return '';
     }
 
     /**
@@ -407,69 +562,360 @@ class import_courselibrary_search {
      */
     public function search() {
         global $DB;
+
         if (!is_null($this->results)) {
+            return $this->results;
+        }
+
+        // Create cache key based on search parameters.
+        $cachekey = $this->get_cache_key();
+        if (isset(self::$searchcache[$cachekey])) {
+            $cached = self::$searchcache[$cachekey];
+            $this->results = $cached['results'];
+            $this->totalcount = $cached['totalcount'];
+            $this->hasmoreresults = $cached['hasmoreresults'];
             return $this->results;
         }
 
         $this->results = [];
         $this->totalcount = 0;
-        $contextlevel = $this->get_itemcontextlevel();
+
         list($sql, $params) = $this->get_searchsql();
 
-        // Get total number, to avoid some incorrect iterations.
-        $countsql = preg_replace('/ORDER BY.*/', '', $sql);
-        $totalcourses = $DB->count_records_sql("SELECT COUNT(*) FROM ($countsql) sel", $params);
+        // Get total count efficiently.
+        $countsql = preg_replace('/SELECT.*?FROM/s', 'SELECT COUNT(DISTINCT c.id) FROM', $sql);
+        $countsql = preg_replace('/ORDER BY.*/', '', $countsql);
+        $countsql = preg_replace('/LIMIT.*/', '', $countsql);
+
+        $totalcourses = $DB->count_records_sql($countsql, $params);
 
         if ($totalcourses > 0) {
-            // Iterate while we have records and haven't reached $this->maxresults.
             $resultset = $DB->get_recordset_sql($sql, $params);
             foreach ($resultset as $result) {
                 \context_helper::preload_from_record($result);
-                // Check if we are over the limit.
+
                 if ($this->totalcount + 1 > $this->maxresults) {
                     $this->hasmoreresults = true;
                     break;
                 }
-                // If not, then continue.
+
                 $this->totalcount++;
-                if ($this->sorttype == 'relevance') {
-                    $result->similarityscore = $this->get_relevance_score($result->id);
-                }
                 $this->results[$result->id] = $result;
             }
             $resultset->close();
+
+            // Calculate relevance scores efficiently if needed.
+            if ($this->sorttype == 'relevance' && !empty($this->results)) {
+                $this->calculate_relevance_scores_batch();
+
+                usort($this->results, function($a, $b) {
+                    $scorea = (float)($a->similarityscore ?? 0);
+                    $scoreb = (float)($b->similarityscore ?? 0);
+                    return $scoreb <=> $scorea;
+                });
+            }
         }
 
-        if ($this->sorttype == 'relevance') {
-
-            usort($this->results, function($a, $b) {
-                // Convert similarity scores to float for accurate comparison.
-                $scorea = (float)$a->similarityscore;
-                $scoreb = (float)$b->similarityscore;
-
-                // Compare scores with higher precision.
-                if ($scoreb > $scorea) {
-                    return 1;
-                } else if ($scoreb < $scorea) {
-                    return -1;
-                }
-                return 0;
-            });
-        }
+        // Cache results.
+        self::$searchcache[$cachekey] = [
+            'results' => $this->results,
+            'totalcount' => $this->totalcount,
+            'hasmoreresults' => $this->hasmoreresults,
+        ];
 
         return $this->totalcount;
     }
 
     /**
-     * Get calculated relevance score for a course.
+     * Calculate relevance scores in batch for better performance
+     */
+    private function calculate_relevance_scores_batch() {
+        global $DB, $COURSE, $USER;
+
+        if (empty($this->results)) {
+            return;
+        }
+
+        $courseids = array_keys($this->results);
+        $currentcourse = $DB->get_record('course', ['id' => $COURSE->id]);
+
+        // Batch fetch course data.
+        list($insql, $params) = $DB->get_in_or_equal($courseids);
+        $courses = $DB->get_records_sql("SELECT * FROM {course} WHERE id $insql", $params);
+
+        // Batch fetch tags if needed.
+        $coursetags = [];
+        $currenttags = [];
+        if ($this->weights['tags'] > 0) {
+            $currenttags = $this->get_course_tags($currentcourse->id);
+            $coursetags = $this->get_multiple_course_tags($courseids);
+        }
+
+        // Batch fetch favorites if needed.
+        $favorites = [];
+        if ($this->weights['starred'] > 0) {
+            $favorites = $this->get_user_favorite_courses($USER->id);
+        }
+
+        // Batch fetch custom field data if needed.
+        $customfielddata = [];
+        if ($this->has_custom_field_weights()) {
+            $customfielddata = $this->get_multiple_course_customfields($courseids);
+            $currentcustomfields = $this->get_course_customfields($currentcourse->id);
+        }
+
+        // Calculate scores.
+        foreach ($this->results as $courseid => $result) {
+            $cachekey = "relevance_{$currentcourse->id}_{$courseid}";
+
+            if (isset(self::$relevancecache[$cachekey])) {
+                $result->similarityscore = self::$relevancecache[$cachekey];
+                continue;
+            }
+
+            $course = $courses[$courseid] ?? null;
+            if (!$course) {
+                continue;
+            }
+
+            $score = 0;
+
+            // Fullname similarity.
+            if ($this->weights['fullname'] > 0) {
+                similar_text(strtolower($currentcourse->fullname), strtolower($course->fullname), $percent);
+                $score += ($percent / 100 * $this->weights['fullname']);
+            }
+
+            // Shortname similarity.
+            if ($this->weights['shortname'] > 0) {
+                similar_text(strtolower($currentcourse->shortname), strtolower($course->shortname), $percent);
+                $score += ($percent / 100 * $this->weights['shortname']);
+            }
+
+            // Tags similarity.
+            if ($this->weights['tags'] > 0 && isset($coursetags[$courseid])) {
+                $score += $this->calculate_tag_similarity($currenttags, $coursetags[$courseid]);
+            }
+
+            // Starred weight.
+            if ($this->weights['starred'] > 0 && in_array($courseid, $favorites)) {
+                $score += $this->weights['starred'];
+            }
+
+            // Custom fields similarity.
+            if (!empty($customfielddata[$courseid]) && !empty($currentcustomfields)) {
+                $score += $this->calculate_customfield_similarity($currentcustomfields, $customfielddata[$courseid]);
+            }
+
+            $result->similarityscore = $score;
+            self::$relevancecache[$cachekey] = $score;
+        }
+    }
+
+    /**
+     * Get cache key for search results
+     * @return string
+     */
+    private function get_cache_key() {
+        $keydata = [
+            'search' => $this->search,
+            'sorttype' => $this->sorttype,
+            'page' => $this->page,
+            'currentcourseid' => $this->currentcourseid,
+            'customfields' => $this->customfields,
+            'capabilities' => $this->requiredcapabilities,
+        ];
+        return md5(serialize($keydata));
+    }
+
+    /**
+     * Get course tags efficiently
+     * @param int $courseid
+     * @return array
+     */
+    private function get_course_tags($courseid) {
+        global $DB;
+
+        $sql = "SELECT t.name
+                FROM {tag} t
+                JOIN {tag_instance} ti ON ti.tagid = t.id
+                WHERE ti.itemid = ? AND ti.itemtype = 'course' AND ti.component = 'core'";
+
+        return $DB->get_fieldset_sql($sql, [$courseid]);
+    }
+
+    /**
+     * Get tags for multiple courses efficiently
+     * @param array $courseids
+     * @return array
+     */
+    private function get_multiple_course_tags($courseids) {
+        global $DB;
+
+        if (empty($courseids)) {
+            return [];
+        }
+
+        list($insql, $params) = $DB->get_in_or_equal($courseids);
+        $sql = "SELECT CONCAT(ti.itemid, '_', t.id) as uniqueid, ti.itemid as courseid, t.name
+                FROM {tag} t
+                JOIN {tag_instance} ti ON ti.tagid = t.id
+                WHERE ti.itemid $insql AND ti.itemtype = 'course' AND ti.component = 'core'";
+
+        $records = $DB->get_records_sql($sql, $params);
+
+        $result = [];
+        foreach ($records as $record) {
+            if (!isset($result[$record->courseid])) {
+                $result[$record->courseid] = [];
+            }
+            $result[$record->courseid][] = $record->name;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get user's favorite courses
+     * @param int $userid
+     * @return array
+     */
+    private function get_user_favorite_courses($userid) {
+        $ufservice = \core_favourites\service_factory::get_service_for_user_context(\context_user::instance($userid));
+        $userfavorites = $ufservice->find_all_favourites('core_course', ['courses']);
+
+        return array_map(function($fav) {
+            return $fav->itemid;
+        }, $userfavorites);
+    }
+
+    /**
+     * Check if any custom field weights are configured
+     * @return bool
+     */
+    private function has_custom_field_weights() {
+        foreach ($this->weights as $key => $weight) {
+            if (strpos($key, 'customfield_') === 0 && $weight > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get custom field data for a course
+     * @param int $courseid
+     * @return array
+     */
+    private function get_course_customfields($courseid) {
+        global $DB;
+
+        $sql = "SELECT CONCAT(cff.shortname, '_', cfd.id) as uniqueid, cff.shortname, cfd.value
+                FROM {customfield_data} cfd
+                JOIN {customfield_field} cff ON cff.id = cfd.fieldid
+                WHERE cfd.instanceid = ? AND (cff.type = 'text' OR cff.type = 'select')";
+
+        $records = $DB->get_records_sql($sql, [$courseid]);
+
+        $result = [];
+        foreach ($records as $record) {
+            $result[$record->shortname] = $record->value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get custom field data for multiple courses
+     * @param array $courseids
+     * @return array
+     */
+    private function get_multiple_course_customfields($courseids) {
+        global $DB;
+
+        if (empty($courseids)) {
+            return [];
+        }
+
+        list($insql, $params) = $DB->get_in_or_equal($courseids);
+        $sql = "SELECT CONCAT(cfd.instanceid, '_', cff.id) as uniqueid, cfd.instanceid as courseid, cff.shortname, cfd.value
+                FROM {customfield_data} cfd
+                JOIN {customfield_field} cff ON cff.id = cfd.fieldid
+                WHERE cfd.instanceid $insql AND (cff.type = 'text' OR cff.type = 'select')";
+
+        $records = $DB->get_records_sql($sql, $params);
+
+        $result = [];
+        foreach ($records as $record) {
+            if (!isset($result[$record->courseid])) {
+                $result[$record->courseid] = [];
+            }
+            $result[$record->courseid][$record->shortname] = $record->value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate tag similarity efficiently
+     * @param array $currenttags
+     * @param array $coursetags
+     * @return float
+     */
+    private function calculate_tag_similarity($currenttags, $coursetags) {
+        $commontags = array_intersect($currenttags, $coursetags);
+        $totaltags = array_unique(array_merge($currenttags, $coursetags));
+
+        $similarity = count($totaltags) > 0 ? count($commontags) / count($totaltags) : 0;
+        return $similarity * $this->weights['tags'];
+    }
+
+    /**
+     * Calculate custom field similarity efficiently
+     * @param array $currentfields
+     * @param array $coursefields
+     * @return float
+     */
+    private function calculate_customfield_similarity($currentfields, $coursefields) {
+        $score = 0;
+
+        foreach ($currentfields as $shortname => $currentvalue) {
+            if (!isset($coursefields[$shortname])) {
+                continue;
+            }
+
+            $weight = $this->weights['customfield_' . $shortname] ?? 0;
+            if ($weight <= 0) {
+                continue;
+            }
+
+            $coursevalue = $coursefields[$shortname];
+
+            similar_text(
+                strtolower($currentvalue),
+                strtolower($coursevalue),
+                $percent
+            );
+            $score += ($percent / 100 * $weight);
+        }
+
+        return $score;
+    }
+
+    /**
+     * Get calculated relevance score for a course (legacy method for backward compatibility)
      * @param mixed $courseid
      * @return float|int
      */
     public function get_relevance_score($courseid) {
-        global $COURSE, $DB, $DB, $USER;
+        global $COURSE, $DB, $USER;
+
+        $cachekey = "relevance_{$COURSE->id}_{$courseid}";
+        if (isset(self::$relevancecache[$cachekey])) {
+            return self::$relevancecache[$cachekey];
+        }
 
         $currentcourse = $DB->get_record('course', ['id' => $COURSE->id]);
-
         $course = get_course($courseid);
         $similarityscore = 0;
 
@@ -528,7 +974,6 @@ class import_courselibrary_search {
                 $shortname = $field->get('shortname');
                 $weight = $this->weights['customfield_' . $shortname];
                 if ($weight > 0) {
-
                     $currentdata = $DB->get_field('customfield_data', 'value',
                     ['instanceid' => $currentcourse->id, 'fieldid' => $field->get('id')]);
                     $coursedata = $DB->get_field('customfield_data', 'value',
@@ -544,9 +989,10 @@ class import_courselibrary_search {
                 }
             }
         }
+
+        self::$relevancecache[$cachekey] = $similarityscore;
         return $similarityscore;
     }
-
 
     /**
      * Gets the context level for the search result items.
@@ -555,7 +1001,6 @@ class import_courselibrary_search {
     public function get_itemcontextlevel() {
         return CONTEXT_COURSE;
     }
-
 
     /**
      * Returns an array of results from the search
@@ -576,7 +1021,6 @@ class import_courselibrary_search {
         return ($this->search !== null) ? $this->search : '';
     }
 
-
     /**
      * Summary of normalise_limit_from_num
      * @param mixed $limitfrom
@@ -586,7 +1030,7 @@ class import_courselibrary_search {
     public function normalise_limit_from_num($limitfrom, $limitnum) {
         global $CFG;
 
-        // We explicilty treat these cases as 0.
+        // We explicitly treat these cases as 0.
         if ($limitfrom === null || $limitfrom === '' || $limitfrom === -1) {
             $limitfrom = 0;
         }
@@ -622,18 +1066,46 @@ class import_courselibrary_search {
         return [$limitfrom, $limitnum];
     }
 
-
     /**
      * Get the total number of courses found by the search
      * @return int
      */
     public function get_total_course_count() {
         global $DB;
+
+        // Use a more efficient count query.
         list($sql, $params) = $this->get_searchsql();
-        // Get total number, to avoid some incorrect iterations.
-        $countsql = preg_replace('/ORDER BY.*/', '', $sql);
-        $totalcourses = $DB->count_records_sql("SELECT COUNT(*) FROM ($countsql) sel", $params);
-        return $totalcourses;
+
+        // Convert to count query.
+        $countsql = preg_replace('/SELECT.*?FROM/s', 'SELECT COUNT(DISTINCT c.id) FROM', $sql);
+        $countsql = preg_replace('/ORDER BY.*/', '', $countsql);
+        $countsql = preg_replace('/LIMIT.*/', '', $countsql);
+
+        return $DB->count_records_sql($countsql, $params);
     }
 
+    /**
+     * Clear search cache (useful for testing or when data changes)
+     */
+    public static function clear_cache() {
+        self::$searchcache = [];
+        self::$relevancecache = [];
+    }
+
+    /**
+     * Preload commonly needed data to reduce database queries
+     */
+    public function preload_data() {
+        global $DB, $USER;
+
+        // Preload user favorites.
+        if ($this->weights['starred'] > 0) {
+            $this->get_user_favorite_courses($USER->id);
+        }
+
+        // Preload module information.
+        $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
+        // Store in static cache for reuse.
+        self::$searchcache['modules'] = $modules;
+    }
 }
