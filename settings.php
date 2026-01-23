@@ -80,9 +80,8 @@ if ($ADMIN->fulltree) {
             $handler = \core_course\customfield\course_handler::create();
             $fields = $handler->get_fields();
             foreach ($fields as $field) {
-                $options["customfield_{$field->get('shortname')}"] = $field->get('name');
                 if ($field->get('type') == 'select' || $field->get('type') == 'text') {
-                    $customfields["customfield_{$field->get('shortname')}"] = $field->get('name');
+                    $options["customfield_{$field->get('shortname')}"] = $field->get('name');
                 }
             }
         }
