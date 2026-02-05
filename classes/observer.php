@@ -28,7 +28,6 @@ namespace format_kickstart;
  * Event observer class define.
  */
 class observer {
-
     /**
      * Callback function will delete the course in the table.
      * @param object $event event data
@@ -44,16 +43,24 @@ class observer {
             $disable = ($data['other']['value'] == 1) ? true : false;
             $format = substr($plugin, 7);
             if ($disable) {
-                $removetemplates = $DB->get_records_menu('format_kickstart_template',
-                    ['format' => $format, 'courseformat' => 1], '', 'id,id');
+                $removetemplates = $DB->get_records_menu(
+                    'format_kickstart_template',
+                    ['format' => $format, 'courseformat' => 1],
+                    '',
+                    'id,id'
+                );
                 if ($removetemplates) {
                     $removetemplates = array_keys($removetemplates);
                     $templates = array_diff($templates, $removetemplates);
                 }
                 $DB->set_field('format_kickstart_template', 'visible', 0, ['format' => $format, 'courseformat' => 1]);
             } else {
-                $addtemplates = $DB->get_records_menu('format_kickstart_template',
-                    ['format' => $format, 'courseformat' => 1], '', 'id,id');
+                $addtemplates = $DB->get_records_menu(
+                    'format_kickstart_template',
+                    ['format' => $format, 'courseformat' => 1],
+                    '',
+                    'id,id'
+                );
                 if ($addtemplates) {
                     $addtemplates = array_keys($addtemplates);
                     $templates = array_merge($templates, $addtemplates);

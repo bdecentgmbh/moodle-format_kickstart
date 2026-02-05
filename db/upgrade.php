@@ -31,11 +31,10 @@
  */
 function xmldb_format_kickstart_upgrade($oldversion) {
     global $CFG, $DB;
-    require_once($CFG->dirroot. "/course/format/kickstart/lib.php");
+    require_once($CFG->dirroot . "/course/format/kickstart/lib.php");
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2019050800) {
-
         // Define table format_kickstart_template to be created.
         $table = new xmldb_table('kickstart_template');
 
@@ -57,7 +56,6 @@ function xmldb_format_kickstart_upgrade($oldversion) {
     }
 
     if ($oldversion < 2019050900) {
-
         // Define field description_format to be added to format_kickstart_template.
         $table = new xmldb_table('kickstart_template');
         $field = new xmldb_field('descriptionformat', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
@@ -72,7 +70,6 @@ function xmldb_format_kickstart_upgrade($oldversion) {
     }
 
     if ($oldversion < 2019061703) {
-
         // Define field preview_url to be added to format_kickstart_template.
         $table = new xmldb_table('kickstart_template');
         $field = new xmldb_field('preview_url', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'descriptionformat');
@@ -87,7 +84,6 @@ function xmldb_format_kickstart_upgrade($oldversion) {
     }
 
     if ($oldversion < 2020051200) {
-
         // Define field restrictcohort to be added to format_kickstart_template.
         $table = new xmldb_table('kickstart_template');
         $field = new xmldb_field('restrictcohort', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'preview_url');
@@ -147,7 +143,6 @@ function xmldb_format_kickstart_upgrade($oldversion) {
     }
 
     if ($oldversion < 2020052502) {
-
         // Define field includesubcategories to be added to format_kickstart_template.
         $table = new xmldb_table('kickstart_template');
         $field = new xmldb_field('includesubcategories', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'categoryids');
@@ -232,8 +227,12 @@ function xmldb_format_kickstart_upgrade($oldversion) {
     }
 
     if ($oldversion < 2023040300) {
-        $DB->set_field('tag_instance', 'itemtype', 'format_kickstart_template',
-            ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']);
+        $DB->set_field(
+            'tag_instance',
+            'itemtype',
+            'format_kickstart_template',
+            ['itemtype' => 'kickstart_template', 'component' => 'format_kickstart']
+        );
         // Kickstart savepoint reached.
         upgrade_plugin_savepoint(true, 2023040300, 'format', 'kickstart');
     }

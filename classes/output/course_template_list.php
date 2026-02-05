@@ -38,8 +38,7 @@ require_once("$CFG->dirroot/course/format/kickstart/lib.php");
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @package format_kickstart
  */
-class course_template_list implements \templatable, \renderable {
-
+class course_template_list implements \renderable, \templatable {
     /**
      * @var \stdClass
      */
@@ -129,7 +128,7 @@ class course_template_list implements \templatable, \renderable {
             $params = $searchparams;
             $orders = explode(",", $CFG->kickstart_templates);
             $orders = array_filter(array_unique($orders), 'strlen');
-            list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
             $params += $inparams;
             $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
                 return "WHEN id = $value THEN " . array_search($value, $orders);
@@ -175,22 +174,28 @@ class course_template_list implements \templatable, \renderable {
                     }
 
                     if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
-                        if (($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
+                        if (
+                            ($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
                             ($template->restrictcategory && !in_array($this->course->category, $categoryids)) ||
-                            ($template->restrictuser && $template->userids && !in_array($USER->id,
-                                json_decode($template->userids, true))) ||
-                            ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))) {
+                            ($template->restrictuser && $template->userids && !in_array(
+                                $USER->id,
+                                json_decode($template->userids, true)
+                            )) ||
+                            ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))
+                        ) {
                             continue;
                         }
                     }
                 }
 
-                $template->description_formatted = format_text(file_rewrite_pluginfile_urls($template->description,
-                                                        'pluginfile.php',
-                                                        \context_system::instance()->id,
-                                                        'format_kickstart',
-                                                        'description',
-                                                        $template->id), $template->descriptionformat);
+                $template->description_formatted = format_text(file_rewrite_pluginfile_urls(
+                    $template->description,
+                    'pluginfile.php',
+                    \context_system::instance()->id,
+                    'format_kickstart',
+                    'description',
+                    $template->id
+                ), $template->descriptionformat);
                 $template->title = format_string($template->title);
                 $tags = [];
                 foreach (\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $template->id) as $tag) {
@@ -208,7 +213,7 @@ class course_template_list implements \templatable, \renderable {
                     break;
                 }
                 if (format_kickstart_has_pro()) {
-                    require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+                    require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
                     if (function_exists('local_kickstart_pro_get_template_backimages')) {
                         $template->backimages = local_kickstart_pro_get_template_backimages($template->id);
                         $template->isbackimages = count($template->backimages);
@@ -217,8 +222,14 @@ class course_template_list implements \templatable, \renderable {
                     }
 
                     $fs = get_file_storage();
-                    $files = $fs->get_area_files(\context_system::instance()->id, 'format_kickstart', 'course_backups',
-                        $template->id, '', false);
+                    $files = $fs->get_area_files(
+                        \context_system::instance()->id,
+                        'format_kickstart',
+                        'course_backups',
+                        $template->id,
+                        '',
+                        false
+                    );
                     $files = array_values($files);
 
                     if (!isset($files[0]) && !$template->courseformat) {
@@ -250,8 +261,11 @@ class course_template_list implements \templatable, \renderable {
             $template->link = 'https://bdecent.de/kickstart/';
             $templates[] = $template;
         }
-        $templateview = $DB->get_field('course_format_options', 'value',
-            ['name' => 'templatesview', 'courseid' => $this->course->id]);
+        $templateview = $DB->get_field(
+            'course_format_options',
+            'value',
+            ['name' => 'templatesview', 'courseid' => $this->course->id]
+        );
         return [
             'templates' => $templates,
             'has_pro' => format_kickstart_has_pro(),

@@ -25,7 +25,7 @@
 
 require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
 
-use Behat\Gherkin\Node\TableNode as TableNode;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * Kickstart course format steps definitions.
@@ -36,7 +36,6 @@ use Behat\Gherkin\Node\TableNode as TableNode;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_format_kickstart extends behat_base {
-
     /**
      * Click the disable link for single activity course format.
      * @Given /^I click on disable link single activity$/
@@ -95,7 +94,7 @@ class behat_format_kickstart extends behat_base {
     public function i_should_see_define_course_format($format) {
         global $CFG;
         if ($CFG->branch <= '403') {
-            switch($format) {
+            switch ($format) {
                 case 'Single activity':
                     $format = 'Single activity format';
                     break;
@@ -122,7 +121,7 @@ class behat_format_kickstart extends behat_base {
     public function i_should_not_see_define_course_format($format) {
         global $CFG;
         if ($CFG->branch <= '403') {
-            switch($format) {
+            switch ($format) {
                 case 'Single activity':
                     $format = 'Single activity format';
                     break;
@@ -162,8 +161,9 @@ class behat_format_kickstart extends behat_base {
     public function i_set_kickstart_format_setting_with(TableNode $table) {
 
         $this->execute("behat_general::i_am_on_homepage");
-        $this->execute("behat_navigation::i_navigate_to_in_site_administration",
-            ["Plugins" . ' > ' . "Course formats". '>'."General settings"],
+        $this->execute(
+            "behat_navigation::i_navigate_to_in_site_administration",
+            ["Plugins" . ' > ' . "Course formats" . '>' . "General settings"],
         );
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $table);
         $this->execute("behat_forms::press_button", get_string('savechanges'));

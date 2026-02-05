@@ -36,7 +36,6 @@ require_once($CFG->libdir . '/tablelib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class template_table extends \table_sql {
-
     /**
      * @var int
      */
@@ -72,7 +71,7 @@ class template_table extends \table_sql {
         $columns[] = 'tags';
         $columns[] = 'status';
         if (format_kickstart_has_pro()) {
-            $headers[] = get_string('up') .'/'. get_string('down');
+            $headers[] = get_string('up') . '/' . get_string('down');
             $columns[] = 'updown';
             $this->no_sorting('updown');
             $this->cnt = 0;
@@ -103,8 +102,11 @@ class template_table extends \table_sql {
      */
     public function col_tags($data) {
         global $OUTPUT;
-        return $OUTPUT->tag_list(\core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $data->id),
-            null, 'template-tags');
+        return $OUTPUT->tag_list(
+            \core_tag_tag::get_item_tags('format_kickstart', 'format_kickstart_template', $data->id),
+            null,
+            'template-tags'
+        );
     }
 
     /**
@@ -114,12 +116,14 @@ class template_table extends \table_sql {
      */
     public function col_description($data) {
         $context = \context_system::instance();
-        return format_text(file_rewrite_pluginfile_urls($data->description,
-                    'pluginfile.php',
-                    $context->id,
-                    'format_kickstart',
-                    'description',
-                    $data->id), $data->descriptionformat);
+        return format_text(file_rewrite_pluginfile_urls(
+            $data->description,
+            'pluginfile.php',
+            $context->id,
+            'format_kickstart',
+            'description',
+            $data->id
+        ), $data->descriptionformat);
     }
 
     /**
@@ -145,15 +149,23 @@ class template_table extends \table_sql {
         $templateurl = new \moodle_url('/course/format/kickstart/templates.php');
         $status = '';
         if ($data->status) {
-            $status .= \html_writer::link($templateurl->out(false,
-            ['action' => 'disable', 'template' => $data->id]),
-            $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', ['class' => 'iconsmall']),
-                ['id' => "sort-template-up-action"]). '';
+            $status .= \html_writer::link(
+                $templateurl->out(
+                    false,
+                    ['action' => 'disable', 'template' => $data->id]
+                ),
+                $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', ['class' => 'iconsmall']),
+                ['id' => "sort-template-up-action"]
+            ) . '';
         } else {
-            $status .= \html_writer::link($templateurl->out(false,
-            ['action' => 'enable', 'template' => $data->id]),
-            $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', ['class' => 'iconsmall']),
-                ['id' => "sort-template-up-action"]). '';
+            $status .= \html_writer::link(
+                $templateurl->out(
+                    false,
+                    ['action' => 'enable', 'template' => $data->id]
+                ),
+                $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', ['class' => 'iconsmall']),
+                ['id' => "sort-template-up-action"]
+            ) . '';
         }
         return $status;
     }
@@ -173,19 +185,32 @@ class template_table extends \table_sql {
         $strdown = get_string('down');
         $spacer = $OUTPUT->pix_icon('spacer', '', 'moodle', ['class' => 'iconsmall']);
         if ($this->cnt) {
-            $updown .= \html_writer::link($templateurl->out(false,
-            ['action' => 'up', 'template' => $data->id]),
-            $OUTPUT->pix_icon('t/up', $strup, 'moodle', ['class' => 'iconsmall']),
-                ['id' => "sort-template-up-action"]). '';
+            $updown .= \html_writer::link(
+                $templateurl->out(
+                    false,
+                    ['action' => 'up', 'template' => $data->id]
+                ),
+                $OUTPUT->pix_icon('t/up', $strup, 'moodle', ['class' => 'iconsmall']),
+                ['id' => "sort-template-up-action"]
+            ) . '';
         } else {
             $updown .= $spacer;
         }
 
         if ($this->cnt < ($this->totaltemplates - 1)) {
-            $updown .= '&nbsp;'. \html_writer::link($templateurl->out(false,
-            ['action' => 'down', 'template' => $data->id]),
-            $OUTPUT->pix_icon('t/down', $strdown, 'moodle',
-                ['class' => 'iconsmall']), ['id' => "sort-template-down-action"]);
+            $updown .= '&nbsp;' . \html_writer::link(
+                $templateurl->out(
+                    false,
+                    ['action' => 'down', 'template' => $data->id]
+                ),
+                $OUTPUT->pix_icon(
+                    't/down',
+                    $strdown,
+                    'moodle',
+                    ['class' => 'iconsmall']
+                ),
+                ['id' => "sort-template-down-action"]
+            );
         } else {
             $updown .= $spacer;
         }
@@ -206,11 +231,15 @@ class template_table extends \table_sql {
         global $OUTPUT;
         $output = $OUTPUT->single_button(
             new \moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]),
-            get_string('edit', 'format_kickstart'), 'get');
+            get_string('edit', 'format_kickstart'),
+            'get'
+        );
         if (!($data->courseformat)) {
             $output .= $OUTPUT->single_button(
-                    new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
-                    get_string('delete', 'format_kickstart'), 'get');
+                new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
+                get_string('delete', 'format_kickstart'),
+                'get'
+            );
         }
         return $output;
     }
@@ -224,13 +253,13 @@ class template_table extends \table_sql {
      */
     public function query_db($pagesize, $useinitialsbar = true) {
         global $DB, $CFG;
-        list($wsql, $params) = $this->get_sql_where();
+        [$wsql, $params] = $this->get_sql_where();
         if ($wsql) {
             $wsql = 'AND ' . $wsql;
         }
         $sql = 'SELECT *
                 FROM {format_kickstart_template} t
-                WHERE t.visible = 1 '.$wsql;
+                WHERE t.visible = 1 ' . $wsql;
         $sort = $this->get_sql_sort();
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
@@ -239,7 +268,7 @@ class template_table extends \table_sql {
                 $orders = explode(",", $CFG->kickstart_templates);
                 $orders = array_filter(array_unique($orders), 'strlen');
                 if (!empty($orders)) {
-                    list($insql, $inparams) = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+                    [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
                     $sql .= "AND ID $insql";
                     $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
                         return "WHEN id = $value THEN " . array_search($value, $orders);

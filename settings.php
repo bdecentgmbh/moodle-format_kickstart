@@ -31,21 +31,27 @@ require_once("$CFG->dirroot/backup/util/includes/backup_includes.php");
 
 if ($ADMIN->fulltree) {
     if (format_kickstart_has_pro()) {
-        require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
-        $settings->add(new admin_setting_configcheckbox('format_kickstart/coursecreatorredirect',
+        require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
+        $settings->add(new admin_setting_configcheckbox(
+            'format_kickstart/coursecreatorredirect',
             get_string('coursecreatorredirect', 'format_kickstart'),
             get_string('coursecreatorredirect_desc', 'format_kickstart'),
-            0));
+            0
+        ));
 
-        $settings->add(new admin_setting_confightmleditor('format_kickstart/coursecreatorinstructions',
+        $settings->add(new admin_setting_confightmleditor(
+            'format_kickstart/coursecreatorinstructions',
             get_string('coursecreatorinstructions', 'format_kickstart'),
             get_string('coursecreatorinstructions_desc', 'format_kickstart'),
-            get_string('coursecreatorinstructions_default', 'format_kickstart')));
+            get_string('coursecreatorinstructions_default', 'format_kickstart')
+        ));
 
-        $settings->add(new admin_setting_configcheckbox('format_kickstart/automatictemplate',
+        $settings->add(new admin_setting_configcheckbox(
+            'format_kickstart/automatictemplate',
             get_string('automatictemplate', 'format_kickstart'),
             get_string('automatictemplate_desc', 'format_kickstart'),
-            1));
+            1
+        ));
         $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
         $settings->add(new admin_setting_configstoredfile(
             'format_kickstart/templatebackimages',
@@ -56,15 +62,21 @@ if ($ADMIN->fulltree) {
             $templatebgoptions
         ));
 
-        $settings->add(new admin_setting_configtext('format_kickstart/modtrimlength',
-                get_string('modtrimlength', 'format_kickstart'),
-                get_string('modtrimlength_desc', 'format_kickstart'),
-                23, PARAM_INT));
+        $settings->add(new admin_setting_configtext(
+            'format_kickstart/modtrimlength',
+            get_string('modtrimlength', 'format_kickstart'),
+            get_string('modtrimlength_desc', 'format_kickstart'),
+            23,
+            PARAM_INT
+        ));
 
-        $settings->add(new admin_setting_configtext('format_kickstart/courselibraryperpage',
-        get_string('courselibraryperpage', 'format_kickstart'),
-        get_string('courselibraryperpage_desc', 'format_kickstart'),
-        10, PARAM_INT));
+        $settings->add(new admin_setting_configtext(
+            'format_kickstart/courselibraryperpage',
+            get_string('courselibraryperpage', 'format_kickstart'),
+            get_string('courselibraryperpage_desc', 'format_kickstart'),
+            10,
+            PARAM_INT
+        ));
 
         $options = [
             "fullname" => get_string('course_fullname', 'format_kickstart'),
@@ -80,8 +92,9 @@ if ($ADMIN->fulltree) {
             $handler = \core_course\customfield\course_handler::create();
             $fields = $handler->get_fields();
             foreach ($fields as $field) {
+                $options["customfield_{$field->get('shortname')}"] = $field->get('name');
                 if ($field->get('type') == 'select' || $field->get('type') == 'text') {
-                    $options["customfield_{$field->get('shortname')}"] = $field->get('name');
+                    $customfields["customfield_{$field->get('shortname')}"] = $field->get('name');
                 }
             }
         }
@@ -93,37 +106,58 @@ if ($ADMIN->fulltree) {
             "showcontents" => 1,
         ];
 
-        $settings->add(new admin_setting_configmulticheckbox('format_kickstart/displaycourselibraryfields',
-                get_string('displaycourselibraryfields', 'format_kickstart'),
-                get_string('displaycourselibraryfields_desc', 'format_kickstart'),
-                $defaultoptions, $options));
+        $settings->add(new admin_setting_configmulticheckbox(
+            'format_kickstart/displaycourselibraryfields',
+            get_string('displaycourselibraryfields', 'format_kickstart'),
+            get_string('displaycourselibraryfields_desc', 'format_kickstart'),
+            $defaultoptions,
+            $options
+        ));
+
+        $settings->add(new admin_setting_configmultiselect(
+            'format_kickstart/courselibraryfilterscf',
+            get_string('courselibraryfilterscf', 'format_kickstart'),
+            get_string('courselibraryfilterscf_desc', 'format_kickstart'),
+            $defaultoptions,
+            $customfields
+        ));
     }
 
-    $settings->add(new admin_setting_configselect('format_kickstart/importtarget',
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/importtarget',
         get_string('importtarget', 'format_kickstart'),
         get_string('importtarget_desc', 'format_kickstart'),
-        \backup::TARGET_EXISTING_DELETING, [
+        \backup::TARGET_EXISTING_DELETING,
+        [
             \backup::TARGET_EXISTING_DELETING => get_string('restoretoexistingcoursedeleting', 'format_kickstart'),
             \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart'),
-        ]));
+        ]
+    ));
 
-    $settings->add(new admin_setting_configselect('format_kickstart/defaulttemplatesview',
+    $settings->add(new admin_setting_configselect(
+        'format_kickstart/defaulttemplatesview',
         get_string('defaulttemplatesview', 'format_kickstart'),
         get_string('defaulttemplatesview_desc', 'format_kickstart'),
-        'tile', [
+        'tile',
+        [
             'tile' => get_string('strtile', 'format_kickstart'),
             'list' => get_string('strlist', 'format_kickstart'),
-        ]));
+        ]
+    ));
 
-    $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultuserinstructions',
+    $settings->add(new admin_setting_confightmleditor(
+        'format_kickstart/defaultuserinstructions',
         get_string('defaultuserinstructions', 'format_kickstart'),
         get_string('defaultuserinstructions_desc', 'format_kickstart'),
-        get_string('defaultuserinstructions_default', 'format_kickstart')));
+        get_string('defaultuserinstructions_default', 'format_kickstart')
+    ));
 
-    $settings->add(new admin_setting_confightmleditor('format_kickstart/defaultteacherinstructions',
+    $settings->add(new admin_setting_confightmleditor(
+        'format_kickstart/defaultteacherinstructions',
         get_string('defaultteacherinstructions', 'format_kickstart'),
         get_string('defaultteacherinstructions_desc', 'format_kickstart'),
-        get_string('defaultteacherinstructions_default', 'format_kickstart')));
+        get_string('defaultteacherinstructions_default', 'format_kickstart')
+    ));
 
     $options = [
         0 => get_string('no'),
@@ -228,9 +262,15 @@ $ADMIN->add('format_kickstart', $settings);
 // Tell core we already added the settings structure.
 $settings = null;
 
-$ADMIN->add('courses', new admin_externalpage('kickstarttemplates', get_string('course_templates', 'format_kickstart'),
-    new moodle_url('/course/format/kickstart/templates.php'), 'format/kickstart:manage_templates'));
+$ADMIN->add('courses', new admin_externalpage(
+    'kickstarttemplates',
+    get_string('course_templates', 'format_kickstart'),
+    new moodle_url('/course/format/kickstart/templates.php'),
+    'format/kickstart:manage_templates'
+));
 
-$ADMIN->add('format_kickstart', new admin_externalpage('managetemplates', get_string('manage_templates', 'format_kickstart'),
-new moodle_url('/course/format/kickstart/templates.php')));
-
+$ADMIN->add('format_kickstart', new admin_externalpage(
+    'managetemplates',
+    get_string('manage_templates', 'format_kickstart'),
+    new moodle_url('/course/format/kickstart/templates.php')
+));

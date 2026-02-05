@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../../config.php');
-require_once(__DIR__.'/lib.php');
+require(__DIR__ . '/../../../config.php');
+require_once(__DIR__ . '/lib.php');
 require_once("$CFG->libdir/adminlib.php");
 
 global $USER;
@@ -38,15 +38,13 @@ $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
 
 require_capability('format/kickstart:manage_templates', $context);
-
 // Check the template add or not.
 format_kickstart_check_format_template();
 $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
 $templates = array_values(array_filter(array_unique($templates), 'strlen'));
 // Template sort action.
 if ($action && $templateid) {
-
-    switch($action) {
+    switch ($action) {
         case 'up':
             if (!in_array($templateid, $templates)) {
                 break;
@@ -78,7 +76,7 @@ if ($action && $templateid) {
         case 'disable':
             $DB->set_field('format_kickstart_template', 'status', 0, ['id' => $templateid]);
             break;
-        case 'enable' :
+        case 'enable':
             $DB->set_field('format_kickstart_template', 'status', 1, ['id' => $templateid]);
             break;
     }
@@ -91,8 +89,10 @@ if (is_siteadmin()) {
 
 $PAGE->set_title(get_string('manage_templates', 'format_kickstart'));
 $PAGE->set_heading(get_string('manage_templates', 'format_kickstart'));
-$PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
-    get_string('create_template', 'format_kickstart')));
+$PAGE->set_button($OUTPUT->single_button(
+    new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
+    get_string('create_template', 'format_kickstart')
+));
 
 if (!format_kickstart_has_pro() && $DB->count_records('format_kickstart_template', ['courseformat' => 0]) >= 2 * 2) {
     \core\notification::warning(get_string('buypromaxtemplates', 'format_kickstart'));

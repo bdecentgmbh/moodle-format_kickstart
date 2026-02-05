@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use format_kickstart\course_importer;
 
-require_once($CFG->libdir.'/externallib.php');
+require_once($CFG->libdir . '/externallib.php');
 
 /**
  * define external class.
@@ -61,8 +61,10 @@ class external extends \external_api {
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
         $context = \context_course::instance($courseid);
         require_capability('format/kickstart:import_from_template', $context);
-        $params = self::validate_parameters(self::import_template_parameters(),
-                        ['templateid' => $templateid, 'courseid' => $courseid]);
+        $params = self::validate_parameters(
+            self::import_template_parameters(),
+            ['templateid' => $templateid, 'courseid' => $courseid]
+        );
         course_importer::import_from_template($templateid, $courseid);
         return true;
     }
