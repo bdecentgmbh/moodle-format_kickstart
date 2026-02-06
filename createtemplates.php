@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require(__DIR__."/freetemplates.php");
-require_once(__DIR__."/lib.php");
+require(__DIR__ . "/freetemplates.php");
+require_once(__DIR__ . "/lib.php");
 
 /**
  * Install templates
@@ -48,4 +48,3 @@ function install_templates() {
         set_config('kickstart_templates', implode(',', $templates));
     }
 }
-

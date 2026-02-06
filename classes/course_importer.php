@@ -28,8 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 use stdClass;
 
-require_once($CFG->dirroot.'/course/format/kickstart/lib.php');
-require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
+require_once($CFG->dirroot . '/course/format/kickstart/lib.php');
+require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 
 /**
  * Import course mbz into existing course.
@@ -39,7 +39,6 @@ require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
  * @package format_kickstart
  */
 class course_importer {
-
     /**
      * Import template into course.
      *
@@ -54,14 +53,20 @@ class course_importer {
      */
     public static function import_from_template($templateid, $courseid) {
         global $CFG, $DB, $PAGE;
-        require_once($CFG->dirroot."/course/lib.php");
+        require_once($CFG->dirroot . "/course/lib.php");
         $PAGE->set_context(\context_course::instance($courseid));
         $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
         if (!$template->courseformat) {
             $fs = get_file_storage();
-            $files = $fs->get_area_files(\context_system::instance()->id, 'format_kickstart', 'course_backups',
-                $template->id, '', false);
+            $files = $fs->get_area_files(
+                \context_system::instance()->id,
+                'format_kickstart',
+                'course_backups',
+                $template->id,
+                '',
+                false
+            );
             $files = array_values($files);
 
             if (!isset($files[0])) {
@@ -83,7 +88,7 @@ class course_importer {
             // Check the coursetype exist or not If not set the designer type.
             if ($template->format == 'designer') {
                 if (empty($formatoptions) || !isset($formatoptions['coursetype'])) {
-                    require_once($CFG->dirroot."/course/format/designer/lib.php");
+                    require_once($CFG->dirroot . "/course/format/designer/lib.php");
                     $coursetypes = format_kickstart_get_designer_coursetypes();
                     $coursetype = array_search($template->title, $coursetypes);
                     $formatoptions['coursetype'] = $coursetype;
@@ -146,8 +151,14 @@ class course_importer {
         try {
             // Now restore the course.
             $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
-            $rc = new \restore_controller($backuptempdir, $course->id, \backup::INTERACTIVE_NO,
-                \backup::MODE_GENERAL, $USER->id, $target);
+            $rc = new \restore_controller(
+                $backuptempdir,
+                $course->id,
+                \backup::INTERACTIVE_NO,
+                \backup::MODE_GENERAL,
+                $USER->id,
+                $target
+            );
 
             foreach ($settings as $settingname => $value) {
                 $setting = $rc->get_plan()->get_setting($settingname);

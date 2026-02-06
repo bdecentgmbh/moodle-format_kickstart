@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot. '/course/format/lib.php');
+require_once($CFG->dirroot . '/course/format/lib.php');
 
 
 use format_kickstart\output\course_template_list;
@@ -37,7 +37,6 @@ use format_kickstart\output\course_template_list;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_kickstart extends core_courseformat\base {
-
     /**
      * Indicates whether the course format supports the creation of a news forum.
      *
@@ -70,7 +69,7 @@ class format_kickstart extends core_courseformat\base {
     public function course_header() {
         global $CFG;
         if (format_kickstart_has_pro()) {
-            require_once($CFG->dirroot. "/local/kickstart_pro/lib.php");
+            require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
             if (function_exists('local_kickstart_pro_redirect_automatictemplate')) {
                 local_kickstart_pro_redirect_automatictemplate();
             }
@@ -185,17 +184,25 @@ class format_kickstart extends core_courseformat\base {
             }
             $cached[$key] = ($sectionid === 0 || !empty($option['cache']));
         }
-        $records = $DB->get_records('course_format_options',
+        $records = $DB->get_records(
+            'course_format_options',
             ['courseid' => $this->courseid,
                 'format' => $this->format,
                 'sectionid' => $sectionid,
-            ], '', 'name,id,value');
+            ],
+            '',
+            'name,id,value'
+        );
         $changed = $needrebuild = false;
         foreach ($defaultoptions as $key => $value) {
             if (isset($records[$key])) {
                 if (array_key_exists($key, $data) && $records[$key]->value !== $data[$key]) {
-                    $DB->set_field('course_format_options', 'value',
-                        $data[$key], ['id' => $records[$key]->id]);
+                    $DB->set_field(
+                        'course_format_options',
+                        'value',
+                        $data[$key],
+                        ['id' => $records[$key]->id]
+                    );
                     $changed = true;
                     $needrebuild = $needrebuild || $cached[$key];
                 }
@@ -381,8 +388,14 @@ function format_kickstart_create_template($template, $sort, $context, $component
 function check_record_exsist($filerecord) {
 
     $fs = get_file_storage();
-    $exist = $fs->file_exists($filerecord->contextid, $filerecord->component, $filerecord->filearea,
-        $filerecord->itemid, $filerecord->filepath, $filerecord->filename);
+    $exist = $fs->file_exists(
+        $filerecord->contextid,
+        $filerecord->component,
+        $filerecord->filearea,
+        $filerecord->itemid,
+        $filerecord->filepath,
+        $filerecord->filename
+    );
     return $exist;
 }
 
@@ -405,7 +418,7 @@ function format_kickstart_import_courseformat_template() {
         }
         $counttemplate++;
         if ($format->name == 'designer') {
-            require_once($CFG->dirroot."/course/format/designer/lib.php");
+            require_once($CFG->dirroot . "/course/format/designer/lib.php");
             $coursetypes = format_kickstart_get_designer_coursetypes();
             foreach ($coursetypes as $type) {
                 format_kickstart_add_couseformat_template($type, $format->name, $counttemplate, $format->is_enabled());
@@ -456,7 +469,8 @@ function format_kickstart_add_couseformat_template($templatename, $format, $coun
 function format_kickstart_update_template_format_options($template) {
     global $DB, $SITE, $CFG;
     $isdesignerformat = ($template->format == 'designer') ? true : false;
-    $records = $DB->get_records('course_format_options',
+    $records = $DB->get_records(
+        'course_format_options',
         [
             'courseid' => $SITE->id,
             'format' => $template->format,
@@ -470,8 +484,10 @@ function format_kickstart_update_template_format_options($template) {
             $courseformat = strtolower($template->title);
         }
         foreach ($records as $record) {
-            if (!$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
-                'templateid' => $template->id, 'name' => $record->name])) {
+            if (
+                !$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
+                'templateid' => $template->id, 'name' => $record->name ])
+            ) {
                 $data = new stdClass();
                 $data->templateid = $template->id;
                 $data->displayname = $template->title;
@@ -506,7 +522,8 @@ function format_kickstart_get_template_format_options($template) {
     if ($template->format == 'designer') {
         $courseformat = strtolower($template->title);
     }
-    $records = $DB->get_records_menu('format_kickstart_options',
+    $records = $DB->get_records_menu(
+        'format_kickstart_options',
         [
             'templateid' => $template->id,
             'format' => $courseformat,
@@ -661,8 +678,13 @@ function format_kickstart_extend_navigation_course(navigation_node $navigation, 
         $url = new moodle_url('/course/format/kickstart/list.php', [
             'id' => $id,
         ]);
-        $node = $navigation->create(get_string('strkickstart', 'format_kickstart'),
-            $url, navigation_node::TYPE_SETTING, null, null);
+        $node = $navigation->create(
+            get_string('strkickstart', 'format_kickstart'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            null
+        );
         $node->add_class('kickstart-nav');
         $node->set_force_into_more_menu(false);
         $node->set_show_in_secondary_navigation(true);
@@ -690,7 +712,7 @@ function format_kickstart_get_breadcump_menus() {
     ];
 
     if (format_kickstart_has_pro()) {
-        require_once($CFG->dirroot. "/local/kickstart_pro/lib.php");
+        require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
         $menus += local_kickstart_pro_get_breadcump_menus();
     }
     return $menus;
@@ -719,10 +741,10 @@ function format_kickstart_get_action_selector_menus($courseid, $pageurl) {
 
     $menus[$coursetemplateurl->out(false)] = get_string('coursetemplate', 'format_kickstart');
     $menus[$studentviewurl->out(false)] = get_string('studentview', 'format_kickstart');
-    $menus[$helpurl->out(false)] = get_string('help' , 'format_kickstart');
+    $menus[$helpurl->out(false)] = get_string('help', 'format_kickstart');
 
     if (format_kickstart_has_pro()) {
-        require_once($CFG->dirroot. "/local/kickstart_pro/lib.php");
+        require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
         $menus += local_kickstart_pro_get_action_selector_menus($courseid, $activeurl);
     }
     return $menus;
@@ -743,8 +765,11 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
     $course = get_course($args['courseid']);
     $action = $args['action'];
 
-    $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
-    ['contextid' => $args['contextid'], 'courseid' => $course->id, 'nav' => $args['menuid'], 'filteroptions' => false]);
+    $PAGE->requires->js_call_amd(
+        'format_kickstart/formatkickstart',
+        'init',
+        ['contextid' => $args['contextid'], 'courseid' => $course->id, 'nav' => $args['menuid'], 'filteroptions' => false]
+    );
 
     $params = ['action' => $action, 'value' => $args['value']];
 
@@ -795,8 +820,11 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
     $nav = $args['menuid'];
     $page = $args['page'];
 
-    $PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
-    ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => false]);
+    $PAGE->requires->js_call_amd(
+        'format_kickstart/formatkickstart',
+        'init',
+        ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => false]
+    );
 
     $renderer = $PAGE->get_renderer('format_kickstart');
     return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype, $page));
@@ -853,14 +881,26 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     require_capability('moodle/course:manageactivities', $context);
 
     // Use Moodle's backup/restore functionality.
-    $bc = new backup_controller(backup::TYPE_1ACTIVITY, $args['cmid'], backup::FORMAT_MOODLE,
-        backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+    $bc = new backup_controller(
+        backup::TYPE_1ACTIVITY,
+        $args['cmid'],
+        backup::FORMAT_MOODLE,
+        backup::INTERACTIVE_NO,
+        backup::MODE_IMPORT,
+        $USER->id
+    );
     $bc->execute_plan();
     $backupid = $bc->get_backupid();
     $bc->destroy();
 
-    $rc = new restore_controller($backupid, $args['maincourse'],
-        backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id, backup::TARGET_EXISTING_ADDING);
+    $rc = new restore_controller(
+        $backupid,
+        $args['maincourse'],
+        backup::INTERACTIVE_NO,
+        backup::MODE_IMPORT,
+        $USER->id,
+        backup::TARGET_EXISTING_ADDING
+    );
     // Set target section using settings.
     $plan = $rc->get_plan();
     $cmcontext = \context_module::instance($args['cmid']);
@@ -899,8 +939,10 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     // Any state action mark the state cache as dirty.
     core_courseformat\base::session_cache_reset($maincourserecord);
     $viewurl = new \moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);
-    if ($subsection = $DB->get_record('modules', ['name' => 'subsection']) && !empty($subsection) &&
-        $subsection->id == $cm->module) {
+    if (
+        $subsection = $DB->get_record('modules', ['name' => 'subsection']) && !empty($subsection) &&
+        $subsection->id == $cm->module
+    ) {
         $subsectionid = $DB->get_field('course_modules', 'id', ['itemid' => $newcmid, 'course' => $cm->course]);
         $viewurl = new \moodle_url('/course/section.php', ['id' => $subsectionid]);
     }

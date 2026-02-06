@@ -29,7 +29,6 @@ use core\output\select_menu;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class general_action_bar {
-
     /** @var moodle_url $activeurl The URL that should be set as active in the URL selector element. */
     protected $activeurl;
 

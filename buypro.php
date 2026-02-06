@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../../config.php');
+require(__DIR__ . '/../../../config.php');
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,6 +37,9 @@ require_login();
 
 echo $OUTPUT->header();
 echo \html_writer::div(get_string('buyprosummary', 'format_kickstart'), 'mb-2');
-echo \html_writer::link('http://bdecent.de/kickstart',
-    get_string('learnmore', 'format_kickstart'), ['target' => '_blank', 'class' => 'btn btn-primary']);
+echo \html_writer::link(
+    'http://bdecent.de/kickstart',
+    get_string('learnmore', 'format_kickstart'),
+    ['target' => '_blank', 'class' => 'btn btn-primary']
+);
 echo $OUTPUT->footer();

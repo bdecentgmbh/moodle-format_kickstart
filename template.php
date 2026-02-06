@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../../config.php');
-require_once(__DIR__.'/lib.php');
+require(__DIR__ . '/../../../config.php');
+require_once(__DIR__ . '/lib.php');
 require_once($CFG->libdir . "/formslib.php");
 
 global $USER, $DB, $CFG;
@@ -42,7 +42,7 @@ require_login();
 require_capability('format/kickstart:manage_templates', $context);
 $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
 if (format_kickstart_has_pro()) {
-    require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+    require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
 }
 
 $editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
@@ -78,18 +78,42 @@ switch ($action) {
             $id = $DB->insert_record('format_kickstart_template', $data);
             array_push($templates, $id);
             set_config('kickstart_templates', implode(',', $templates));
-            core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
-                context_system::instance(), $data->tags);
-            file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
-                $id, ['subdirs' => 0, 'maxfiles' => 1]);
+            core_tag_tag::set_item_tags(
+                'format_kickstart',
+                'format_kickstart_template',
+                $id,
+                context_system::instance(),
+                $data->tags
+            );
+            file_save_draft_area_files(
+                $data->course_backup,
+                $context->id,
+                'format_kickstart',
+                'course_backups',
+                $id,
+                ['subdirs' => 0, 'maxfiles' => 1]
+            );
             if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
-                file_save_draft_area_files($data->templatebackimg, $context->id, 'local_kickstart_pro', 'templatebackimg',
-                $id, $templatebgoptions);
+                file_save_draft_area_files(
+                    $data->templatebackimg,
+                    $context->id,
+                    'local_kickstart_pro',
+                    'templatebackimg',
+                    $id,
+                    $templatebgoptions
+                );
             }
 
             // Update the description editor.
-            $data = file_postupdate_standard_editor($data, 'description', $editoroptions,
-            $context, 'format_kickstart', 'description', $id);
+            $data = file_postupdate_standard_editor(
+                $data,
+                'description',
+                $editoroptions,
+                $context,
+                'format_kickstart',
+                'description',
+                $id
+            );
             $upd = new stdClass();
             $upd->id                = $id;
             $upd->description       = $data->description;
@@ -105,13 +129,26 @@ switch ($action) {
             if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
                 $templateoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
                 $draftitem = file_get_submitted_draft_itemid('templatebackimages');
-                file_prepare_draft_area($draftitem, \context_system::instance()->id,
-                    'format_kickstart', 'templatebackimages', 0, $templateoptions);
+                file_prepare_draft_area(
+                    $draftitem,
+                    \context_system::instance()->id,
+                    'format_kickstart',
+                    'templatebackimages',
+                    0,
+                    $templateoptions
+                );
                 $template->templatebackimg = $draftitem;
             }
             $editoroptions['subdirs'] = false;
-            $template = file_prepare_standard_editor($template, 'description', $editoroptions,
-            $context, 'format_kickstart', 'description', null);
+            $template = file_prepare_standard_editor(
+                $template,
+                'description',
+                $editoroptions,
+                $context,
+                'format_kickstart',
+                'description',
+                null
+            );
             $form->set_data($template);
         }
 
@@ -139,8 +176,15 @@ switch ($action) {
                 $courseformat->update_course_format_options($data);
                 format_kickstart_update_template_format_options($template);
             }
-            $data = file_postupdate_standard_editor($data, 'description', $editoroptions, $context,
-            'format_kickstart', 'description', $data->id);
+            $data = file_postupdate_standard_editor(
+                $data,
+                'description',
+                $editoroptions,
+                $context,
+                'format_kickstart',
+                'description',
+                $data->id
+            );
             if (format_kickstart_has_pro()) {
                 $data->cohortids = json_encode($data->cohortids);
                 $data->categoryids = json_encode($data->categoryids);
@@ -149,16 +193,33 @@ switch ($action) {
             }
             $DB->update_record('format_kickstart_template', $data);
 
-            core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id,
-                context_system::instance(), $data->tags);
+            core_tag_tag::set_item_tags(
+                'format_kickstart',
+                'format_kickstart_template',
+                $id,
+                context_system::instance(),
+                $data->tags
+            );
             if (isset($data->course_backup)) {
-                file_save_draft_area_files($data->course_backup, $context->id, 'format_kickstart', 'course_backups',
-                    $data->id, ['subdirs' => 0, 'maxfiles' => 1]);
+                file_save_draft_area_files(
+                    $data->course_backup,
+                    $context->id,
+                    'format_kickstart',
+                    'course_backups',
+                    $data->id,
+                    ['subdirs' => 0, 'maxfiles' => 1]
+                );
             }
 
             if (format_kickstart_has_pro() && function_exists('local_kickstart_pro_get_template_backimages')) {
-                file_save_draft_area_files($data->templatebackimg, $context->id, 'local_kickstart_pro', 'templatebackimg',
-                $data->id, $templatebgoptions);
+                file_save_draft_area_files(
+                    $data->templatebackimg,
+                    $context->id,
+                    'local_kickstart_pro',
+                    'templatebackimg',
+                    $data->id,
+                    $templatebgoptions
+                );
             }
 
 
@@ -169,13 +230,26 @@ switch ($action) {
             redirect(new moodle_url('/course/format/kickstart/templates.php'));
         } else {
             $editoroptions['subdirs'] = file_area_contains_subdirs($context, 'format_kickstart', 'description', $template->id);
-            $template = file_prepare_standard_editor($template, 'description', $editoroptions,
-                $context, 'format_kickstart', 'description', $template->id);
+            $template = file_prepare_standard_editor(
+                $template,
+                'description',
+                $editoroptions,
+                $context,
+                'format_kickstart',
+                'description',
+                $template->id
+            );
             if (format_kickstart_has_pro()) {
                 if (function_exists('local_kickstart_pro_get_template_backimages')) {
                     $drafteditor = file_get_submitted_draft_itemid('templatebackimg');
-                    file_prepare_draft_area($drafteditor, $context->id, 'local_kickstart_pro',
-                        'templatebackimg', $id, $templatebgoptions);
+                    file_prepare_draft_area(
+                        $drafteditor,
+                        $context->id,
+                        'local_kickstart_pro',
+                        'templatebackimg',
+                        $id,
+                        $templatebgoptions
+                    );
                     $template->templatebackimg = $drafteditor;
                 }
                 $template->cohortids = isset($template->cohortids) ? json_decode($template->cohortids, true) : [];
@@ -186,8 +260,14 @@ switch ($action) {
             // Check the template is normal or course format.
             if (!$template->courseformat) {
                 $draftitemid = file_get_submitted_draft_itemid('course_backup');
-                file_prepare_draft_area($draftitemid, $context->id, 'format_kickstart', 'course_backups', $id,
-                    ['subdirs' => 0, 'maxfiles' => 1]);
+                file_prepare_draft_area(
+                    $draftitemid,
+                    $context->id,
+                    'format_kickstart',
+                    'course_backups',
+                    $id,
+                    ['subdirs' => 0, 'maxfiles' => 1]
+                );
                 $template->course_backup = $draftitemid;
             } else {
                 $params['format'] = $template->format;
@@ -195,7 +275,7 @@ switch ($action) {
                 $records = format_kickstart_get_template_format_options($template);
                 $template = array_merge((array) $records, (array) $template);
                 if ($params['format'] == 'designer') {
-                    require_once($CFG->dirroot."/course/format/designer/lib.php");
+                    require_once($CFG->dirroot . "/course/format/designer/lib.php");
                     $coursetypes = format_kickstart_get_designer_coursetypes();
                     $template['coursetype'] = array_search($template['title'], $coursetypes);
                 }

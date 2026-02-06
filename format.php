@@ -26,8 +26,8 @@ use format_kickstart\output\course_template_list;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/filelib.php');
-require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->libdir . '/completionlib.php');
 
 $nav = optional_param('nav', 'coursetemplate', PARAM_TEXT);
 
@@ -42,8 +42,11 @@ $output = $PAGE->get_renderer('format_kickstart');
 
 $pageurl = new moodle_url($PAGE->url, ['nav' => $nav]);
 
-$PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
-    ['contextid' => $context->id, 'courseid' => $course->id, 'menuid' => $nav, 'filteroptions' => true]);
+$PAGE->requires->js_call_amd(
+    'format_kickstart/formatkickstart',
+    'init',
+    ['contextid' => $context->id, 'courseid' => $course->id, 'menuid' => $nav, 'filteroptions' => true]
+);
 
 // Print header.
 $actionbar = new format_kickstart\output\general_action_bar($context, $pageurl, 'kickstart', 'coursetemplate');
@@ -69,4 +72,3 @@ if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartPr
 echo $renderer->render_kickstart_page($kickstartpage);
 
 echo html_writer::end_div();
-

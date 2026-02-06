@@ -38,7 +38,6 @@ require_once("$CFG->dirroot/course/format/kickstart/lib.php");
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class template_form extends \moodleform {
-
     /**
      * Define form elements.
      *
@@ -66,8 +65,12 @@ class template_form extends \moodleform {
         $mform->addElement('editor', 'description_editor', get_string('description', 'format_kickstart'), null, $editoroptions);
         $mform->setType('description_editor', PARAM_RAW);
 
-        $mform->addElement('tags', 'tags', get_string('tags'),
-            ['itemtype' => 'format_kickstart_template', 'component' => 'format_kickstart']);
+        $mform->addElement(
+            'tags',
+            'tags',
+            get_string('tags'),
+            ['itemtype' => 'format_kickstart_template', 'component' => 'format_kickstart']
+        );
 
         if (!$courseautotemplate) {
             $mform->addElement('hidden', 'id');
@@ -75,32 +78,40 @@ class template_form extends \moodleform {
         }
 
         if (!$checkformat && !$courseautotemplate) {
-
-            $mform->addElement('filemanager', 'course_backup',
-                get_string('course_backup', 'format_kickstart'), null, [
+            $mform->addElement(
+                'filemanager',
+                'course_backup',
+                get_string('course_backup', 'format_kickstart'),
+                null,
+                [
                 'subdirs' => 0,
                 'maxfiles' => 1,
                 'accepted_types' => ['.mbz'],
                 'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
-                ]);
+                ]
+            );
             $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
             $mform->addRule('course_backup', get_string('required'), 'required');
         }
 
         if (!$courseautotemplate) {
-
             $mform->addElement('text', 'preview_url', get_string('previewurl', 'format_kickstart'));
             $mform->setType('preview_url', PARAM_URL);
             $mform->addHelpButton('preview_url', 'previewurl', 'format_kickstart');
         }
 
-        if (format_kickstart_has_pro() ) {
-            require_once($CFG->dirroot."/local/kickstart_pro/lib.php");
+        if (format_kickstart_has_pro()) {
+            require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
 
             if (function_exists('local_kickstart_pro_get_template_backimages')) {
                 // Template background images.
-                $mform->addElement('filemanager', 'templatebackimg',
-                    get_string('templatebackimg', 'format_kickstart'), null, $templatebgoptions);
+                $mform->addElement(
+                    'filemanager',
+                    'templatebackimg',
+                    get_string('templatebackimg', 'format_kickstart'),
+                    null,
+                    $templatebgoptions
+                );
                 $mform->addHelpButton('templatebackimg', 'templatebackimg', 'format_kickstart');
             }
 
@@ -125,8 +136,13 @@ class template_form extends \moodleform {
             $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
             $mform->setType('restrictcategory', PARAM_BOOL);
             $categories = \core_course_category::make_categories_list('moodle/course:create');
-            $mform->addElement('autocomplete', 'categoryids', get_string('categories'), $categories,
-                ['multiple' => true]);
+            $mform->addElement(
+                'autocomplete',
+                'categoryids',
+                get_string('categories'),
+                $categories,
+                ['multiple' => true]
+            );
             $mform->hideIf('categoryids', 'restrictcategory');
 
             $mform->addElement('advcheckbox', 'includesubcategories', get_string('includesubcategories', 'format_kickstart'));
@@ -156,14 +172,19 @@ class template_form extends \moodleform {
             $options = [
                 'ajax' => 'core_user/form_user_selector',
                 'multiple' => true,
-                'valuehtmlcallback' => function($userid) {
+                'valuehtmlcallback' => function ($userid) {
                     $user = \core_user::get_user($userid);
                     return fullname($user, has_capability('moodle/site:viewfullnames', \context_system::instance()));
                 },
             ];
 
-            $userelement = $mform->addElement('autocomplete', 'userids', get_string('addusers', 'core_reportbuilder'),
-                [], $options);
+            $userelement = $mform->addElement(
+                'autocomplete',
+                'userids',
+                get_string('addusers', 'core_reportbuilder'),
+                [],
+                $options
+            );
             if ($courseautotemplate) {
                 $userelement->setValue($USER->id);
                 $mform->setDefault('restrictuser', 1);
@@ -172,8 +193,7 @@ class template_form extends \moodleform {
         }
 
         if ($checkformat) {
-
-            $PAGE->add_body_class('template-'.$template['format']."-format");
+            $PAGE->add_body_class('template-' . $template['format'] . "-format");
             $mform->addElement('header', 'formatoptions', get_string('courseformatoptions', 'format_kickstart'));
 
             // Just a placeholder for the course format options.
@@ -191,14 +211,15 @@ class template_form extends \moodleform {
             $courseformat = course_get_format((object)$params);
             $elements = $courseformat->create_edit_form_elements($mform, false);
             for ($i = 0; $i < count($elements); $i++) {
-                $mform->insertElementBefore($mform->removeElement($elements[$i]->getName(), false),
-                        'courseformatoptions');
+                $mform->insertElementBefore(
+                    $mform->removeElement($elements[$i]->getName(), false),
+                    'courseformatoptions'
+                );
             }
 
             if ($mform->elementExists('numsections')) {
                 $mform->removeElement('numsections');
             }
-
         }
 
         $this->add_action_buttons();

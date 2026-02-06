@@ -39,7 +39,7 @@ final class format_kickstart_test extends \advanced_testcase {
      */
     public function setup(): void {
         global $CFG;
-        require_once($CFG->dirroot. "/course/format/kickstart/lib.php");
+        require_once($CFG->dirroot . "/course/format/kickstart/lib.php");
         $this->setAdminUser();
         $this->resetAfterTest(true);
     }
@@ -99,8 +99,11 @@ final class format_kickstart_test extends \advanced_testcase {
             if (in_array($field, $excludefield)) {
                 continue;
             }
-            $this->assertEquals($course->$field, $updatecourse->$field,
-                'Ensure course setting was not changed after import: ' . $field);
+            $this->assertEquals(
+                $course->$field,
+                $updatecourse->$field,
+                'Ensure course setting was not changed after import: ' . $field
+            );
         }
     }
 

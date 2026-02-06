@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../../config.php');
-require_once(__DIR__.'/lib.php');
+require(__DIR__ . '/../../../config.php');
+require_once(__DIR__ . '/lib.php');
 require_once($CFG->dirroot . '/course/format/kickstart/classes/output/general_action_bar.php');
 
 global $USER, $DB;
@@ -40,8 +40,11 @@ $course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_login($course);
 
-$PAGE->requires->js_call_amd('format_kickstart/formatkickstart', 'init',
-    ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => true]);
+$PAGE->requires->js_call_amd(
+    'format_kickstart/formatkickstart',
+    'init',
+    ['contextid' => $context->id, 'courseid' => $course->id, 'nav' => $nav, 'filteroptions' => true]
+);
 
 // Print header.
 $actionbar = new format_kickstart\output\general_action_bar($context, $pageurl, 'kickstart', 'coursetemplate');
@@ -78,4 +81,3 @@ echo $renderer->render_kickstart_page($kickstartpage);
 echo html_writer::end_div();
 
 echo $OUTPUT->footer();
-
