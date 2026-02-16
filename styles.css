@@ -464,7 +464,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 .kickstart-page .listing-view-block a {
     padding: 0.375rem 0.75rem;
-    border: 1px solid var(--primary);
+    border: 1px solid var(--primary, var(--bs-primary));
 }
 .kickstart-page .listing-view-block a:first-child {
     border-right: 0;
@@ -485,7 +485,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 .kickstart-page .listing-view-block a.active {
     color: #fff;
     text-decoration: none;
-    background: var(--primary);
+    background: var(--primary, var(--bs-primary));
     box-shadow: none;
 }
 .kickstart-page .listing-view-block a span {
