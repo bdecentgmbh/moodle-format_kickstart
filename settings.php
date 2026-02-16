@@ -132,7 +132,6 @@ if ($ADMIN->fulltree) {
                 \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart'),
             ]
         ));
-
     }
 
     $settings->add(new admin_setting_configselect(
