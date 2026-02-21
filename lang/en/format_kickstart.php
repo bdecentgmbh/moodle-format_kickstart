@@ -34,6 +34,7 @@ $string['confirmtemplate'] = 'Are you sure you want to use this Template "{$a->n
 $string['course_backup'] = 'Course backup file (.mbz)';
 $string['course_backup_help'] = 'When a user selects this template from within a course, this .mbz course backup will be imported into the course.';
 $string['course_fullname'] = "Course full name";
+$string['course_imported'] = 'Course imported';
 $string['course_templates'] = 'Course templates';
 $string['coursebackupnotset'] = 'Template has no course backup set.';
 $string['coursecreatorinstructions'] = "Course creator instructions";
