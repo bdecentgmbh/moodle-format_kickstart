@@ -113,14 +113,16 @@ if ($ADMIN->fulltree) {
             $defaultoptions,
             $options
         ));
-
-        $settings->add(new admin_setting_configmultiselect(
-            'format_kickstart/courselibraryfilterscf',
-            get_string('courselibraryfilterscf', 'format_kickstart'),
-            get_string('courselibraryfilterscf_desc', 'format_kickstart'),
-            $defaultoptions,
-            $customfields
-        ));
+ 
+        if (!empty($customfields)) {
+            $settings->add(new admin_setting_configmultiselect(
+                'format_kickstart/courselibraryfilterscf',
+                get_string('courselibraryfilterscf', 'format_kickstart'),
+                get_string('courselibraryfilterscf_desc', 'format_kickstart'),
+                [],
+                $customfields
+            ));
+        }
 
         $settings->add(new admin_setting_configselect(
             'format_kickstart/importtarget',
