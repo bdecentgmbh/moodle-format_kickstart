@@ -190,7 +190,7 @@ class import_course_list implements \renderable, \templatable {
     public function sectionsummary_trim_char($summary, $trimchar = 25) {
 
         if (str_word_count($summary) < $trimchar) {
-            return $summary;
+            return '';
         }
         $arrstr = explode(" ", $summary);
         $slicearr = array_slice($arrstr, 0, $trimchar);
