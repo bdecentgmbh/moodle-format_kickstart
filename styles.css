@@ -228,23 +228,22 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
     border-radius: 5px;
 }
-.format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block
+.format-kickstart .template-list .templates-block .card .card-body .image-block
 .carousel .carousel-indicators li {
     width: 10px;
     height: 2px;
-    /* border: 1px solid #fff; */
     background-color: rgba(255, 255, 255, .7);
-    /* border-radius: 50%; */
     margin: 0 5px 0 0;
+    cursor: pointer;
 }
 .format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block .carousel-item {
     height: auto;
 }
-.format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block
+.format-kickstart .template-list .templates-block .card .card-body .image-block
 .carousel .carousel-indicators li.active {
     background-color: var(--primar, var(--bs-primary));
 }
-.format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block
+.format-kickstart .template-list .templates-block .card .card-body .image-block
 .carousel .carousel-indicators li::marker {
     color: transparent;
 }
