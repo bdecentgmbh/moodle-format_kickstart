@@ -113,7 +113,7 @@ if ($ADMIN->fulltree) {
             $defaultoptions,
             $options
         ));
- 
+
         if (!empty($customfields)) {
             $settings->add(new admin_setting_configmultiselect(
                 'format_kickstart/courselibraryfilterscf',
