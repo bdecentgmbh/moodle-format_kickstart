@@ -228,21 +228,24 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
     border-radius: 5px;
 }
-.format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block
+.format-kickstart .template-list .templates-block .card .card-body .image-block
 .carousel .carousel-indicators li {
     width: 10px;
-    height: 10px;
-    border: 1px solid #fff;
-    background-color: #000;
-    border-radius: 50%;
+    height: 2px;
+    background-color: rgba(255, 255, 255, .7);
     margin: 0 5px 0 0;
+    cursor: pointer;
 }
 .format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block .carousel-item {
     height: auto;
 }
-.format-kickstart .kickstart-list-view .templates-block .card .card-body .image-block
+.format-kickstart .template-list .templates-block .card .card-body .image-block
 .carousel .carousel-indicators li.active {
-    background-color: #0f6cbf;
+    background-color: var(--primar, var(--bs-primary));
+}
+.format-kickstart .template-list .templates-block .card .card-body .image-block
+.carousel .carousel-indicators li::marker {
+    color: transparent;
 }
 .format-kickstart .kickstart-list-view .templates-block .card .card-footer {
     text-align: right;
@@ -464,7 +467,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 .kickstart-page .listing-view-block a {
     padding: 0.375rem 0.75rem;
-    border: 1px solid var(--primary);
+    border: 1px solid var(--primary, var(--bs-primary));
 }
 .kickstart-page .listing-view-block a:first-child {
     border-right: 0;
@@ -485,7 +488,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 .kickstart-page .listing-view-block a.active {
     color: #fff;
     text-decoration: none;
-    background: var(--primary);
+    background: var(--primary, var(--bs-primary));
     box-shadow: none;
 }
 .kickstart-page .listing-view-block a span {

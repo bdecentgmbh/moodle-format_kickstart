@@ -114,25 +114,27 @@ if ($ADMIN->fulltree) {
             $options
         ));
 
-        $settings->add(new admin_setting_configmultiselect(
-            'format_kickstart/courselibraryfilterscf',
-            get_string('courselibraryfilterscf', 'format_kickstart'),
-            get_string('courselibraryfilterscf_desc', 'format_kickstart'),
-            $defaultoptions,
-            $customfields
+        if (!empty($customfields)) {
+            $settings->add(new admin_setting_configmultiselect(
+                'format_kickstart/courselibraryfilterscf',
+                get_string('courselibraryfilterscf', 'format_kickstart'),
+                get_string('courselibraryfilterscf_desc', 'format_kickstart'),
+                [],
+                $customfields
+            ));
+        }
+
+        $settings->add(new admin_setting_configselect(
+            'format_kickstart/importtarget',
+            get_string('importtarget', 'format_kickstart'),
+            get_string('importtarget_desc', 'format_kickstart'),
+            \backup::TARGET_EXISTING_DELETING,
+            [
+                \backup::TARGET_EXISTING_DELETING => get_string('restoretoexistingcoursedeleting', 'format_kickstart'),
+                \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart'),
+            ]
         ));
     }
-
-    $settings->add(new admin_setting_configselect(
-        'format_kickstart/importtarget',
-        get_string('importtarget', 'format_kickstart'),
-        get_string('importtarget_desc', 'format_kickstart'),
-        \backup::TARGET_EXISTING_DELETING,
-        [
-            \backup::TARGET_EXISTING_DELETING => get_string('restoretoexistingcoursedeleting', 'format_kickstart'),
-            \backup::TARGET_EXISTING_ADDING => get_string('restoretoexistingcourseadding', 'format_kickstart'),
-        ]
-    ));
 
     $settings->add(new admin_setting_configselect(
         'format_kickstart/defaulttemplatesview',
@@ -159,101 +161,103 @@ if ($ADMIN->fulltree) {
         get_string('defaultteacherinstructions_default', 'format_kickstart')
     ));
 
-    $options = [
-        0 => get_string('no'),
-        1 => get_string('yes'),
-        2 => get_string('usedefault', 'format_kickstart'),
-    ];
+    if (format_kickstart_has_pro()) {
+        $options = [
+            0 => get_string('no'),
+            1 => get_string('yes'),
+            2 => get_string('usedefault', 'format_kickstart'),
+        ];
 
-    $settings->add(new admin_setting_heading(
-        'courselibsortsettings',
-        get_string('courselibsortsettings', 'format_kickstart'),
-        get_string('courselibsortsettings_help', 'format_kickstart'),
-    ));
-
-
-    // Settings for the course library sort weight.
-    // Add relevance weight settings.
-    $settings->add(new admin_setting_configtext(
-        'format_kickstart/weight_fullname',
-        get_string('weight_fullname', 'format_kickstart'),
-        get_string('weight_fullname_desc', 'format_kickstart'),
-        5,
-        PARAM_INT
-    ));
-
-    $settings->add(new admin_setting_configtext(
-        'format_kickstart/weight_shortname',
-        get_string('weight_shortname', 'format_kickstart'),
-        get_string('weight_shortname_desc', 'format_kickstart'),
-        5,
-        PARAM_INT
-    ));
-
-    $settings->add(new admin_setting_configtext(
-        'format_kickstart/weight_tags',
-        get_string('weight_tags', 'format_kickstart'),
-        get_string('weight_tags_desc', 'format_kickstart'),
-        5,
-        PARAM_INT
-    ));
-
-    $settings->add(new admin_setting_configtext(
-        'format_kickstart/weight_starred',
-        get_string('weight_starred', 'format_kickstart'),
-        get_string('weight_starred_desc', 'format_kickstart'),
-        5,
-        PARAM_INT
-    ));
+        $settings->add(new admin_setting_heading(
+            'courselibsortsettings',
+            get_string('courselibsortsettings', 'format_kickstart'),
+            get_string('courselibsortsettings_help', 'format_kickstart'),
+        ));
 
 
-    if (class_exists('\core_course\customfield\course_handler')) {
-        $handler = \core_course\customfield\course_handler::create();
-        $fields = $handler->get_fields();
-        foreach ($fields as $field) {
-            if ($field->get('type') == 'text' || $field->get('type') == 'select') {
-                $fieldname = $field->get('name');
-                $fieldshortname = $field->get('shortname');
-                $settings->add(new admin_setting_configtext(
-                    'format_kickstart/weight_customfield_' . $fieldshortname,
-                    get_string('weight_customfield', 'format_kickstart', $fieldname),
-                    get_string('weight_customfield_desc', 'format_kickstart', $fieldname),
-                    5, // Default value.
-                    PARAM_INT
-                ));
+        // Settings for the course library sort weight.
+        // Add relevance weight settings.
+        $settings->add(new admin_setting_configtext(
+            'format_kickstart/weight_fullname',
+            get_string('weight_fullname', 'format_kickstart'),
+            get_string('weight_fullname_desc', 'format_kickstart'),
+            5,
+            PARAM_INT
+        ));
+
+        $settings->add(new admin_setting_configtext(
+            'format_kickstart/weight_shortname',
+            get_string('weight_shortname', 'format_kickstart'),
+            get_string('weight_shortname_desc', 'format_kickstart'),
+            5,
+            PARAM_INT
+        ));
+
+        $settings->add(new admin_setting_configtext(
+            'format_kickstart/weight_tags',
+            get_string('weight_tags', 'format_kickstart'),
+            get_string('weight_tags_desc', 'format_kickstart'),
+            5,
+            PARAM_INT
+        ));
+
+        $settings->add(new admin_setting_configtext(
+            'format_kickstart/weight_starred',
+            get_string('weight_starred', 'format_kickstart'),
+            get_string('weight_starred_desc', 'format_kickstart'),
+            5,
+            PARAM_INT
+        ));
+
+
+        if (class_exists('\core_course\customfield\course_handler')) {
+            $handler = \core_course\customfield\course_handler::create();
+            $fields = $handler->get_fields();
+            foreach ($fields as $field) {
+                if ($field->get('type') == 'text' || $field->get('type') == 'select') {
+                    $fieldname = $field->get('name');
+                    $fieldshortname = $field->get('shortname');
+                    $settings->add(new admin_setting_configtext(
+                        'format_kickstart/weight_customfield_' . $fieldshortname,
+                        get_string('weight_customfield', 'format_kickstart', $fieldname),
+                        get_string('weight_customfield_desc', 'format_kickstart', $fieldname),
+                        5, // Default value.
+                        PARAM_INT
+                    ));
+                }
             }
         }
+
+        $settings->add(new admin_setting_heading(
+            'restoresettings',
+            get_string('generalrestoresettings', 'backup'),
+            get_string('usedefault_help', 'format_kickstart'),
+        ));
+
+        $settings->add(new admin_setting_configselect(
+            'format_kickstart/restore_general_users',
+            get_string('generalusers', 'backup'),
+            get_string('configrestoreusers', 'backup'),
+            0,
+            $options
+        ));
+
+        $settings->add(new admin_setting_configselect(
+            'format_kickstart/restore_replace_keep_roles_and_enrolments',
+            get_string('setting_keep_roles_and_enrolments', 'backup'),
+            get_string('config_keep_roles_and_enrolments', 'backup'),
+            0,
+            $options
+        ));
+
+        $settings->add(new admin_setting_configselect(
+            'format_kickstart/restore_replace_keep_groups_and_groupings',
+            get_string('setting_keep_groups_and_groupings', 'backup'),
+            get_string('config_keep_groups_and_groupings', 'backup'),
+            0,
+            $options
+        ));
     }
-
-    $settings->add(new admin_setting_heading(
-        'restoresettings',
-        get_string('generalrestoresettings', 'backup'),
-        get_string('usedefault_help', 'format_kickstart'),
-    ));
-
-    $settings->add(new admin_setting_configselect(
-        'format_kickstart/restore_general_users',
-        get_string('generalusers', 'backup'),
-        get_string('configrestoreusers', 'backup'),
-        0,
-        $options
-    ));
-
-    $settings->add(new admin_setting_configselect(
-        'format_kickstart/restore_replace_keep_roles_and_enrolments',
-        get_string('setting_keep_roles_and_enrolments', 'backup'),
-        get_string('config_keep_roles_and_enrolments', 'backup'),
-        0,
-        $options
-    ));
-
-    $settings->add(new admin_setting_configselect(
-        'format_kickstart/restore_replace_keep_groups_and_groupings',
-        get_string('setting_keep_groups_and_groupings', 'backup'),
-        get_string('config_keep_groups_and_groupings', 'backup'),
-        0,
-        $options
-    ));
 }
 $settings->visiblename = get_string('general_settings', 'format_kickstart');
 $ADMIN->add('formatsettings', new admin_category('format_kickstart', get_string('pluginname', 'format_kickstart')));

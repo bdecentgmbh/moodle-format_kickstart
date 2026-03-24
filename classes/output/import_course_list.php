@@ -145,7 +145,7 @@ class import_course_list implements \renderable, \templatable {
                 }
 
                 // Get category path.
-                $category = \core_course_category::get($courseinfo->category);
+                $category = \core_course_category::get($courseinfo->category, MUST_EXIST, true);
                 $categorypath = $category->get_nested_name(false, ' > ');
 
                 $path = $categorypath . " > " . $courseinfo->get_formatted_shortname();
@@ -190,7 +190,7 @@ class import_course_list implements \renderable, \templatable {
     public function sectionsummary_trim_char($summary, $trimchar = 25) {
 
         if (str_word_count($summary) < $trimchar) {
-            return $summary;
+            return '';
         }
         $arrstr = explode(" ", $summary);
         $slicearr = array_slice($arrstr, 0, $trimchar);
@@ -226,6 +226,8 @@ class import_course_list implements \renderable, \templatable {
                 'notgeneral' => $section->section != 0 ? 1 : 0,
                 'expanded' => (!$hassections && $section->section == 0) ? 1 : 0,
                 'collapsible' => ($hassections || $section->section != 0),
+                'datatoggle' => ($CFG->branch >= 500) ? 'data-bs-toggle' : 'data-toggle',
+                'datatarget' => ($CFG->branch >= 500) ? 'data-bs-target' : 'data-target',
             ];
 
             $options = (object) ['noclean' => true];

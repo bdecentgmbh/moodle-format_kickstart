@@ -119,6 +119,7 @@ class template_form extends \moodleform {
 
             $mform->addElement('advcheckbox', 'restrictcohort', get_string('restrictcohort', 'format_kickstart'));
             $mform->setType('restrictcohort', PARAM_BOOL);
+            $mform->addHelpButton('restrictcohort', 'restrictcohort', 'format_kickstart');
 
             $cohortdata = cohort_get_all_cohorts(0, 0);
             $options = [];
@@ -135,6 +136,7 @@ class template_form extends \moodleform {
 
             $mform->addElement('advcheckbox', 'restrictcategory', get_string('restrictcategory', 'format_kickstart'));
             $mform->setType('restrictcategory', PARAM_BOOL);
+            $mform->addHelpButton('restrictcategory', 'restrictcategory', 'format_kickstart');
             $categories = \core_course_category::make_categories_list('moodle/course:create');
             $mform->addElement(
                 'autocomplete',
@@ -153,7 +155,8 @@ class template_form extends \moodleform {
             $mform->addElement('html', '<hr>');
 
             $mform->addElement('advcheckbox', 'restrictrole', get_string('restrictrole', 'format_kickstart'));
-            $mform->setType('restrictcategory', PARAM_BOOL);
+            $mform->setType('restrictrole', PARAM_BOOL);
+            $mform->addHelpButton('restrictrole', 'restrictrole', 'format_kickstart');
 
             $roleoptions = [];
             foreach (role_get_names(\context_system::instance()) as $role) {
@@ -167,6 +170,7 @@ class template_form extends \moodleform {
 
             $mform->addElement('advcheckbox', 'restrictuser', get_string('restrictuser', 'format_kickstart'));
             $mform->setType('restrictuser', PARAM_BOOL);
+            $mform->addHelpButton('restrictuser', 'restrictuser', 'format_kickstart');
 
             // Restrict userids.
             $options = [
