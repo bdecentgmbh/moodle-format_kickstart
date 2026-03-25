@@ -36,7 +36,6 @@ use renderable;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends section_renderer {
-
     /**
      * Overrides the parent so that templatable widgets are handled even without their explicit render method.
      *
@@ -47,7 +46,7 @@ class renderer extends section_renderer {
     public function render(renderable $widget) {
         $namespacedclassname = get_class($widget);
         $plainclassname = preg_replace('/^.*\\\/', '', $namespacedclassname);
-        $rendermethod = 'render_'.$plainclassname;
+        $rendermethod = 'render_' . $plainclassname;
 
         if (method_exists($this, $rendermethod)) {
             // Explicit rendering method exists, fall back to the default behaviour.
@@ -59,8 +58,7 @@ class renderer extends section_renderer {
         if (isset($interfaces['templatable'])) {
             // Default implementation of template-based rendering.
             $data = $widget->export_for_template($this);
-            return parent::render_from_template('format_kickstart/'.$plainclassname, $data);
-
+            return parent::render_from_template('format_kickstart/' . $plainclassname, $data);
         } else {
             return parent::render($widget);
         }

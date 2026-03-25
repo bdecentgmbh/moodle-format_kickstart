@@ -44,4 +44,3 @@ $freetemplates = [
         'descriptionformat' => 1,
     ],
 ];
-

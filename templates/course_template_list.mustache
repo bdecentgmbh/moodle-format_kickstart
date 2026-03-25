@@ -55,11 +55,11 @@
                         <div class="card-body">
                             {{#isbackimages}}
                             <div class="image-block">
-                                <div id="carousel-template-{{id}}" class="carousel slide" data-ride="carousel" data-interval="2000">
+                                <div id="carousel-template-{{id}}" class="carousel slide" {{dataride}}="carousel" {{datainterval}}="2000">
                                     {{#showimageindicators}}
                                     <ol class="carousel-indicators">
                                         {{#backimages}}
-                                        <li data-target="#carousel-template-{{id}}" data-slide-to="{{pos}}" class="{{#active}} active{{/active}}"></li>
+                                        <li {{datatarget}}="#carousel-template-{{id}}" {{dataslideto}}="{{pos}}" class="{{#active}} active{{/active}}"></li>
                                         {{/backimages}}
                                     </ol>
                                     {{/showimageindicators}}

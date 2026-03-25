@@ -31,7 +31,6 @@ use context_course;
  * Implements the kickstart page handler.
  */
 class kickstartHandler {
-
     use kickstart_page;
 
     /**
@@ -81,7 +80,7 @@ class kickstartHandler {
      */
     public function get_content() {
         // Get menu id based the called function.
-        $method = 'get_' .$this->menuid . '_content';
+        $method = 'get_' . $this->menuid . '_content';
         if (method_exists($this, $method)) {
             return $this->$method();
         }

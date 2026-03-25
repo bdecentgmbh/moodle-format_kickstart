@@ -23,8 +23,8 @@
  */
 
 
-require(__DIR__.'/../../../config.php');
-require_once(__DIR__.'/lib.php');
+require(__DIR__ . '/../../../config.php');
+require_once(__DIR__ . '/lib.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 
 global $USER, $DB;

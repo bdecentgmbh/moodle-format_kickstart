@@ -33,8 +33,7 @@ use renderer_base;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @package format_kickstart
  */
-class import_course_list implements \templatable, \renderable {
-
+class import_course_list implements \renderable, \templatable {
     /**
      * Summary of filtercustomfields
      * @var array
@@ -78,8 +77,13 @@ class import_course_list implements \templatable, \renderable {
 
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
-        $component = new import_courselibrary_search(['url' => $url], $COURSE->id,
-            $this->filtercustomfields, $this->sorttype, $this->page);
+        $component = new import_courselibrary_search(
+            ['url' => $url],
+            $COURSE->id,
+            $this->filtercustomfields,
+            $this->sorttype,
+            $this->page
+        );
         $courses = [];
         $html = '';
 
@@ -141,7 +145,7 @@ class import_course_list implements \templatable, \renderable {
                 }
 
                 // Get category path.
-                $category = \core_course_category::get($courseinfo->category, alwaysreturnhidden: true);
+                $category = \core_course_category::get($courseinfo->category, MUST_EXIST, true);
                 $categorypath = $category->get_nested_name(false, ' > ');
 
                 $path = $categorypath. " > ".$courseinfo->get_formatted_shortname();
@@ -155,8 +159,12 @@ class import_course_list implements \templatable, \renderable {
             }
         }
         $page = $this->page;
-        $pagination = $OUTPUT->paging_bar($component->get_total_course_count(), $page,
-            get_config('format_kickstart', 'courselibraryperpage'), $PAGE->url);
+        $pagination = $OUTPUT->paging_bar(
+            $component->get_total_course_count(),
+            $page,
+            get_config('format_kickstart', 'courselibraryperpage'),
+            $PAGE->url
+        );
         return [
             'searchterm' => $component->get_search() ?
                 get_string('searchterm', 'format_kickstart', ['term' => $component->get_search()]) : null,
@@ -182,7 +190,7 @@ class import_course_list implements \templatable, \renderable {
     public function sectionsummary_trim_char($summary, $trimchar = 25) {
 
         if (str_word_count($summary) < $trimchar) {
-            return $summary;
+            return '';
         }
         $arrstr = explode(" ", $summary);
         $slicearr = array_slice($arrstr, 0, $trimchar);
@@ -218,17 +226,28 @@ class import_course_list implements \templatable, \renderable {
                 'notgeneral' => $section->section != 0 ? 1 : 0,
                 'expanded' => (!$hassections && $section->section == 0) ? 1 : 0,
                 'collapsible' => ($hassections || $section->section != 0),
+                'datatoggle' => ($CFG->branch >= 500) ? 'data-bs-toggle' : 'data-toggle',
+                'datatarget' => ($CFG->branch >= 500) ? 'data-bs-target' : 'data-target',
             ];
 
             $options = (object) ['noclean' => true];
 
-            list($sectionvalues['summary'], $sectionvalues['summaryformat']) =
-            external_format_text($section->summary, $section->summaryformat, $coursecontext->id,
-                'course', 'section', $section->id, $options);
+            [$sectionvalues['summary'], $sectionvalues['summaryformat']] =
+            external_format_text(
+                $section->summary,
+                $section->summaryformat,
+                $coursecontext->id,
+                'course',
+                'section',
+                $section->id,
+                $options
+            );
             $modtrimlength = !empty(get_config('format_kickstart', 'modtrimlength')) ?
                 get_config('format_kickstart', 'modtrimlength') : 25;
-            $sectionvalues['trimsummary'] = $this->sectionsummary_trim_char(format_string($sectionvalues['summary']),
-                $modtrimlength);
+            $sectionvalues['trimsummary'] = $this->sectionsummary_trim_char(
+                format_string($sectionvalues['summary']),
+                $modtrimlength
+            );
             $sectionmodulenames = [];
             if (!empty($modinfosections[$section->section])) {
                 foreach ($modinfosections[$section->section] as $cmid) {
