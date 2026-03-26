@@ -78,6 +78,13 @@ if ($ADMIN->fulltree) {
             PARAM_INT
         ));
 
+        $settings->add(new admin_setting_configcheckbox(
+            'format_kickstart/disableactivitydescriptionsearch',
+            get_string('disableactivitydescriptionsearch', 'format_kickstart'),
+            get_string('disableactivitydescriptionsearch_desc', 'format_kickstart'),
+            0
+        ));
+
         $options = [
             "fullname" => get_string('course_fullname', 'format_kickstart'),
             "categorypath" => get_string('categorypath', 'format_kickstart'),
