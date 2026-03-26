@@ -254,6 +254,8 @@ class import_courselibrary_search {
         $context = \context_system::instance();
         $ctxselect = ', ' . \context_helper::get_preload_record_columns_sql('ctx');
         $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+        $disableactivitydescriptionsearch = get_config('format_kickstart', 'disableactivitydescriptionsearch');
+
         $params = [
             'contextlevel' => CONTEXT_COURSE,
             'fullnamesearch' => '%' . $this->get_search() . '%',
@@ -262,10 +264,13 @@ class import_courselibrary_search {
             'tagsearch' => '%' . $this->get_search() . '%',
             'activitynamesearch' => '%' . $this->get_search() . '%',
             'activitytagsearch' => '%' . $this->get_search() . '%',
-            'activitydescriptionsearch' => '%' . $this->get_search() . '%',
             'currentuser' => $USER->id,
             'currentuserid' => $USER->id,
         ];
+
+        if (!$disableactivitydescriptionsearch) {
+            $params['activitydescriptionsearch'] = '%' . $this->get_search() . '%';
+        }
 
         // Extract capability requirements.
         $capjoin = '';
@@ -303,8 +308,14 @@ class import_courselibrary_search {
             $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
             if ($DB->get_manager()->table_exists($tablename)) {
                 // Use proper Moodle DB table name formatting.
-                $moduleunions[] = "SELECT '" . $DB->sql_compare_text($module->name) .
-                    "' as modname, id, name, intro FROM {" . $tablename . "}";
+                // Some modules (e.g. mod_reengagement) don't have an intro column.
+                if ($DB->get_manager()->field_exists($tablename, 'intro')) {
+                    $moduleunions[] = "SELECT '" . $DB->sql_compare_text($module->name) .
+                        "' as modname, id, name, intro FROM {" . $tablename . "}";
+                } else {
+                    $moduleunions[] = "SELECT '" . $DB->sql_compare_text($module->name) .
+                        "' as modname, id, name, NULL as intro FROM {" . $tablename . "}";
+                }
             }
         }
         $modulesql = implode(" UNION ALL ", $moduleunions);
@@ -329,12 +340,15 @@ class import_courselibrary_search {
                     LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
                     LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid ";
 
+        $activitydescriptionclause = $disableactivitydescriptionsearch ? '' :
+            " OR " . $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false);
+
         $where  = " WHERE c.id > 1 AND (" . $DB->sql_like('c.fullname', ':fullnamesearch', false) . " OR " .
                 $DB->sql_like('c.shortname', ':shortnamesearch', false) . " OR " .
                 $DB->sql_like('c.summary', ':descriptionsearch', false) . " OR " .
                 $DB->sql_like('t.name', ':tagsearch', false) . " OR " .
-                $DB->sql_like('modinfo.name', ':activitynamesearch', false) . " OR " .
-                $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false) . " OR " .
+                $DB->sql_like('modinfo.name', ':activitynamesearch', false) .
+                $activitydescriptionclause . " OR " .
                 $DB->sql_like('cmt.name', ':activitytagsearch', false) . ")";
 
         if (!is_siteadmin()) {
