@@ -832,6 +832,51 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
 
 
 /**
+ * Renders the sections/activities accordion for a single course in the library.
+ *
+ * Called on first expand of the "Show contents" button so the costly
+ * get_fast_modinfo + filter passes happen only for courses the user actually
+ * looks at, not for every course on the landing page.
+ *
+ * @param array $args Must contain courseid; optionally maincourse for the import action data.
+ * @return string Rendered HTML for the accordion (sections + activities).
+ */
+function format_kickstart_output_fragment_get_library_coursecontents($args) {
+    global $OUTPUT, $CFG, $PAGE;
+
+    $courseid   = (int)($args['courseid'] ?? 0);
+    $maincourse = (int)($args['maincourse'] ?? 0);
+
+    if (!$courseid) {
+        return '';
+    }
+
+    // The required capability is the same one the library itself enforces.
+    require_capability('moodle/backup:backuptargetimport', \context_course::instance($courseid));
+
+    $list = new \format_kickstart\output\import_course_list();
+    $contents = $list->get_course_contents($courseid);
+
+    // The partial needs the maincourse id on each module for the "Import activity" action.
+    foreach ($contents as &$section) {
+        foreach ($section['modules'] as &$module) {
+            $module['maincourse'] = $maincourse;
+        }
+    }
+    unset($section, $module);
+
+    $data = [
+        'contents'    => array_values($contents),
+        'accordionid' => 'accordion-import-courses-' . $courseid,
+        'datatoggle'  => ($CFG->branch >= 500) ? 'data-bs-toggle' : 'data-toggle',
+        'datatarget'  => ($CFG->branch >= 500) ? 'data-bs-target' : 'data-target',
+    ];
+
+    return $OUTPUT->render_from_template('local_kickstart_pro/import_course_contents', $data);
+}
+
+
+/**
  * Generates a template for importing modules with section information.
  *
  * Prepares a template containing module import information and a list of course sections

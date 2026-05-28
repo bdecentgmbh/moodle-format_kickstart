@@ -540,31 +540,163 @@ class import_courselibrary_search {
                 }
                 // If not, then continue.
                 $this->totalcount++;
-                if ($this->sorttype == 'relevance') {
-                    $result->similarityscore = $this->get_relevance_score($result->id);
-                }
                 $this->results[$result->id] = $result;
             }
             $resultset->close();
         }
 
-        if ($this->sorttype == 'relevance') {
-            usort($this->results, function ($a, $b) {
-                // Convert similarity scores to float for accurate comparison.
-                $scorea = (float)$a->similarityscore;
-                $scoreb = (float)$b->similarityscore;
+        if ($this->sorttype == 'relevance' && !empty($this->results)) {
+            // Compute all relevance scores in one batch (current course, tags,
+            // favourites and customfield values are loaded once for the whole page
+            // instead of per result).
+            $this->calculate_relevance_scores_batch();
 
-                // Compare scores with higher precision.
-                if ($scoreb > $scorea) {
-                    return 1;
-                } else if ($scoreb < $scorea) {
-                    return -1;
-                }
-                return 0;
+            usort($this->results, function ($a, $b) {
+                $scorea = (float)($a->similarityscore ?? 0);
+                $scoreb = (float)($b->similarityscore ?? 0);
+                return $scoreb <=> $scorea;
             });
         }
 
         return $this->totalcount;
+    }
+
+    /**
+     * Compute similarity scores for every course in $this->results in one batch.
+     *
+     * Replaces N+1 per-result calls to get_relevance_score() with a fixed number
+     * of queries:
+     *   - 1 query for the current course record
+     *   - 1 query for tags of (current course + all result courses)
+     *   - 1 query for the user's favourite courses
+     *   - 1 query for customfield_data of (current course + all result courses)
+     *
+     * @return void
+     */
+    private function calculate_relevance_scores_batch() {
+        global $DB, $COURSE, $USER;
+
+        if (empty($this->results)) {
+            return;
+        }
+
+        $resultids = array_keys($this->results);
+        $allids = array_unique(array_merge([(int)$COURSE->id], $resultids));
+
+        $currentcourse = $DB->get_record('course', ['id' => $COURSE->id]);
+        if (!$currentcourse) {
+            // Defensive: shouldn't happen but don't crash the page if it does.
+            foreach ($this->results as $result) {
+                $result->similarityscore = 0;
+            }
+            return;
+        }
+
+        // Batch tags.
+        $tagsbycourse = [];
+        if (!empty($this->weights['tags']) && $this->weights['tags'] > 0) {
+            [$insql, $params] = $DB->get_in_or_equal($allids, SQL_PARAMS_NAMED);
+            $sql = "SELECT ti.id, ti.itemid AS courseid, t.name
+                      FROM {tag_instance} ti
+                      JOIN {tag} t ON t.id = ti.tagid
+                     WHERE ti.itemtype = 'course'
+                       AND ti.component = 'core'
+                       AND ti.itemid $insql";
+            $tagrows = $DB->get_records_sql($sql, $params);
+            foreach ($tagrows as $row) {
+                $tagsbycourse[$row->courseid][] = $row->name;
+            }
+        }
+        $currenttags = $tagsbycourse[$currentcourse->id] ?? [];
+
+        // Batch favourites (one lookup for the user, then membership tests).
+        $favouriteids = [];
+        if (!empty($this->weights['starred']) && $this->weights['starred'] > 0) {
+            $ufservice = \core_favourites\service_factory::get_service_for_user_context(
+                \context_user::instance($USER->id)
+            );
+            $userfavourites = $ufservice->find_all_favourites('core_course', ['courses']);
+            foreach ($userfavourites as $fav) {
+                $favouriteids[(int)$fav->itemid] = true;
+            }
+        }
+
+        // Batch customfield data for any text/select field with a configured weight > 0.
+        $relevantfields = [];
+        foreach ($this->weights as $key => $weight) {
+            if (strpos($key, 'customfield_') === 0 && $weight > 0) {
+                $relevantfields[substr($key, strlen('customfield_'))] = (int)$weight;
+            }
+        }
+        $cfvaluesbycourse = [];
+        if (!empty($relevantfields)) {
+            [$insql, $params] = $DB->get_in_or_equal($allids, SQL_PARAMS_NAMED);
+            [$fsql, $fparams] = $DB->get_in_or_equal(array_keys($relevantfields), SQL_PARAMS_NAMED, 'cffsn');
+            $sql = "SELECT cfd.id, cfd.instanceid AS courseid, cff.shortname, cfd.value
+                      FROM {customfield_data} cfd
+                      JOIN {customfield_field} cff ON cff.id = cfd.fieldid
+                     WHERE cfd.instanceid $insql
+                       AND cff.shortname $fsql
+                       AND (cff.type = 'text' OR cff.type = 'select')";
+            $cfrows = $DB->get_records_sql($sql, array_merge($params, $fparams));
+            foreach ($cfrows as $row) {
+                $cfvaluesbycourse[$row->courseid][$row->shortname] = (string)$row->value;
+            }
+        }
+        $currentcfvalues = $cfvaluesbycourse[$currentcourse->id] ?? [];
+
+        foreach ($this->results as $result) {
+            $score = 0;
+
+            if (!empty($this->weights['fullname']) && $this->weights['fullname'] > 0) {
+                similar_text(
+                    strtolower($currentcourse->fullname),
+                    strtolower($result->fullname),
+                    $percent
+                );
+                $score += ($percent / 100 * $this->weights['fullname']);
+            }
+
+            if (!empty($this->weights['shortname']) && $this->weights['shortname'] > 0) {
+                similar_text(
+                    strtolower($currentcourse->shortname),
+                    strtolower($result->shortname),
+                    $percent
+                );
+                $score += ($percent / 100 * $this->weights['shortname']);
+            }
+
+            if (!empty($this->weights['tags']) && $this->weights['tags'] > 0) {
+                $coursetags = $tagsbycourse[$result->id] ?? [];
+                $intersect = array_intersect($currenttags, $coursetags);
+                $union = array_unique(array_merge($currenttags, $coursetags));
+                $sim = count($union) > 0 ? count($intersect) / count($union) : 0;
+                $score += $sim * $this->weights['tags'];
+            }
+
+            if (!empty($this->weights['starred']) && $this->weights['starred'] > 0
+                && isset($favouriteids[(int)$result->id])
+            ) {
+                $score += $this->weights['starred'];
+            }
+
+            if (!empty($relevantfields)) {
+                $coursecfvalues = $cfvaluesbycourse[$result->id] ?? [];
+                foreach ($relevantfields as $shortname => $weight) {
+                    if (!isset($currentcfvalues[$shortname]) || !isset($coursecfvalues[$shortname])) {
+                        continue;
+                    }
+                    similar_text(
+                        strtolower($currentcfvalues[$shortname]),
+                        strtolower($coursecfvalues[$shortname]),
+                        $percent
+                    );
+                    $score += ($percent / 100 * $weight);
+                }
+            }
+
+            $result->similarityscore = $score;
+        }
     }
 
     /**
