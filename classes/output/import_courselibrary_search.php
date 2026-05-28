@@ -269,7 +269,11 @@ class import_courselibrary_search {
 
         $ctxselect = ', ' . \context_helper::get_preload_record_columns_sql('ctx');
 
-        $select = "SELECT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
+        // Include every {course} column that the render loop or core_course_list_element
+        // touches directly so the list_element __get magic doesn't lazy-load each field
+        // with a per-course DB query.
+        $select = "SELECT c.id, c.category, c.fullname, c.shortname, c.idnumber, c.startdate,
+                          c.summary, c.summaryformat, c.visible, c.sortorder,
                           COALESCE(ul.timeaccess, 0) AS timeaccess";
 
         $from = " FROM {course} c

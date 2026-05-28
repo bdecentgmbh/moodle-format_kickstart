@@ -226,25 +226,55 @@ class import_course_list implements \renderable, \templatable {
     /**
      * Batch-load customfield instance data for a set of course IDs.
      *
-     * Returns array keyed by courseid, each value an array of \core_customfield\data_controller
-     * instances suitable for rendering via \core_customfield\output\field_data.
-     * Uses the customfield handler once and then groups the records in PHP.
+     * Returns array keyed by courseid, each value an array of
+     * \core_customfield\data_controller instances suitable for rendering via
+     * \core_customfield\output\field_data.
+     *
+     * One DB query fetches all data rows for the page; data_controller::create()
+     * is called with the already-fetched record and pre-built field controller so
+     * it does not issue any further queries.
      *
      * @param int[] $courseids
      * @return array<int,\core_customfield\data_controller[]>
      */
     private function load_customfields_for_courses(array $courseids) {
+        global $DB;
         if (empty($courseids)) {
             return [];
         }
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
+        $fieldsbyid = [];
+        foreach ($handler->get_fields() as $field) {
+            $fieldsbyid[$field->get('id')] = $field;
+        }
+
         $result = array_fill_keys($courseids, []);
-        // The handler caches the field schema; get_instance_data() per course is one
-        // query for the data rows. Moodle does not expose a batch API, so we still
-        // call it per course but only for the page (default 10), not for every
-        // course in the result set.
-        foreach ($courseids as $courseid) {
-            $result[$courseid] = $handler->get_instance_data($courseid);
+        if (empty($fieldsbyid)) {
+            return $result;
+        }
+
+        [$insql, $params] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+        $rows = $DB->get_records_sql(
+            "SELECT cfd.* FROM {customfield_data} cfd WHERE cfd.instanceid $insql",
+            $params
+        );
+        foreach ($rows as $row) {
+            if (!isset($fieldsbyid[$row->fieldid])) {
+                continue;
+            }
+            try {
+                $result[$row->instanceid][] = \core_customfield\data_controller::create(
+                    0,
+                    $row,
+                    $fieldsbyid[$row->fieldid]
+                );
+            } catch (\Exception $e) {
+                // Field type plugin missing or row malformed; skip without failing
+                // the whole library render.
+                debugging('Skipping customfield data row ' . $row->id . ': ' . $e->getMessage(),
+                    DEBUG_DEVELOPER);
+                continue;
+            }
         }
         return $result;
     }
