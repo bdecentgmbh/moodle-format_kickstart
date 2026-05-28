@@ -125,6 +125,12 @@ class import_courselibrary_search {
     public $page = 0;
 
     /**
+     * Cached total course count for the current search.
+     * @var int|null
+     */
+    public $totalcount_full = null;
+
+    /**
      * The course library search object.
      * @param array $config
      * @param mixed $currentcouseid
@@ -246,177 +252,256 @@ class import_courselibrary_search {
     /**
      * Get the search SQL.
      *
+     * The main query touches only {course}, {context} and {user_lastaccess}. Anything
+     * search-related (course tags, activity name/intro, course-module tags, custom-field
+     * filters) and capability filtering is folded in via subqueries so the main query
+     * never multiplies rows or requires DISTINCT.
+     *
      * @return array
      */
     public function get_searchsql() {
-        global $DB, $CFG, $USER;
-
-        $context = \context_system::instance();
-        $ctxselect = ', ' . \context_helper::get_preload_record_columns_sql('ctx');
-        $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
-        $disableactivitydescriptionsearch = get_config('format_kickstart', 'disableactivitydescriptionsearch');
+        global $USER;
 
         $params = [
             'contextlevel' => CONTEXT_COURSE,
-            'fullnamesearch' => '%' . $this->get_search() . '%',
-            'shortnamesearch' => '%' . $this->get_search() . '%',
-            'descriptionsearch' => '%' . $this->get_search() . '%',
-            'tagsearch' => '%' . $this->get_search() . '%',
-            'activitynamesearch' => '%' . $this->get_search() . '%',
-            'activitytagsearch' => '%' . $this->get_search() . '%',
-            'currentuser' => $USER->id,
-            'currentuserid' => $USER->id,
+            'currentuser'  => $USER->id,
         ];
 
-        if (!$disableactivitydescriptionsearch) {
-            $params['activitydescriptionsearch'] = '%' . $this->get_search() . '%';
-        }
+        $ctxselect = ', ' . \context_helper::get_preload_record_columns_sql('ctx');
 
-        // Extract capability requirements.
-        $capjoin = '';
-        $capwhere = '';
-        if (!empty($this->requiredcapabilities)) {
-            $capconditions = [];
-            $capindex = 0;
-            foreach ($this->requiredcapabilities as $cap) {
-                $capindex++;
-                $rolecapjoin = "LEFT JOIN {role_capabilities} rc{$capindex} ON rc{$capindex}.capability = :capability{$capindex}";
-                $roleassignjoin = "LEFT JOIN {role_assignments} ra{$capindex} ON ra{$capindex}.roleid = rc{$capindex}.roleid
-                                AND ra{$capindex}.contextid = ctx.id";
+        $select = "SELECT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
+                          COALESCE(ul.timeaccess, 0) AS timeaccess";
 
-                $capjoin .= " $rolecapjoin $roleassignjoin ";
-                $params["capability{$capindex}"] = $cap['capability'];
+        $from = " FROM {course} c
+                  LEFT JOIN {context} ctx
+                         ON ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel
+                  LEFT JOIN {user_lastaccess} ul
+                         ON ul.courseid = c.id AND ul.userid = :currentuser ";
 
-                // Check if a specific user is required.
-                if (isset($cap['user']) && is_int($cap['user'])) {
-                    $capconditions[] = "(ra{$capindex}.userid = :capuser{$capindex})";
-                    $params["capuser{$capindex}"] = $cap['user'];
-                } else {
-                    $capconditions[] = "(ra{$capindex}.userid = :currentuserid)";
-                }
-            }
-
-            if (!empty($capconditions)) {
-                $capwhere = " AND (" . implode(" OR ", $capconditions) . ")";
-            }
-        }
-
-        $modules = $DB->get_records_sql("SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'");
-        $moduleunions = [];
-        foreach ($modules as $module) {
-            // Clean the module name and verify table exists.
-            $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
-            if ($DB->get_manager()->table_exists($tablename)) {
-                // Use proper Moodle DB table name formatting.
-                // Some modules (e.g. mod_reengagement) don't have an intro column.
-                if ($DB->get_manager()->field_exists($tablename, 'intro')) {
-                    $moduleunions[] = "SELECT '" . $DB->sql_compare_text($module->name) .
-                        "' as modname, id, name, intro FROM {" . $tablename . "}";
-                } else {
-                    $moduleunions[] = "SELECT '" . $DB->sql_compare_text($module->name) .
-                        "' as modname, id, name, NULL as intro FROM {" . $tablename . "}";
-                }
-            }
-        }
-        $modulesql = implode(" UNION ALL ", $moduleunions);
-
-        $select = " SELECT DISTINCT c.id, c.fullname, c.shortname, c.visible, c.sortorder,
-            COALESCE(ul.timeaccess, 0) AS timeaccess ";
-        $from   = " FROM {course} c ";
-
-        // Add context join immediately after the course table.
-        $from .= $ctxjoin;
-
-        $from .= " LEFT JOIN {user_lastaccess} ul ON ul.courseid = c.id AND ul.userid = :currentuser
-                    LEFT JOIN {tag_instance} ti ON ti.itemid = c.id
-                    LEFT JOIN {tag} t ON t.id = ti.tagid
-                    LEFT JOIN {course_modules} cm ON cm.course = c.id
-                    LEFT JOIN {modules} m ON m.id = cm.module
-                    LEFT JOIN (
-                        " . $modulesql . "
-                    ) modinfo ON modinfo.modname = m.name AND modinfo.id = cm.instance
-                    LEFT JOIN {tag_instance} cmti ON cmti.itemid = cm.id AND cmti.itemtype = 'course_modules'
-                    LEFT JOIN {tag} cmt ON cmt.id = cmti.tagid
-                    LEFT JOIN {customfield_data} cfd ON cfd.instanceid = c.id
-                    LEFT JOIN {customfield_field} cff ON cff.id = cfd.fieldid ";
-
-        $activitydescriptionclause = $disableactivitydescriptionsearch ? '' :
-            " OR " . $DB->sql_like('modinfo.intro', ':activitydescriptionsearch', false);
-
-        $where  = " WHERE c.id > 1 AND (" . $DB->sql_like('c.fullname', ':fullnamesearch', false) . " OR " .
-                $DB->sql_like('c.shortname', ':shortnamesearch', false) . " OR " .
-                $DB->sql_like('c.summary', ':descriptionsearch', false) . " OR " .
-                $DB->sql_like('t.name', ':tagsearch', false) . " OR " .
-                $DB->sql_like('modinfo.name', ':activitynamesearch', false) .
-                $activitydescriptionclause . " OR " .
-                $DB->sql_like('cmt.name', ':activitytagsearch', false) . ")";
-
-        if (!is_siteadmin()) {
-            // Add capability conditions.
-            // Add capability joins.
-            $from .= $capjoin;
-            $where .= $capwhere;
-        }
-
-        if (!empty($this->customfields)) {
-            $customfieldconditions = [];
-            foreach ($this->customfields as $fieldshortname => $value) {
-                if ($value) {
-                    $paramname = 'customfield_' . $fieldshortname;
-                    $customfieldconditions[] = "(cff.shortname = :{$paramname}_name AND cfd.value = :{$paramname}_value)";
-                    $params[$paramname . '_name'] = $fieldshortname;
-                    $params[$paramname . '_value'] = $value;
-                }
-            }
-            if ($customfieldconditions) {
-                $where .= " AND (" . implode(" OR ", $customfieldconditions) . ")";
-            }
-        }
-
-        $orderby = " ORDER BY c.sortorder";
-
-        // Add sorting.
-        switch ($this->sorttype) {
-            case 'alphabetical':
-                $orderby = " ORDER BY c.fullname ASC";
-                break;
-            case 'lastaccessed':
-                $orderby = " ORDER BY timeaccess DESC";
-                break;
-        }
+        $where = " WHERE c.id > 1";
 
         if ($this->currentcourseid !== null) {
             $where .= " AND c.id <> :currentcourseid";
             $params['currentcourseid'] = $this->currentcourseid;
         }
 
-        $limit = '';
+        // Capability restriction (admins bypass).
+        if (!is_siteadmin() && !empty($this->requiredcapabilities)) {
+            [$capwhere, $capparams] = $this->get_capability_where();
+            $where  .= $capwhere;
+            $params += $capparams;
+        }
 
-        $limitfrom = $this->page;
-        $perpage = get_config("format_kickstart", "courselibraryperpage");
-        [$limitfrom, $limitnum] = $this->normalise_limit_from_num($limitfrom * $perpage, $perpage);
+        // Search term -> IN-clause of matching course IDs.
+        if ($this->get_search() !== '') {
+            [$searchwhere, $searchparams] = $this->get_search_where();
+            $where  .= $searchwhere;
+            $params += $searchparams;
+        }
+
+        // Custom-field filter -> EXISTS clause per filter.
+        if (!empty($this->customfields)) {
+            [$cfwhere, $cfparams] = $this->get_customfield_where();
+            $where  .= $cfwhere;
+            $params += $cfparams;
+        }
+
+        $orderby = $this->get_orderby_sql();
+        $limit   = $this->get_limit_sql();
+
+        $params += $this->sqlparams;
+
+        return [$select . $ctxselect . $from . $where . $orderby . $limit, $params];
+    }
+
+    /**
+     * Build the capability WHERE fragment using EXISTS subqueries.
+     *
+     * Replaces the previous LEFT JOIN role_capabilities / role_assignments pattern,
+     * which fanned rows out and required DISTINCT.
+     *
+     * @return array [where, params]
+     */
+    private function get_capability_where() {
+        global $USER;
+
+        $conds  = [];
+        $params = [];
+        $i = 0;
+        foreach ($this->requiredcapabilities as $cap) {
+            $userid = (isset($cap['user']) && is_int($cap['user'])) ? $cap['user'] : $USER->id;
+            $capparam  = "capability{$i}";
+            $userparam = "capuser{$i}";
+            $conds[] = "EXISTS (SELECT 1
+                                  FROM {role_capabilities} rc{$i}
+                                  JOIN {role_assignments}  ra{$i} ON ra{$i}.roleid = rc{$i}.roleid
+                                 WHERE rc{$i}.capability = :{$capparam}
+                                   AND ra{$i}.userid     = :{$userparam}
+                                   AND ra{$i}.contextid  = ctx.id)";
+            $params[$capparam]  = $cap['capability'];
+            $params[$userparam] = $userid;
+            $i++;
+        }
+        if (empty($conds)) {
+            return ['', []];
+        }
+        return [' AND (' . implode(' OR ', $conds) . ')', $params];
+    }
+
+    /**
+     * Build the search WHERE fragment as a single c.id IN (... UNION ...) clause.
+     *
+     * Each source (course fields, course tags, course-module tags, activity name/intro
+     * per module table) is a small index-friendly query. The activity intro branch
+     * respects the disableactivitydescriptionsearch setting.
+     *
+     * @return array [where, params]
+     */
+    private function get_search_where() {
+        global $DB;
+
+        $disableactivitydescriptionsearch =
+            get_config('format_kickstart', 'disableactivitydescriptionsearch');
+
+        $like = '%' . $this->get_search() . '%';
+        $unions = [];
+        $params = [];
+        $i = 0;
+
+        // Course fullname / shortname / summary.
+        $unions[] = "SELECT id FROM {course} WHERE "
+            . $DB->sql_like('fullname',  ":s{$i}_fn", false) . " OR "
+            . $DB->sql_like('shortname', ":s{$i}_sn", false) . " OR "
+            . $DB->sql_like('summary',   ":s{$i}_sm", false);
+        $params["s{$i}_fn"] = $like;
+        $params["s{$i}_sn"] = $like;
+        $params["s{$i}_sm"] = $like;
+        $i++;
+
+        // Course tags.
+        $unions[] = "SELECT ti.itemid AS id
+                       FROM {tag_instance} ti
+                       JOIN {tag} t ON t.id = ti.tagid
+                      WHERE ti.itemtype = 'course'
+                        AND ti.component = 'core'
+                        AND " . $DB->sql_like('t.name', ":s{$i}_tag", false);
+        $params["s{$i}_tag"] = $like;
+        $i++;
+
+        // Course-module tags.
+        $unions[] = "SELECT cm.course AS id
+                       FROM {course_modules} cm
+                       JOIN {tag_instance} cmti
+                            ON cmti.itemid = cm.id AND cmti.itemtype = 'course_modules'
+                       JOIN {tag} cmt ON cmt.id = cmti.tagid
+                      WHERE " . $DB->sql_like('cmt.name', ":s{$i}_cmtag", false);
+        $params["s{$i}_cmtag"] = $like;
+        $i++;
+
+        // Activity name (+ intro unless disabled) -- one small query per module table.
+        $modules = $DB->get_records_sql(
+            "SELECT * FROM {modules} WHERE visible = 1 AND name != 'subsection'"
+        );
+        foreach ($modules as $module) {
+            $tablename = clean_param($module->name, PARAM_ALPHANUMEXT);
+            if (!$DB->get_manager()->table_exists($tablename)) {
+                continue;
+            }
+            $hasintro = $DB->get_manager()->field_exists($tablename, 'intro');
+            $cond = $DB->sql_like('m.name', ":s{$i}_name", false);
+            $modparams = [
+                "s{$i}_name" => $like,
+                "s{$i}_mid"  => $module->id,
+            ];
+            if ($hasintro && !$disableactivitydescriptionsearch) {
+                $cond .= " OR " . $DB->sql_like('m.intro', ":s{$i}_intro", false);
+                $modparams["s{$i}_intro"] = $like;
+            }
+            $unions[] = "SELECT cm.course AS id
+                           FROM {course_modules} cm
+                           JOIN {" . $tablename . "} m ON m.id = cm.instance
+                          WHERE cm.module = :s{$i}_mid AND ({$cond})";
+            $params += $modparams;
+            $i++;
+        }
+
+        return [' AND c.id IN (' . implode(' UNION ', $unions) . ')', $params];
+    }
+
+    /**
+     * Build the custom-field WHERE fragment using EXISTS subqueries.
+     *
+     * @return array [where, params]
+     */
+    private function get_customfield_where() {
+        $conds  = [];
+        $params = [];
+        $i = 0;
+        foreach ($this->customfields as $shortname => $value) {
+            if ($value === '' || $value === null) {
+                continue;
+            }
+            $conds[] = "EXISTS (SELECT 1
+                                  FROM {customfield_data} cfd{$i}
+                                  JOIN {customfield_field} cff{$i} ON cff{$i}.id = cfd{$i}.fieldid
+                                 WHERE cfd{$i}.instanceid = c.id
+                                   AND cff{$i}.shortname  = :cf{$i}_name
+                                   AND cfd{$i}.value      = :cf{$i}_value)";
+            $params["cf{$i}_name"]  = $shortname;
+            $params["cf{$i}_value"] = $value;
+            $i++;
+        }
+        if (empty($conds)) {
+            return ['', []];
+        }
+        return [' AND (' . implode(' OR ', $conds) . ')', $params];
+    }
+
+    /**
+     * Get the ORDER BY fragment.
+     *
+     * @return string
+     */
+    private function get_orderby_sql() {
+        switch ($this->sorttype) {
+            case 'alphabetical':
+                return ' ORDER BY c.fullname ASC';
+            case 'lastaccessed':
+                return ' ORDER BY timeaccess DESC';
+            default:
+                return ' ORDER BY c.sortorder';
+        }
+    }
+
+    /**
+     * Get the LIMIT / OFFSET fragment for the current DB driver.
+     *
+     * @return string
+     */
+    private function get_limit_sql() {
+        global $CFG;
+
+        $perpage = get_config('format_kickstart', 'courselibraryperpage');
+        [$limitfrom, $limitnum] = $this->normalise_limit_from_num($this->page * $perpage, $perpage);
 
         if ($CFG->dbtype == 'pgsql') {
-            // If pgsql.
+            $limit = '';
             if ($limitnum) {
                 $limit .= " LIMIT $limitnum";
             }
             if ($limitfrom) {
                 $limit .= " OFFSET $limitfrom";
             }
-        } else {
-            // If mysqli.
-            if ($limitfrom || $limitnum) {
-                if ($limitnum < 1) {
-                    $limitnum = "18446744073709551615";
-                }
-                $limit .= " LIMIT $limitfrom, $limitnum";
-            }
+            return $limit;
         }
 
-        $params += $this->sqlparams;
-
-        return [$select . $ctxselect . $from . $where . $orderby . $limit, $params];
+        if ($limitfrom || $limitnum) {
+            if ($limitnum < 1) {
+                $limitnum = "18446744073709551615";
+            }
+            return " LIMIT $limitfrom, $limitnum";
+        }
+        return '';
     }
 
     /**
@@ -434,9 +519,14 @@ class import_courselibrary_search {
         $contextlevel = $this->get_itemcontextlevel();
         [$sql, $params] = $this->get_searchsql();
 
-        // Get total number, to avoid some incorrect iterations.
-        $countsql = preg_replace('/ORDER BY.*/', '', $sql);
-        $totalcourses = $DB->count_records_sql("SELECT COUNT(*) FROM ($countsql) sel", $params);
+        // Count against the same WHERE without wrapping the SELECT in a subquery.
+        // The new main query has no DISTINCT and no fan-out joins, so a direct count
+        // is correct and much cheaper than SELECT COUNT(*) FROM ($sql) sel.
+        $countsql = preg_replace('/ORDER BY.*/s', '', $sql);
+        $countsql = preg_replace('/\sLIMIT\s.*/si', '', $countsql);
+        $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $countsql);
+        $totalcourses = $DB->count_records_sql($countsql, $params);
+        $this->totalcount_full = (int)$totalcourses;
 
         if ($totalcourses > 0) {
             // Iterate while we have records and haven't reached $this->maxresults.
@@ -658,11 +748,9 @@ class import_courselibrary_search {
      * @return int
      */
     public function get_total_course_count() {
-        global $DB;
-        [$sql, $params] = $this->get_searchsql();
-        // Get total number, to avoid some incorrect iterations.
-        $countsql = preg_replace('/ORDER BY.*/', '', $sql);
-        $totalcourses = $DB->count_records_sql("SELECT COUNT(*) FROM ($countsql) sel", $params);
-        return $totalcourses;
+        if ($this->totalcount_full === null) {
+            $this->search();
+        }
+        return $this->totalcount_full;
     }
 }
