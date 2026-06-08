@@ -154,9 +154,9 @@ class import_course_list implements \renderable, \templatable {
                 }
 
                 if (in_array("categorypath", $displaycourselibraryfields)) {
-                    // core_course_category::get() is statically cached, so this is cheap on
-                    // subsequent calls within the request. get_nested_name() walks the parents
-                    // using the same cache.
+                    // The core_course_category::get() result is statically cached, so this is
+                    // cheap on subsequent calls within the request. get_nested_name() walks the
+                    // parents using the same cache.
                     $category = \core_course_category::get($courseinfo->category, MUST_EXIST, true);
                     $course->categorypath = $category->get_nested_name(false, ' > ') . " > "
                         . $courseinfo->get_formatted_shortname();
@@ -271,8 +271,10 @@ class import_course_list implements \renderable, \templatable {
             } catch (\Exception $e) {
                 // Field type plugin missing or row malformed; skip without failing
                 // the whole library render.
-                debugging('Skipping customfield data row ' . $row->id . ': ' . $e->getMessage(),
-                    DEBUG_DEVELOPER);
+                debugging(
+                    'Skipping customfield data row ' . $row->id . ': ' . $e->getMessage(),
+                    DEBUG_DEVELOPER
+                );
                 continue;
             }
         }

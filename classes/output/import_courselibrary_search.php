@@ -128,7 +128,7 @@ class import_courselibrary_search {
      * Cached total course count for the current search.
      * @var int|null
      */
-    public $totalcount_full = null;
+    public $totalcountfull = null;
 
     /**
      * The course library search object.
@@ -374,9 +374,9 @@ class import_courselibrary_search {
 
         // Course fullname / shortname / summary.
         $unions[] = "SELECT id FROM {course} WHERE "
-            . $DB->sql_like('fullname',  ":s{$i}_fn", false) . " OR "
+            . $DB->sql_like('fullname', ":s{$i}_fn", false) . " OR "
             . $DB->sql_like('shortname', ":s{$i}_sn", false) . " OR "
-            . $DB->sql_like('summary',   ":s{$i}_sm", false);
+            . $DB->sql_like('summary', ":s{$i}_sm", false);
         $params["s{$i}_fn"] = $like;
         $params["s{$i}_sn"] = $like;
         $params["s{$i}_sm"] = $like;
@@ -530,7 +530,7 @@ class import_courselibrary_search {
         $countsql = preg_replace('/\sLIMIT\s.*/si', '', $countsql);
         $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $countsql);
         $totalcourses = $DB->count_records_sql($countsql, $params);
-        $this->totalcount_full = (int)$totalcourses;
+        $this->totalcountfull = (int)$totalcourses;
 
         if ($totalcourses > 0) {
             // Iterate while we have records and haven't reached $this->maxresults.
@@ -678,7 +678,8 @@ class import_courselibrary_search {
                 $score += $sim * $this->weights['tags'];
             }
 
-            if (!empty($this->weights['starred']) && $this->weights['starred'] > 0
+            if (
+                !empty($this->weights['starred']) && $this->weights['starred'] > 0
                 && isset($favouriteids[(int)$result->id])
             ) {
                 $score += $this->weights['starred'];
@@ -884,9 +885,9 @@ class import_courselibrary_search {
      * @return int
      */
     public function get_total_course_count() {
-        if ($this->totalcount_full === null) {
+        if ($this->totalcountfull === null) {
             $this->search();
         }
-        return $this->totalcount_full;
+        return $this->totalcountfull;
     }
 }
