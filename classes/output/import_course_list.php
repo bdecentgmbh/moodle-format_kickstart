@@ -120,6 +120,20 @@ class import_course_list implements \renderable, \templatable {
                 }
 
                 $courseinfo = new \core_course_list_element($course);
+                // The search SELECT includes c.idnumber, c.startdate, c.summary,
+                // c.summaryformat and c.category to avoid per-course lazy loads via
+                // core_course_list_element::__get(). The list-element wrapper has its
+                // own copy of these on $courseinfo, so we can clear them from $course
+                // here: the template only renders idnumber / startdate when populated
+                // by the display-field branches below, and never references the others
+                // directly.
+                unset(
+                    $course->idnumber,
+                    $course->startdate,
+                    $course->summary,
+                    $course->summaryformat,
+                    $course->category
+                );
                 $customfields = [];
                 if (!empty($customfieldsbycourse[$course->id])) {
                     $customfieldoutput = $PAGE->get_renderer('core_customfield');
