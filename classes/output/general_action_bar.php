@@ -71,11 +71,27 @@ class general_action_bar {
      * @return array
      */
     public function export_for_template(\renderer_base $output): array {
-        $selectmenu = $this->get_action_selector();
-
-        if (is_null($selectmenu)) {
+        if ($this->context->contextlevel !== CONTEXT_COURSE) {
             return [];
         }
+
+        $courseid = $this->context->instanceid;
+        $menu = format_kickstart_get_action_selector_menus($courseid, $this->activeurl);
+
+        // With at most one visible page there is no choice to make: render the
+        // page title instead of a dropdown selector (or nothing when empty).
+        if (count($menu) <= 1) {
+            if (empty($menu)) {
+                return [];
+            }
+            return [
+                'singleitem' => true,
+                'title' => reset($menu),
+            ];
+        }
+
+        $selectmenu = new select_menu('kickstartactionselect', $menu, $this->activeurl->out(false));
+        $selectmenu->set_label(get_string('kickstartnavigationmenu', 'format_kickstart'), ['class' => 'sr-only']);
 
         return [
             'generalnavselector' => $selectmenu->export_for_template($output),
@@ -89,24 +105,5 @@ class general_action_bar {
      */
     public function get_template(): string {
         return 'format_kickstart/general_action_bar';
-    }
-
-    /**
-     * Returns the URL selector object.
-     *
-     * @return \select_menu|null The URL select object.
-     */
-    private function get_action_selector(): ?select_menu {
-        if ($this->context->contextlevel !== CONTEXT_COURSE) {
-            return null;
-        }
-
-        $courseid = $this->context->instanceid;
-        $menu = [];
-        $menu = format_kickstart_get_action_selector_menus($courseid, $this->activeurl);
-        $selectmenu = new select_menu('kickstartactionselect', $menu, $this->activeurl->out(false));
-        $selectmenu->set_label(get_string('kickstartnavigationmenu', 'format_kickstart'), ['class' => 'sr-only']);
-
-        return $selectmenu;
     }
 }

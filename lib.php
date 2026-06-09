@@ -695,17 +695,19 @@ function format_kickstart_extend_navigation_course(navigation_node $navigation, 
 
 
 /**
- * Retrieves the available breadcrumb menu items for the Kickstart format.
+ * Returns every Kickstart navigation page in the canonical (default) order.
  *
- * This function generates a list of menu items including course template,
- * student view, and help. If the Kickstart Pro plugin is available,
- * additional menu items are added.
+ * This is the single source of truth for the available sub-pages: the three
+ * base pages (course template, student view, help) plus the Kickstart Pro pages
+ * (course library, create template) when the Pro plugin is installed. The order
+ * and visibility configured by the administrator is applied separately by
+ * {@see format_kickstart_get_ordered_pages()}.
  *
- * @return array An associative array of breadcrumb menu items
+ * @return array An associative array of page key => localized display name
  */
-function format_kickstart_get_breadcump_menus() {
+function format_kickstart_get_all_pages() {
     global $CFG;
-    $menus = [
+    $pages = [
         'coursetemplate' => get_string('coursetemplate', 'format_kickstart'),
         'studentview' => get_string('studentview', 'format_kickstart'),
         'help' => get_string('help', 'format_kickstart'),
@@ -713,39 +715,119 @@ function format_kickstart_get_breadcump_menus() {
 
     if (format_kickstart_has_pro()) {
         require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
-        $menus += local_kickstart_pro_get_breadcump_menus();
+        $pages += local_kickstart_pro_get_breadcump_menus();
     }
-    return $menus;
+    return $pages;
+}
+
+/**
+ * Applies the admin-configured order and visibility to the Kickstart pages.
+ *
+ * For each page the administrator configures a numeric "order" value
+ * (setting key {@code pageorder_<pagekey>}). Pages with an order of 0 (or an
+ * empty value) are hidden; the remaining pages are sorted ascending by their
+ * order, falling back to the canonical order for ties so the result is stable.
+ *
+ * @param array|null $pages Page key => label map. Defaults to {@see format_kickstart_get_all_pages()}.
+ * @return array The visible pages as page key => label, in display order
+ */
+function format_kickstart_get_ordered_pages($pages = null) {
+    if ($pages === null) {
+        $pages = format_kickstart_get_all_pages();
+    }
+
+    $ordered = [];
+    $canonicalindex = 0;
+    foreach ($pages as $key => $label) {
+        $raw = get_config('format_kickstart', 'pageorder_' . $key);
+        if ($raw === false || $raw === '') {
+            // Not configured yet: keep the canonical position and stay visible so a
+            // fresh install (before defaults are applied) never hides every page.
+            $order = $canonicalindex + 1;
+        } else {
+            $order = (int) $raw;
+        }
+        if ($order <= 0) {
+            // An explicit value of 0 hides the page from the dropdown.
+            $canonicalindex++;
+            continue;
+        }
+        $ordered[] = [
+            'order' => $order,
+            'canonical' => $canonicalindex++,
+            'key' => $key,
+            'label' => $label,
+        ];
+    }
+
+    usort($ordered, function ($a, $b) {
+        return [$a['order'], $a['canonical']] <=> [$b['order'], $b['canonical']];
+    });
+
+    $result = [];
+    foreach ($ordered as $page) {
+        $result[$page['key']] = $page['label'];
+    }
+    return $result;
+}
+
+/**
+ * Returns the default navigation page key for the Kickstart format.
+ *
+ * The default is the first visible page according to the admin-configured order.
+ * If every page has been hidden, it falls back to the course template page so the
+ * format always has something to render.
+ *
+ * @return string The default navigation (nav) key
+ */
+function format_kickstart_get_default_nav() {
+    $ordered = format_kickstart_get_ordered_pages();
+    if (empty($ordered)) {
+        return 'coursetemplate';
+    }
+    return array_key_first($ordered);
+}
+
+/**
+ * Retrieves the available breadcrumb menu items for the Kickstart format.
+ *
+ * Returns the visible pages (course template, student view, help and, when the
+ * Kickstart Pro plugin is available, course library and create template) in the
+ * order configured by the administrator.
+ *
+ * @return array An associative array of breadcrumb menu items
+ */
+function format_kickstart_get_breadcump_menus() {
+    return format_kickstart_get_ordered_pages();
 }
 
 
 /**
  * Generates a list of action selector menu items for the Kickstart format.
  *
- * Creates URLs and menu labels for course template, student view, and help pages.
- * If Kickstart Pro is available, additional menu items are added from the pro plugin.
+ * Builds the navigation dropdown URLs and labels for every visible page, honoring
+ * the admin-configured order and visibility. The Pro "create template" page stays
+ * gated behind the {@code local/kickstart_pro:create_template_course} capability.
  *
  * @param int $courseid The ID of the current course
  * @param moodle_url $pageurl The base URL for the current page
  * @return array An associative array of menu URLs and their corresponding labels
  */
 function format_kickstart_get_action_selector_menus($courseid, $pageurl) {
-    global $CFG;
-
     $activeurl = new moodle_url($pageurl);
     $activeurl->remove_params(['nav']);
 
-    $coursetemplateurl = new moodle_url($activeurl, ['nav' => 'coursetemplate']);
-    $studentviewurl = new moodle_url($activeurl, ['nav' => 'studentview']);
-    $helpurl = new moodle_url($activeurl, ['nav' => 'help']);
+    // The Pro create-template page stays gated behind its own capability.
+    $cancreatetemplate = !format_kickstart_has_pro()
+        || has_capability('local/kickstart_pro:create_template_course', \context_course::instance($courseid));
 
-    $menus[$coursetemplateurl->out(false)] = get_string('coursetemplate', 'format_kickstart');
-    $menus[$studentviewurl->out(false)] = get_string('studentview', 'format_kickstart');
-    $menus[$helpurl->out(false)] = get_string('help', 'format_kickstart');
-
-    if (format_kickstart_has_pro()) {
-        require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
-        $menus += local_kickstart_pro_get_action_selector_menus($courseid, $activeurl);
+    $menus = [];
+    foreach (format_kickstart_get_ordered_pages() as $key => $label) {
+        if ($key === 'createtemplaefromcourse' && !$cancreatetemplate) {
+            continue;
+        }
+        $url = new moodle_url($activeurl, ['nav' => $key]);
+        $menus[$url->out(false)] = $label;
     }
     return $menus;
 }
