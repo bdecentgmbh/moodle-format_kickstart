@@ -21,8 +21,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
  define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates',
-    'core/modal_events', 'core/modal_factory', 'core/toast'],
- function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalFactory, Toast) {
+    'core/modal_events', 'core/modal_save_cancel', 'core/toast'],
+ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalSaveCancel, Toast) {
 
     /**
      * Controls kicstart javascript.
@@ -152,8 +152,7 @@
             modname: modname,
         };
 
-        ModalFactory.create({
-            type: ModalFactory.types.SAVE_CANCEL,
+        ModalSaveCancel.create({
             title: str.get_string('importactivity', 'format_kickstart'),
             body: Fragment.loadFragment('format_kickstart', 'get_import_module_box', self.contextId, args),
         }).then(function(modal) {
