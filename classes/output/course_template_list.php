@@ -249,7 +249,7 @@ class course_template_list implements \renderable, \templatable {
      * @throws \moodle_exception
      */
     public function export_for_template(renderer_base $output) {
-        global $DB, $CFG;
+        global $DB;
         $templates = $this->get_templates();
         if (!format_kickstart_has_pro() && is_siteadmin()) {
             $template = new \stdClass();
@@ -263,7 +263,6 @@ class course_template_list implements \renderable, \templatable {
             'value',
             ['name' => 'templatesview', 'courseid' => $this->course->id]
         );
-        $isbs5 = ($CFG->branch >= 500);
         return [
             'templates' => $templates,
             'has_pro' => format_kickstart_has_pro(),
@@ -275,10 +274,10 @@ class course_template_list implements \renderable, \templatable {
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
             'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
             'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php'),
-            'dataride' => $isbs5 ? 'data-bs-ride' : 'data-ride',
-            'datainterval' => $isbs5 ? 'data-bs-interval' : 'data-interval',
-            'dataslideto' => $isbs5 ? 'data-bs-slide-to' : 'data-slide-to',
-            'datatarget' => $isbs5 ? 'data-bs-target' : 'data-target',
+            'dataride' => 'data-bs-ride',
+            'datainterval' => 'data-bs-interval',
+            'dataslideto' => 'data-bs-slide-to',
+            'datatarget' => 'data-bs-target',
         ];
     }
 
