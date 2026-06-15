@@ -93,7 +93,7 @@ class general_action_bar {
         }
 
         $selectmenu = new select_menu('kickstartactionselect', $menu, $this->activeurl->out(false));
-        $selectmenu->set_label(get_string('kickstartnavigationmenu', 'format_kickstart'), ['class' => 'sr-only visually-hidden']);
+        $selectmenu->set_label(get_string('kickstartnavigationmenu', 'format_kickstart'), ['class' => 'visually-hidden']);
 
         return [
             'generalnavselector' => $selectmenu->export_for_template($output),
