@@ -183,13 +183,19 @@ if ($ADMIN->fulltree) {
         'courselibrary' => 4,
         'createtemplaefromcourse' => 5,
     ];
-    foreach (format_kickstart_get_all_pages() as $pagekey => $pagelabel) {
-        $settings->add(new admin_setting_configtext(
+    $pages = format_kickstart_get_all_pages();
+    // Build the position dropdown: "Hide" for 0, then one entry per available page.
+    $pageorderoptions = [0 => get_string('hide', 'format_kickstart')];
+    for ($position = 1; $position <= count($pages); $position++) {
+        $pageorderoptions[$position] = $position;
+    }
+    foreach ($pages as $pagekey => $pagelabel) {
+        $settings->add(new admin_setting_configselect(
             'format_kickstart/pageorder_' . $pagekey,
             get_string('pageorder', 'format_kickstart', $pagelabel),
             get_string('pageorder_desc', 'format_kickstart', $pagelabel),
             $defaultpageorders[$pagekey] ?? 0,
-            PARAM_INT
+            $pageorderoptions
         ));
     }
 
