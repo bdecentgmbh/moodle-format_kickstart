@@ -226,8 +226,8 @@ class import_course_list implements \renderable, \templatable {
                 'notgeneral' => $section->section != 0 ? 1 : 0,
                 'expanded' => (!$hassections && $section->section == 0) ? 1 : 0,
                 'collapsible' => ($hassections || $section->section != 0),
-                'datatoggle' => ($CFG->branch >= 500) ? 'data-bs-toggle' : 'data-toggle',
-                'datatarget' => ($CFG->branch >= 500) ? 'data-bs-target' : 'data-target',
+                'datatoggle' => 'data-bs-toggle',
+                'datatarget' => 'data-bs-target',
             ];
 
             $options = (object) ['noclean' => true];
