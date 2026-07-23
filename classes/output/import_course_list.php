@@ -319,7 +319,6 @@ class import_course_list implements \renderable, \templatable {
      */
     public function get_course_contents($courseid) {
         global $CFG;
-        require_once($CFG->dirroot . '/lib/externallib.php');
         // Create return value.
         $coursecontents = [];
         $course = get_course($courseid);
@@ -346,7 +345,7 @@ class import_course_list implements \renderable, \templatable {
             $options = (object) ['noclean' => true];
 
             [$sectionvalues['summary'], $sectionvalues['summaryformat']] =
-            external_format_text(
+            \core_external\util::format_text(
                 $section->summary,
                 $section->summaryformat,
                 $coursecontext->id,
@@ -373,7 +372,7 @@ class import_course_list implements \renderable, \templatable {
                     $modcontext = \context_module::instance($cm->id);
 
                     $module['id'] = $cm->id;
-                    $module['name'] = external_format_string($cm->name, $modcontext->id);
+                    $module['name'] = \core_external\util::format_string($cm->name, $modcontext->id);
                     $module['instance'] = $cm->instance;
                     $module['contextid'] = $modcontext->id;
                     $module['modname'] = (string) $cm->modname;
