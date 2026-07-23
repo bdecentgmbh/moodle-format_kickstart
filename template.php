@@ -45,7 +45,8 @@ if (format_kickstart_has_pro()) {
     require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
 }
 
-$editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
+$editoroptions = [
+    'maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
     'trusttext' => false, 'noclean' => true, 'context' => $context,
 ];
 
@@ -59,7 +60,8 @@ switch ($action) {
             redirect(new moodle_url('/course/format/kickstart/buypro.php'));
         }
 
-        $form = new \format_kickstart\form\template_form($PAGE->url, ['templatebgoptions' => $templatebgoptions,
+        $form = new \format_kickstart\form\template_form($PAGE->url, [
+            'templatebgoptions' => $templatebgoptions,
             'editoroptions' => $editoroptions,
         ]);
 
@@ -164,7 +166,8 @@ switch ($action) {
         $template = $DB->get_record('format_kickstart_template', ['id' => $id], '*', MUST_EXIST);
         $template->tags = core_tag_tag::get_item_tags_array('format_kickstart', 'format_kickstart_template', $template->id);
 
-        $form = new \format_kickstart\form\template_form($PAGE->url, ['templatebgoptions' => $templatebgoptions,
+        $form = new \format_kickstart\form\template_form($PAGE->url, [
+            'templatebgoptions' => $templatebgoptions,
             'template' => (array) $template, 'editoroptions' => $editoroptions,
         ]);
 

@@ -182,10 +182,12 @@ final class format_kickstart_test extends \advanced_testcase {
         $this->create_kickstart_template_options();
         $format = 'topics';
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
-        $this->assertTrue($DB->record_exists('format_kickstart_options', ['format' => $format,
+        $this->assertTrue($DB->record_exists('format_kickstart_options', [
+            'format' => $format,
             'templateid' => $template->id, 'name' => 'hiddensections',
         ]));
-        $this->assertTrue($DB->record_exists('format_kickstart_options', ['format' => $format,
+        $this->assertTrue($DB->record_exists('format_kickstart_options', [
+            'format' => $format,
             'templateid' => $template->id, 'name' => 'coursedisplay',
         ]));
     }
@@ -234,7 +236,8 @@ final class format_kickstart_test extends \advanced_testcase {
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
         $this->create_kickstart_template_options();
         $this->assertTrue(!empty($DB->get_record('format_kickstart_template', ['id' => $template->id])));
-        $this->assertTrue(!empty($DB->get_records('course_format_options', ['courseid' => $SITE->id,
+        $this->assertTrue(!empty($DB->get_records('course_format_options', [
+            'courseid' => $SITE->id,
             'format' => $template->format,
         ])));
         format_kickstart_remove_kickstart_templates($template->id);

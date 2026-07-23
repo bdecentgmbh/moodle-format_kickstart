@@ -51,9 +51,9 @@ trait kickstart_page {
                 'value',
                 ['name' => 'templatesview', 'courseid' => $this->courseid]
             );
-            $content .= $OUTPUT->render_from_template('format_kickstart/course_template_header', ['managetemplateurl' =>
-                new \moodle_url('/course/format/kickstart/templates.php'), 'canmanage' =>
-                has_capability('format/kickstart:manage_templates', \context_system::instance()),
+            $content .= $OUTPUT->render_from_template('format_kickstart/course_template_header', [
+                'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php'),
+                'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
                 'listview' => ($templateview == 'list') ? true : false,
             ]);
             $content .= $output->render(new course_template_list($course, $USER->id, $this->params));

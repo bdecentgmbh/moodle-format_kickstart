@@ -163,7 +163,7 @@ class format_kickstart extends core_courseformat\base {
         global $DB;
         // Moodle 3.5 compatibility.
         if (method_exists($this, 'validate_format_options')) {
-            $data = $this->validate_format_options((array)$data, $sectionid);
+            $data = $this->validate_format_options((array) $data, $sectionid);
         }
         if (!$sectionid) {
             $allformatoptions = $this->course_format_options();
@@ -186,7 +186,8 @@ class format_kickstart extends core_courseformat\base {
         }
         $records = $DB->get_records(
             'course_format_options',
-            ['courseid' => $this->courseid,
+            [
+                'courseid' => $this->courseid,
                 'format' => $this->format,
                 'sectionid' => $sectionid,
             ],
@@ -253,7 +254,7 @@ class format_kickstart extends core_courseformat\base {
      * @return bool whether there were any changes to the options values
      */
     public function update_course_format_options($data, $oldcourse = null) {
-        $data = (array)$data;
+        $data = (array) $data;
 
         if (isset($data['userinstructions']) && is_array($data['userinstructions'])) {
             $data['userinstructions_format'] = $data['userinstructions']['format'];
@@ -485,8 +486,11 @@ function format_kickstart_update_template_format_options($template) {
         }
         foreach ($records as $record) {
             if (
-                !$existrecord = $DB->get_record('format_kickstart_options', ['format' => $courseformat,
-                'templateid' => $template->id, 'name' => $record->name ])
+                !$existrecord = $DB->get_record('format_kickstart_options', [
+                    'format' => $courseformat,
+                    'templateid' => $template->id,
+                    'name' => $record->name,
+                ])
             ) {
                 $data = new stdClass();
                 $data->templateid = $template->id;
@@ -863,8 +867,10 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
         }
 
         if ($DB->record_exists('course_format_options', ['courseid' => $course->id, 'name' => 'templatesview'])) {
-            $DB->set_field('course_format_options', 'value', $args['value'], ['courseid' => $course->id,
-            'name' => 'templatesview']);
+            $DB->set_field('course_format_options', 'value', $args['value'], [
+                'courseid' => $course->id,
+                'name' => 'templatesview',
+            ]);
         } else {
             $record = new stdClass();
             $record->courseid = $course->id;
@@ -926,8 +932,8 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
 function format_kickstart_output_fragment_get_library_coursecontents($args) {
     global $OUTPUT, $CFG, $PAGE;
 
-    $courseid   = (int)($args['courseid'] ?? 0);
-    $maincourse = (int)($args['maincourse'] ?? 0);
+    $courseid   = (int) ($args['courseid'] ?? 0);
+    $maincourse = (int) ($args['maincourse'] ?? 0);
 
     if (!$courseid) {
         return '';

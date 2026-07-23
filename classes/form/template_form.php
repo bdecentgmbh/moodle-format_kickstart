@@ -84,10 +84,10 @@ class template_form extends \moodleform {
                 get_string('course_backup', 'format_kickstart'),
                 null,
                 [
-                'subdirs' => 0,
-                'maxfiles' => 1,
-                'accepted_types' => ['.mbz'],
-                'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
+                    'subdirs' => 0,
+                    'maxfiles' => 1,
+                    'accepted_types' => ['.mbz'],
+                    'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
                 ]
             );
             $mform->addHelpButton('course_backup', 'course_backup', 'format_kickstart');
@@ -212,7 +212,7 @@ class template_form extends \moodleform {
 
             $params['format'] = $template['format'];
             $params['id'] = '1';
-            $courseformat = course_get_format((object)$params);
+            $courseformat = course_get_format((object) $params);
             $elements = $courseformat->create_edit_form_elements($mform, false);
             for ($i = 0; $i < count($elements); $i++) {
                 $mform->insertElementBefore(

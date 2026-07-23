@@ -530,7 +530,7 @@ class import_courselibrary_search {
         $countsql = preg_replace('/\sLIMIT\s.*/si', '', $countsql);
         $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $countsql);
         $totalcourses = $DB->count_records_sql($countsql, $params);
-        $this->totalcountfull = (int)$totalcourses;
+        $this->totalcountfull = (int) $totalcourses;
 
         if ($totalcourses > 0) {
             // Iterate while we have records and haven't reached $this->maxresults.
@@ -556,8 +556,8 @@ class import_courselibrary_search {
             $this->calculate_relevance_scores_batch();
 
             usort($this->results, function ($a, $b) {
-                $scorea = (float)($a->similarityscore ?? 0);
-                $scoreb = (float)($b->similarityscore ?? 0);
+                $scorea = (float) ($a->similarityscore ?? 0);
+                $scoreb = (float) ($b->similarityscore ?? 0);
                 return $scoreb <=> $scorea;
             });
         }
@@ -585,7 +585,7 @@ class import_courselibrary_search {
         }
 
         $resultids = array_keys($this->results);
-        $allids = array_unique(array_merge([(int)$COURSE->id], $resultids));
+        $allids = array_unique(array_merge([(int) $COURSE->id], $resultids));
 
         $currentcourse = $DB->get_record('course', ['id' => $COURSE->id]);
         if (!$currentcourse) {
@@ -621,7 +621,7 @@ class import_courselibrary_search {
             );
             $userfavourites = $ufservice->find_all_favourites('core_course', ['courses']);
             foreach ($userfavourites as $fav) {
-                $favouriteids[(int)$fav->itemid] = true;
+                $favouriteids[(int) $fav->itemid] = true;
             }
         }
 
@@ -629,7 +629,7 @@ class import_courselibrary_search {
         $relevantfields = [];
         foreach ($this->weights as $key => $weight) {
             if (strpos($key, 'customfield_') === 0 && $weight > 0) {
-                $relevantfields[substr($key, strlen('customfield_'))] = (int)$weight;
+                $relevantfields[substr($key, strlen('customfield_'))] = (int) $weight;
             }
         }
         $cfvaluesbycourse = [];
@@ -644,7 +644,7 @@ class import_courselibrary_search {
                        AND (cff.type = 'text' OR cff.type = 'select')";
             $cfrows = $DB->get_records_sql($sql, array_merge($params, $fparams));
             foreach ($cfrows as $row) {
-                $cfvaluesbycourse[$row->courseid][$row->shortname] = (string)$row->value;
+                $cfvaluesbycourse[$row->courseid][$row->shortname] = (string) $row->value;
             }
         }
         $currentcfvalues = $cfvaluesbycourse[$currentcourse->id] ?? [];
@@ -680,7 +680,7 @@ class import_courselibrary_search {
 
             if (
                 !empty($this->weights['starred']) && $this->weights['starred'] > 0
-                && isset($favouriteids[(int)$result->id])
+                && isset($favouriteids[(int) $result->id])
             ) {
                 $score += $this->weights['starred'];
             }
@@ -871,8 +871,8 @@ class import_courselibrary_search {
             }
         }
 
-        $limitfrom = (int)$limitfrom;
-        $limitnum  = (int)$limitnum;
+        $limitfrom = (int) $limitfrom;
+        $limitnum  = (int) $limitnum;
         $limitfrom = max(0, $limitfrom);
         $limitnum  = max(0, $limitnum);
 
