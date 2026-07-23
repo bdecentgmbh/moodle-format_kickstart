@@ -152,7 +152,7 @@ class template_table extends \table_sql {
             $status .= \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'disable', 'template' => $data->id]
+                    ['action' => 'disable', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', ['class' => 'iconsmall']),
                 ['id' => "sort-template-up-action"]
@@ -161,7 +161,7 @@ class template_table extends \table_sql {
             $status .= \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'enable', 'template' => $data->id]
+                    ['action' => 'enable', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', ['class' => 'iconsmall']),
                 ['id' => "sort-template-up-action"]
@@ -188,7 +188,7 @@ class template_table extends \table_sql {
             $updown .= \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'up', 'template' => $data->id]
+                    ['action' => 'up', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon('t/up', $strup, 'moodle', ['class' => 'iconsmall']),
                 ['id' => "sort-template-up-action"]
@@ -201,7 +201,7 @@ class template_table extends \table_sql {
             $updown .= '&nbsp;' . \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'down', 'template' => $data->id]
+                    ['action' => 'down', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon(
                     't/down',

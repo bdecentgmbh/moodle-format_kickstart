@@ -44,6 +44,7 @@ $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_tem
 $templates = array_values(array_filter(array_unique($templates), 'strlen'));
 // Template sort action.
 if ($action && $templateid) {
+    require_sesskey();
     switch ($action) {
         case 'up':
             if (!in_array($templateid, $templates)) {

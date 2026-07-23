@@ -893,7 +893,7 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
 function format_kickstart_output_fragment_get_library_courselist($args) {
     global $PAGE;
 
-    $_GET['search'] = $args['searchcourse'];
+    $_GET['search'] = clean_param($args['searchcourse'], PARAM_NOTAGS);
     $sorttype = is_null($args['sort']) ? 'relevance' : $args['sort'];
 
     $customvalues = json_decode($args['customvalues']);
