@@ -64,19 +64,19 @@ body.format-kickstart .form-control .fa-search {
 .format-kickstart .course-content > a {
     float: right;
 }
-.format-kickstart .card-deck .carousel-inner {
+.format-kickstart .templates-block .carousel-inner {
     display: flex;
     margin-bottom: .5rem;
 }
-.format-kickstart .card-deck.templates-block .image-block,
-#page-course-format-kickstart-list .card-deck.templates-block .image-block {
+.format-kickstart .templates-block .image-block,
+#page-course-format-kickstart-list .templates-block .image-block {
     margin-bottom: 20px;
 }
-.format-kickstart .card-deck.templates-block .image-block .carousel-item {
+.format-kickstart .templates-block .image-block .carousel-item {
     height: 200px;
     width: 100%;
 }
-.format-kickstart .card-deck.templates-block .image-block .carousel-item img {
+.format-kickstart .templates-block .image-block .carousel-item img {
     width: 100%;
     min-height: 120px;
     object-fit: cover;
@@ -108,7 +108,7 @@ body.format-kickstart .form-control .fa-search {
 }
 
 @media (min-width: 576px) {
-    .format-kickstart .card-deck {
+    .format-kickstart .templates-block {
         flex-flow: row wrap;
         margin-right: -.25rem;
         margin-left: -.25rem;
@@ -116,7 +116,7 @@ body.format-kickstart .form-control .fa-search {
 }
 
 @media (min-width: 576px) {
-    .format-kickstart .card-deck .card {
+    .format-kickstart .templates-block .card {
         display: flex;
         flex: 1 0 0%;
         flex-direction: column;
@@ -199,11 +199,11 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     display: flex;
     align-items: center;
 }
-.kickstart-page .template-list.kickstart-list-view .card-deck .card {
+.kickstart-page .template-list.kickstart-list-view .templates-block .card {
     flex-direction: row;
     flex-wrap: wrap;
 }
-.kickstart-page .template-list.kickstart-list-view .card-deck .card .card-body {
+.kickstart-page .template-list.kickstart-list-view .templates-block .card .card-body {
     width: 40%;
     display: flex;
     align-items: center;
@@ -293,14 +293,14 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     .format-kickstart .card-footer {
         padding: .625rem;
     }
-    .kickstart-page .template-list.kickstart-list-view .card-deck .card:has(.image-block) {
+    .kickstart-page .template-list.kickstart-list-view .templates-block .card:has(.image-block) {
         flex-direction: column;
     }
-    .kickstart-page .template-list.kickstart-list-view .card-deck .card:has(.image-block) .card-body {
+    .kickstart-page .template-list.kickstart-list-view .templates-block .card:has(.image-block) .card-body {
         width: 100%;
         margin-bottom: 15px;
     }
-    .kickstart-page .template-list.kickstart-list-view .card-deck .card:has(.image-block) .card-footer {
+    .kickstart-page .template-list.kickstart-list-view .templates-block .card:has(.image-block) .card-footer {
         margin-left: auto;
     }
 }
@@ -372,7 +372,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 .kickstart-page .kickstart-block + .mform {
     width: 100%;
 }
-.kickstart-page .template-list .card-deck .card .card-content img {
+.kickstart-page .template-list .templates-block .card .card-content img {
     max-width: 260px;
     width: 100%;
 }
@@ -420,11 +420,11 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     flex-wrap: wrap;
     gap: 15px;
 }
-.kickstart-page .template-list.kickstart-tile-view .card-deck {
+.kickstart-page .template-list.kickstart-tile-view .templates-block {
     min-height: 230px;
     flex-basis: 19.5%;
 }
-.kickstart-page .template-list .card-deck .card .card-footer {
+.kickstart-page .template-list .templates-block .card .card-footer {
     border: 0;
     background: none;
     display: flex;
@@ -432,7 +432,7 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
     flex-direction: row-reverse;
     align-items: center;
 }
-.kickstart-page .template-list.kickstart-tile-view .card-deck .card .card-footer {
+.kickstart-page .template-list.kickstart-tile-view .templates-block .card .card-footer {
     padding: 0 1.25rem 1.25rem;
 }
 
@@ -514,19 +514,19 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 
 
 @media (min-width: 1501px) {
-    .course-content .kickstart-page .template-list.kickstart-tile-view .card-deck {
+    .course-content .kickstart-page .template-list.kickstart-tile-view .templates-block {
         flex-basis: 33%;
     }
 }
 
 @media (min-width: 1200px) and (max-width: 1500px) {
-    .kickstart-page .template-list.kickstart-tile-view .card-deck {
+    .kickstart-page .template-list.kickstart-tile-view .templates-block {
         flex-basis: 24.5%;
     }
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-    .kickstart-page .template-list.kickstart-tile-view .card-deck {
+    .kickstart-page .template-list.kickstart-tile-view .templates-block {
         flex-basis: 33%;
     }
 }
@@ -539,14 +539,14 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 
 @media (min-width: 576px) and (max-width: 991px) {
-    .kickstart-page .template-list.kickstart-tile-view .card-deck {
+    .kickstart-page .template-list.kickstart-tile-view .templates-block {
         min-height: 180px;
         flex-basis: 50%;
     }
 }
 
 @media (max-width: 575px) {
-    .kickstart-page .template-list.kickstart-tile-view .card-deck {
+    .kickstart-page .template-list.kickstart-tile-view .templates-block {
         min-height: 150px;
         flex-basis: 100%;
     }
