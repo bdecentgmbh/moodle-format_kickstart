@@ -231,7 +231,7 @@ final class format_kickstart_test extends \advanced_testcase {
      * @return void
      */
     public function test_format_kickstart_remove_kickstart_templates(): void {
-        global $DB, $CFG, $SITE;
+        global $DB, $SITE;
         $format = 'topics';
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
         $this->create_kickstart_template_options();
@@ -242,7 +242,7 @@ final class format_kickstart_test extends \advanced_testcase {
         ])));
         format_kickstart_remove_kickstart_templates($template->id);
         $this->assertFalse($DB->get_record('format_kickstart_template', ['id' => $template->id]));
-        $this->assertFalse(array_search($template->id, explode(",", $CFG->kickstart_templates)));
+        $this->assertFalse(in_array($template->id, format_kickstart_get_templates()));
     }
 
     /**

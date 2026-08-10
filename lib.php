@@ -324,6 +324,23 @@ function format_kickstart_has_pro() {
 }
 
 /**
+ * Get the Kickstart template ids stored in the config.
+ *
+ * @return int[] List of configured template ids.
+ */
+function format_kickstart_get_templates() {
+    $templatesconfig = get_config(null, 'kickstart_templates');
+
+    if (empty($templatesconfig)) {
+        return [];
+    }
+
+    $templateids = explode(',', $templatesconfig);
+    $templateids = array_filter(array_unique($templateids), 'strlen');
+    return array_map('intval', $templateids);
+}
+
+/**
  * Automatically create the template.
  * @param object $template template info
  * @param int $sort sort position
@@ -333,52 +350,56 @@ function format_kickstart_has_pro() {
  */
 function format_kickstart_create_template($template, $sort, $context, $component) {
 
-    global $DB, $CFG, $USER;
-    if (!isguestuser() && isloggedin()) {
-        $fs = get_file_storage();
-        $draftidattach = file_get_unused_draft_itemid();
-        $template->sort = $sort;
-        $template->course_backup = $draftidattach;
-        $template->cohortids = json_encode($template->cohortids);
-        $template->categoryids = json_encode($template->categoryids);
-        $template->roleids = json_encode($template->roleids);
-        $template->courseformat = 0;
-        $id = $DB->insert_record('format_kickstart_template', $template);
-        core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id, $context, $template->tags);
-        if (isset($template->backupfile) && !empty($template->backupfile)) {
-            $filerecord = new stdClass();
-            $filerecord->component = 'format_kickstart';
-            $filerecord->contextid = $context->id;
-            $filerecord->filearea = "course_backups";
-            $filerecord->filepath = '/';
-            $filerecord->itemid = $id;
-            $filerecord->filename = $template->backupfile;
-            $exist = check_record_exsist($filerecord);
-            if ($exist != 1) {
-                if ($component == 'format_kickstart') {
-                    $backuppath = $CFG->dirroot . "/course/format/kickstart/assets/templates/$template->backupfile";
-                } else if ($component == 'local_kickstart_pro') {
-                    $backuppath = $CFG->dirroot . "/local/kickstart_pro/assets/templates/$template->backupfile";
-                }
-                $fs->create_file_from_pathname($filerecord, $backuppath);
+    global $DB, $CFG;
+    $fs = get_file_storage();
+    $template->sort = $sort;
+    $template->cohortids = json_encode($template->cohortids);
+    $template->categoryids = json_encode($template->categoryids);
+    $template->roleids = json_encode($template->roleids);
+    $template->courseformat = 0;
+    $id = $DB->insert_record('format_kickstart_template', $template);
+    core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id, $context, $template->tags);
+    if (isset($template->backupfile) && !empty($template->backupfile)) {
+        $filerecord = new stdClass();
+        $filerecord->component = 'format_kickstart';
+        $filerecord->contextid = $context->id;
+        $filerecord->filearea = "course_backups";
+        $filerecord->filepath = '/';
+        $filerecord->itemid = $id;
+        $filerecord->filename = $template->backupfile;
+        $exist = check_record_exsist($filerecord);
+        if ($exist != 1) {
+            if ($component == 'format_kickstart') {
+                $backuppath = $CFG->dirroot . "/course/format/kickstart/assets/templates/$template->backupfile";
+            } else if ($component == 'local_kickstart_pro') {
+                $backuppath = $CFG->dirroot . "/local/kickstart_pro/assets/templates/$template->backupfile";
             }
+            $fs->create_file_from_pathname($filerecord, $backuppath);
         }
-        if (format_kickstart_has_pro() && isset($template->templatebackimg) && !empty($template->templatebackimg)) {
-            $filerecord = new stdClass();
-            $filerecord->component = 'local_kickstart_pro';
-            $filerecord->contextid = $context->id;
-            $filerecord->filearea = "templatebackimg";
-            $filerecord->filepath = '/';
-            $filerecord->itemid = $id;
-            $filerecord->filename = $template->templatebackimg;
-            $exist = check_record_exsist($filerecord);
-            if ($exist != 1) {
-                $imagepath = $CFG->dirroot . "/local/kickstart_pro/assets/$template->templatebackimg";
-                $fs->create_file_from_pathname($filerecord, $backuppath);
-            }
-        }
-        return $id;
     }
+    if (format_kickstart_has_pro() && isset($template->templatebackimg) && !empty($template->templatebackimg)) {
+        $filerecord = new stdClass();
+        $filerecord->component = 'local_kickstart_pro';
+        $filerecord->contextid = $context->id;
+        $filerecord->filearea = "templatebackimg";
+        $filerecord->filepath = '/';
+        $filerecord->itemid = $id;
+        $filerecord->filename = $template->templatebackimg;
+        $exist = check_record_exsist($filerecord);
+        if ($exist != 1) {
+            $imagepath = $CFG->dirroot . "/local/kickstart_pro/assets/$template->templatebackimg";
+            $fs->create_file_from_pathname($filerecord, $backuppath);
+        }
+    }
+
+    // Register the new template in the configured templates list.
+    $templates = format_kickstart_get_templates();
+    if (!in_array($id, $templates)) {
+        $templates[] = $id;
+        set_config('kickstart_templates', implode(',', $templates));
+    }
+
+    return $id;
 }
 
 /**
@@ -441,8 +462,8 @@ function format_kickstart_import_courseformat_template() {
  * @param bool $isenabled
  */
 function format_kickstart_add_couseformat_template($templatename, $format, $counttemplate, $isenabled) {
-    global $DB, $CFG;
-    $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
+    global $DB;
+    $templates = format_kickstart_get_templates();
     if (!$DB->record_exists('format_kickstart_template', ['title' => $templatename, 'courseformat' => 1])) {
         $template = new stdClass();
         $template->title = $templatename;
@@ -456,7 +477,7 @@ function format_kickstart_add_couseformat_template($templatename, $format, $coun
         }
         $templateid = $DB->insert_record('format_kickstart_template', $template);
         if ($isenabled) {
-            array_push($templates, $templateid);
+            $templates[] = $templateid;
             set_config('kickstart_templates', implode(',', $templates));
         }
     }
@@ -556,8 +577,8 @@ function format_kickstart_get_template_format_options($template) {
  * @return void
  */
 function format_kickstart_check_format_template() {
-    global $DB, $SITE, $CFG;
-    $templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
+    global $DB, $SITE;
+    $templates = format_kickstart_get_templates();
     // Add the kickstart templates to visible template remove the store config.
     $records = $DB->get_records_menu('format_kickstart_template', ['visible' => 1], '', 'id,id');
     if ($records) {
@@ -599,13 +620,10 @@ function format_kickstart_check_format_template() {
  * @param int $templateid
  */
 function format_kickstart_remove_kickstart_templates($templateid) {
-    global $CFG, $SITE, $DB;
+    global $SITE, $DB;
     $fs = get_file_storage();
     $context = context_system::instance();
-    $templates = [];
-    if (isset($CFG->kickstart_templates) && $CFG->kickstart_templates) {
-        $templates = explode(",", $CFG->kickstart_templates);
-    }
+    $templates = format_kickstart_get_templates();
     $template = $DB->get_record('format_kickstart_template', ['id' => $templateid]);
     // Delete the template bg.
     $fs->delete_area_files($context->id, 'local_kickstart_pro', 'templatebackimg', $templateid);
@@ -616,7 +634,10 @@ function format_kickstart_remove_kickstart_templates($templateid) {
         $fs->delete_area_files($context->id, 'format_kickstart', 'course_backups', $templateid);
     }
     $DB->delete_records('format_kickstart_template', ['id' => $templateid]);
-    unset($templates[array_search($templateid, $templates)]);
+    $key = array_search($templateid, $templates);
+    if ($key !== false) {
+        unset($templates[$key]);
+    }
     set_config('kickstart_templates', implode(',', $templates));
 }
 

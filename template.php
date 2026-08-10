@@ -40,7 +40,7 @@ $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'), new moodl
 $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
 require_login();
 require_capability('format/kickstart:manage_templates', $context);
-$templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
+$templates = format_kickstart_get_templates();
 if (format_kickstart_has_pro()) {
     require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
 }
@@ -78,7 +78,7 @@ switch ($action) {
             $data->sort = (!empty($counttemplate)) ? $counttemplate + 1 : 1;
             $data->courseformat = 0;
             $id = $DB->insert_record('format_kickstart_template', $data);
-            array_push($templates, $id);
+            $templates[] = $id;
             set_config('kickstart_templates', implode(',', $templates));
             core_tag_tag::set_item_tags(
                 'format_kickstart',

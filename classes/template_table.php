@@ -252,7 +252,7 @@ class template_table extends \table_sql {
      * @throws \dml_exception
      */
     public function query_db($pagesize, $useinitialsbar = true) {
-        global $DB, $CFG;
+        global $DB;
         [$wsql, $params] = $this->get_sql_where();
         if ($wsql) {
             $wsql = 'AND ' . $wsql;
@@ -264,18 +264,15 @@ class template_table extends \table_sql {
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
         } else if (format_kickstart_has_pro()) {
-            if (!empty($CFG->kickstart_templates)) {
-                $orders = explode(",", $CFG->kickstart_templates);
-                $orders = array_filter(array_unique($orders), 'strlen');
-                if (!empty($orders)) {
-                    [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
-                    $sql .= "AND ID $insql";
-                    $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
-                        return "WHEN id = $value THEN " . array_search($value, $orders);
-                    }, $orders)) . " END)";
-                    $sql .= " ORDER BY $subquery";
-                    $params += $inparams;
-                }
+            $orders = format_kickstart_get_templates();
+            if (!empty($orders)) {
+                [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+                $sql .= "AND ID $insql";
+                $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
+                    return "WHEN id = $value THEN " . array_search($value, $orders);
+                }, $orders)) . " END)";
+                $sql .= " ORDER BY $subquery";
+                $params += $inparams;
             }
         }
         if ($pagesize != -1) {

@@ -33,6 +33,12 @@ function xmldb_format_kickstart_install() {
         core_plugin_manager::reset_caches();
     }
     format_kickstart_import_courseformat_template();
+
+    // Skip default templates on Behat test sites.
+    if (defined('BEHAT_SITE_RUNNING')) {
+        return true;
+    }
+
     $file = $CFG->dirroot . '/course/format/kickstart/createtemplates.php';
     if (file_exists($file)) {
         require_once($file);
