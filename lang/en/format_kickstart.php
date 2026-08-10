@@ -123,6 +123,7 @@ $string['pluginname'] = 'Kickstart format';
 $string['previewurl'] = 'Preview URL';
 $string['previewurl_help'] = 'If provided a button will display on the template that will open this URL in a new tab';
 $string['privacy:metadata'] = 'The Kickstart format plugin does not store any personal data.';
+$string['restorefailed'] = 'Restore failed with status: {$a}';
 $string['restoretoexistingcourseadding'] = 'Merge Kickstart templates into courses';
 $string['restoretoexistingcoursedeleting'] = 'Delete existing content when importing Kickstart templates';
 $string['restrictcategory'] = 'Restrict by categories';

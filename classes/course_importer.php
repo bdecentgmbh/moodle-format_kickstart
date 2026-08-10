@@ -180,7 +180,7 @@ class course_importer {
             $rc->destroy();
         } catch (\Exception $e) {
             if ($rc) {
-                \core\notification::error('Restore failed with status: ' . $rc->get_status());
+                \core\notification::error(get_string('restorefailed', 'format_kickstart', $rc->get_status()));
             }
             throw $e;
         } finally {

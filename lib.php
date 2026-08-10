@@ -671,7 +671,9 @@ function format_kickstart_get_designer_coursetypes() {
  */
 function format_kickstart_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     require_login();
-    if ($context->contextlevel != CONTEXT_SYSTEM && $filearea != 'description') {
+    if ($filearea === 'course_backups') {
+        require_capability('format/kickstart:manage_templates', $context);
+    } else if ($filearea !== 'description') {
         return false;
     }
 
@@ -869,6 +871,15 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
     global $PAGE, $DB, $USER;
     $course = get_course($args['courseid']);
     $action = $args['action'];
+    // The search template uses a free-text string.
+    if ($action === 'searchtemplate') {
+        $value = $args['value'];
+    } else {
+        $value = ($args['value'] === 'list') ? 'list' : 'tile';
+    }
+
+    $context = \context_course::instance($course->id);
+    require_capability('format/kickstart:import_from_template', $context);
 
     $PAGE->requires->js_call_amd(
         'format_kickstart/formatkickstart',
@@ -876,7 +887,7 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
         ['contextid' => $args['contextid'], 'courseid' => $course->id, 'nav' => $args['menuid'], 'filteroptions' => false]
     );
 
-    $params = ['action' => $action, 'value' => $args['value']];
+    $params = ['action' => $action, 'value' => $value];
 
     // Modify the actions related to the kickstart page.
     if ($action == 'changetemplate') {
@@ -886,7 +897,7 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
         }
 
         if ($DB->record_exists('course_format_options', ['courseid' => $course->id, 'name' => 'templatesview'])) {
-            $DB->set_field('course_format_options', 'value', $args['value'], [
+            $DB->set_field('course_format_options', 'value', $value, [
                 'courseid' => $course->id,
                 'name' => 'templatesview',
             ]);
@@ -896,7 +907,7 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
             $record->format = 'kickstart';
             $record->name = 'templatesview';
             $record->sectionid = 0;
-            $record->value = $args['value'];
+            $record->value = $value;
             $DB->insert_record('course_format_options', $record);
         }
     }
@@ -918,7 +929,7 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
 function format_kickstart_output_fragment_get_library_courselist($args) {
     global $PAGE;
 
-    $_GET['search'] = clean_param($args['searchcourse'], PARAM_NOTAGS);
+    $search = clean_param($args['searchcourse'], PARAM_NOTAGS);
     $sorttype = is_null($args['sort']) ? 'relevance' : $args['sort'];
 
     $customvalues = json_decode($args['customvalues']);
@@ -934,7 +945,7 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
     );
 
     $renderer = $PAGE->get_renderer('format_kickstart');
-    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype, $page));
+    return $renderer->render(new \format_kickstart\output\import_course_list((array) $customvalues, $sorttype, $page, $search));
 }
 
 
@@ -994,11 +1005,15 @@ function format_kickstart_output_fragment_get_library_coursecontents($args) {
  */
 function format_kickstart_output_fragment_get_import_module_box($args) {
     global $OUTPUT;
-    $template = [];
-    $template['information'] = get_string('importmoduleinformation', 'format_kickstart');
+
+    // Security checks.
+    $context = \context_course::instance($args['maincourse']);
+    require_capability('moodle/course:manageactivities', $context);
+
     $modinfo = get_fast_modinfo($args['maincourse']);
     $course = course_get_format($args['maincourse'])->get_course();
     $sections = $modinfo->get_section_info_all();
+
     $sectionsdata = [];
     foreach ($sections as $section) {
         $list['id'] = $section->id;
@@ -1006,7 +1021,11 @@ function format_kickstart_output_fragment_get_import_module_box($args) {
         $list['number'] = $section->section;
         $sectionsdata[] = $list;
     }
-    $template['sections'] = $sectionsdata;
+
+    $template = [
+        'information' => get_string('importmoduleinformation', 'format_kickstart'),
+        'sections' => $sectionsdata,
+    ];
     return $OUTPUT->render_from_template('format_kickstart/import_module_list', $template);
 }
 

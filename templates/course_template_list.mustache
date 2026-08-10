@@ -44,7 +44,7 @@
     {{#templates}}
             <div class="card-deck mb-2 templates-block">
                 {{^isplaceholder}}
-                    <div class="card" data-templatename="{{{title}}}">
+                    <div class="card" data-templatename="{{title}}">
                         <div class="card-body">
                             {{#isbackimages}}
                             <div class="image-block">
@@ -74,7 +74,7 @@
                         </div>
                         <div class="card-footer">
                             {{^waitingadhoctask}}
-                                <a href="{{{link}}}" data-template="{{id}}" data-templatename="{{{title}}}" class="btn btn-primary use-template">{{#str}}usetemplate, format_kickstart{{/str}}</a>
+                                <a href="{{{link}}}" data-template="{{id}}" data-templatename="{{title}}" class="btn btn-primary use-template">{{#str}}usetemplate, format_kickstart{{/str}}</a>
                             {{/waitingadhoctask}}
                             {{#waitingadhoctask}}
                                 <span class="template-wait-info"> {{#str}} waitingadhoctasktemplate, format_kickstart {{/str}}</span>

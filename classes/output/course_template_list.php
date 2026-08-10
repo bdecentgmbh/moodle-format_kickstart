@@ -124,13 +124,16 @@ class course_template_list implements \renderable, \templatable {
             $params = $searchparams;
             [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
             $params += $inparams;
-            $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
-                return "WHEN id = $value THEN " . array_search($value, $orders);
-            }, $orders)) . " END)";
 
-            $whereconditions = ["visible = 1", "status = 1", "ID $insql"];
+            $cases = [];
+            foreach ($orders as $order => $templateid) {
+                $cases[] = "WHEN id = $templateid THEN $order";
+            }
+            $subquery = '(CASE ' . implode(' ', $cases) . ' END)';
+
+            $whereconditions = ['visible = 1', 'status = 1', "id $insql"];
             if (!empty($searchconditions)) {
-                $whereconditions[] = "(" . implode(" OR ", $searchconditions) . ")";
+                $whereconditions[] = '(' . implode(' OR ', $searchconditions) . ')';
             }
 
             $sql = "SELECT * FROM {format_kickstart_template} WHERE " . implode(" AND ", $whereconditions) . " ORDER BY $subquery";

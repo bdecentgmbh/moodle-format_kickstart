@@ -28,7 +28,5 @@ $tagareas = [
     [
         'itemtype' => 'format_kickstart_template',
         'component' => 'format_kickstart',
-        'callback' => 'format_kickstart_get_tagged_templates',
-        'callbackfile' => '/course/format/loclstart/lib.php',
     ],
 ];

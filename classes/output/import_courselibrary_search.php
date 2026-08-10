@@ -133,20 +133,21 @@ class import_courselibrary_search {
     /**
      * The course library search object.
      * @param array $config
-     * @param mixed $currentcouseid
-     * @param mixed $customfields
-     * @param mixed $sorttype
-     * @param mixed $page
+     * @param int $currentcouseid
+     * @param array $customfields
+     * @param string $sorttype
+     * @param int $page
+     * @param string $search
      */
     public function __construct(
         array $config = [],
         $currentcouseid = null,
         $customfields = [],
         $sorttype = '',
-        $page = 0
+        $page = 0,
+        $search = ''
     ) {
-        $this->search = optional_param('search', '', PARAM_NOTAGS);
-        $this->search = trim($this->search);
+        $this->search = trim($search);
         $this->maxresults = get_config('format_kickstart', 'courselibraryperpage');
         $this->setup_restrictions();
         $this->currentcourseid = $currentcouseid;
@@ -310,12 +311,9 @@ class import_courselibrary_search {
             $params += $cfparams;
         }
 
-        $orderby = $this->get_orderby_sql();
-        $limit   = $this->get_limit_sql();
-
         $params += $this->sqlparams;
 
-        return [$select . $ctxselect . $from . $where . $orderby . $limit, $params];
+        return [$select . $ctxselect . $from . $where, $params];
     }
 
     /**
@@ -478,34 +476,13 @@ class import_courselibrary_search {
     }
 
     /**
-     * Get the LIMIT / OFFSET fragment for the current DB driver.
+     * Get the [offset, limit] values for an SQL query.
      *
-     * @return string
+     * @return int[]
      */
     private function get_limit_sql() {
-        global $CFG;
-
         $perpage = get_config('format_kickstart', 'courselibraryperpage');
-        [$limitfrom, $limitnum] = $this->normalise_limit_from_num($this->page * $perpage, $perpage);
-
-        if ($CFG->dbtype == 'pgsql') {
-            $limit = '';
-            if ($limitnum) {
-                $limit .= " LIMIT $limitnum";
-            }
-            if ($limitfrom) {
-                $limit .= " OFFSET $limitfrom";
-            }
-            return $limit;
-        }
-
-        if ($limitfrom || $limitnum) {
-            if ($limitnum < 1) {
-                $limitnum = "18446744073709551615";
-            }
-            return " LIMIT $limitfrom, $limitnum";
-        }
-        return '';
+        return $this->normalise_limit_from_num($this->page * $perpage, $perpage);
     }
 
     /**
@@ -521,19 +498,17 @@ class import_courselibrary_search {
         $this->results = [];
         $this->totalcount = 0;
         [$sql, $params] = $this->get_searchsql();
+        $orderby = $this->get_orderby_sql();
+        [$limitfrom, $limitnum] = $this->get_limit_sql();
 
-        // Count against the same WHERE without wrapping the SELECT in a subquery.
-        // The new main query has no DISTINCT and no fan-out joins, so a direct count
-        // is correct and much cheaper than SELECT COUNT(*) FROM ($sql) sel.
-        $countsql = preg_replace('/ORDER BY.*/s', '', $sql);
-        $countsql = preg_replace('/\sLIMIT\s.*/si', '', $countsql);
-        $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $countsql);
+        // Count against the same WHERE by replacing the SELECT.
+        $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $sql);
         $totalcourses = $DB->count_records_sql($countsql, $params);
         $this->totalcountfull = (int) $totalcourses;
 
         if ($totalcourses > 0) {
             // Iterate while we have records and haven't reached $this->maxresults.
-            $resultset = $DB->get_recordset_sql($sql, $params);
+            $resultset = $DB->get_recordset_sql($sql . $orderby, $params, $limitfrom, $limitnum);
             foreach ($resultset as $result) {
                 \context_helper::preload_from_record($result);
                 // Check if we are over the limit.

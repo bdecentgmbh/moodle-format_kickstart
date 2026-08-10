@@ -53,15 +53,23 @@ class import_course_list implements \renderable, \templatable {
     public $page;
 
     /**
+     * Summary of search
+     * @var string
+     */
+    public $search;
+
+    /**
      * Constructor for improt course list.
      * @param array $filtercustomfields
      * @param string $sorttype
      * @param int $page
+     * @param string $search
      */
-    public function __construct(array $filtercustomfields = [], string $sorttype = '', int $page = 0) {
+    public function __construct(array $filtercustomfields = [], string $sorttype = '', int $page = 0, string $search = '') {
         $this->filtercustomfields = $filtercustomfields;
         $this->sorttype = $sorttype;
         $this->page = $page;
+        $this->search = $search;
     }
 
     /**
@@ -82,7 +90,8 @@ class import_course_list implements \renderable, \templatable {
             $COURSE->id,
             $this->filtercustomfields,
             $this->sorttype,
-            $this->page
+            $this->page,
+            $this->search
         );
         $courses = [];
         $html = '';

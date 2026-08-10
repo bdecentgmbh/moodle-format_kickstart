@@ -267,10 +267,14 @@ class template_table extends \table_sql {
             $orders = format_kickstart_get_templates();
             if (!empty($orders)) {
                 [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
-                $sql .= "AND ID $insql";
-                $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
-                    return "WHEN id = $value THEN " . array_search($value, $orders);
-                }, $orders)) . " END)";
+                $sql .= "AND id $insql";
+
+                $cases = [];
+                foreach ($orders as $order => $templateid) {
+                    $cases[] = "WHEN id = $templateid THEN $order";
+                }
+                $subquery = '(CASE ' . implode(' ', $cases) . ' END)';
+
                 $sql .= " ORDER BY $subquery";
                 $params += $inparams;
             }
