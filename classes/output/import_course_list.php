@@ -73,7 +73,7 @@ class import_course_list implements \renderable, \templatable {
      * @throws \moodle_exception
      */
     public function export_for_template(renderer_base $output) {
-        global $CFG, $COURSE, $PAGE, $OUTPUT, $SITE;
+        global $COURSE, $PAGE, $OUTPUT, $SITE;
 
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
@@ -90,7 +90,6 @@ class import_course_list implements \renderable, \templatable {
         $displaycourselibraryfields = get_config('format_kickstart', 'displaycourselibraryfields');
         $displaycourselibraryfields = explode(",", $displaycourselibraryfields);
 
-        $tagrenderer = $PAGE->get_renderer('core', 'tag');
         if ($component->get_count() === 0) {
             $html .= $OUTPUT->notification(get_string('nomatchingcourses', 'backup'));
         } else {
@@ -397,7 +396,7 @@ class import_course_list implements \renderable, \templatable {
                     $module['uservisible'] = $cm->uservisible;
 
                     // Availability date (also send to user who can see hidden module).
-                    if ($CFG->enableavailability && ($canviewhidden || $canupdatecourse)) {
+                    if ($CFG->enableavailability && $canviewhidden) {
                         $module['availability'] = $cm->availability;
                     }
 

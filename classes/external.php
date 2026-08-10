@@ -58,13 +58,13 @@ class external extends external_api {
         global $CFG;
         require_login();
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-        $context = \context_course::instance($courseid);
-        require_capability('format/kickstart:import_from_template', $context);
         $params = self::validate_parameters(
             self::import_template_parameters(),
             ['templateid' => $templateid, 'courseid' => $courseid]
         );
-        course_importer::import_from_template($templateid, $courseid);
+        $context = \context_course::instance($params['courseid']);
+        require_capability('format/kickstart:import_from_template', $context);
+        course_importer::import_from_template($params['templateid'], $params['courseid']);
         return true;
     }
 

@@ -520,7 +520,6 @@ class import_courselibrary_search {
 
         $this->results = [];
         $this->totalcount = 0;
-        $contextlevel = $this->get_itemcontextlevel();
         [$sql, $params] = $this->get_searchsql();
 
         // Count against the same WHERE without wrapping the SELECT in a subquery.

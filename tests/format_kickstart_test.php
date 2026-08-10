@@ -57,7 +57,7 @@ final class format_kickstart_test extends \advanced_testcase {
             'sortorder' => 10001,
             'enablecompletion' => 1,
         ]);
-        $module = $this->getDataGenerator()->create_module('forum', [
+        $this->getDataGenerator()->create_module('forum', [
             'course' => $course->id,
         ]);
         $template = new \stdClass();
@@ -169,7 +169,6 @@ final class format_kickstart_test extends \advanced_testcase {
         $format = "proline";
         $counttemplate = $DB->count_records("format_kickstart_template");
         format_kickstart_add_couseformat_template($templatename, $format, $counttemplate, true);
-        $count = $DB->count_records('format_kickstart_template');
         $this->assertTrue($DB->record_exists('format_kickstart_template', ['format' => $format, 'courseformat' => 1]));
     }
 

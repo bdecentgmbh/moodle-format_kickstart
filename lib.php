@@ -388,7 +388,7 @@ function format_kickstart_create_template($template, $sort, $context, $component
         $exist = check_record_exsist($filerecord);
         if ($exist != 1) {
             $imagepath = $CFG->dirroot . "/local/kickstart_pro/assets/$template->templatebackimg";
-            $fs->create_file_from_pathname($filerecord, $backuppath);
+            $fs->create_file_from_pathname($filerecord, $imagepath);
         }
     }
 
@@ -489,7 +489,7 @@ function format_kickstart_add_couseformat_template($templatename, $format, $coun
  * @return void
  */
 function format_kickstart_update_template_format_options($template) {
-    global $DB, $SITE, $CFG;
+    global $DB, $SITE;
     $isdesignerformat = ($template->format == 'designer') ? true : false;
     $records = $DB->get_records(
         'course_format_options',
@@ -577,7 +577,7 @@ function format_kickstart_get_template_format_options($template) {
  * @return void
  */
 function format_kickstart_check_format_template() {
-    global $DB, $SITE;
+    global $DB;
     $templates = format_kickstart_get_templates();
     // Add the kickstart templates to visible template remove the store config.
     $records = $DB->get_records_menu('format_kickstart_template', ['visible' => 1], '', 'id,id');
@@ -607,9 +607,7 @@ function format_kickstart_check_format_template() {
 
         // Add the formats.
         if ($addformats) {
-            foreach ($addformats as $addformat) {
-                format_kickstart_import_courseformat_template();
-            }
+            format_kickstart_import_courseformat_template();
         }
         $cache->set('templateformat', true);
     }
@@ -951,7 +949,7 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
  * @return string Rendered HTML for the accordion (sections + activities).
  */
 function format_kickstart_output_fragment_get_library_coursecontents($args) {
-    global $OUTPUT, $CFG, $PAGE;
+    global $OUTPUT, $CFG;
 
     $courseid   = (int) ($args['courseid'] ?? 0);
     $maincourse = (int) ($args['maincourse'] ?? 0);
@@ -995,12 +993,11 @@ function format_kickstart_output_fragment_get_library_coursecontents($args) {
  * @return string Rendered HTML template for module import
  */
 function format_kickstart_output_fragment_get_import_module_box($args) {
-    global $PAGE, $OUTPUT;
+    global $OUTPUT;
     $template = [];
     $template['information'] = get_string('importmoduleinformation', 'format_kickstart');
     $modinfo = get_fast_modinfo($args['maincourse']);
     $course = course_get_format($args['maincourse'])->get_course();
-    $modinfosections = $modinfo->get_sections();
     $sections = $modinfo->get_section_info_all();
     $sectionsdata = [];
     foreach ($sections as $section) {
@@ -1027,7 +1024,7 @@ function format_kickstart_output_fragment_get_import_module_box($args) {
  * @return url The ID of the newly imported course module
  */
 function format_kickstart_output_fragment_import_activity_courselib($args) {
-    global $USER, $CFG, $DB, $PAGE;
+    global $USER, $CFG, $DB;
     require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
     require_once($CFG->dirroot . '/course/format/classes/base.php');
     // Security checks.
@@ -1045,6 +1042,7 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     );
     $bc->execute_plan();
     $backupid = $bc->get_backupid();
+    $backupbasepath = $bc->get_plan()->get_basepath();
     $bc->destroy();
 
     $rc = new restore_controller(

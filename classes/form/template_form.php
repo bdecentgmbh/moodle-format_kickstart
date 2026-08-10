@@ -214,9 +214,9 @@ class template_form extends \moodleform {
             $params['id'] = '1';
             $courseformat = course_get_format((object) $params);
             $elements = $courseformat->create_edit_form_elements($mform, false);
-            for ($i = 0; $i < count($elements); $i++) {
+            foreach ($elements as $element) {
                 $mform->insertElementBefore(
-                    $mform->removeElement($elements[$i]->getName(), false),
+                    $mform->removeElement($element->getName(), false),
                     'courseformatoptions'
                 );
             }
