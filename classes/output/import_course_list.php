@@ -24,6 +24,7 @@
 
 namespace format_kickstart\output;
 
+use core_external\util;
 use renderer_base;
 
 /**
@@ -353,7 +354,7 @@ class import_course_list implements \renderable, \templatable {
             $options = (object) ['noclean' => true];
 
             [$sectionvalues['summary'], $sectionvalues['summaryformat']] =
-            \core_external\util::format_text(
+            util::format_text(
                 $section->summary,
                 $section->summaryformat,
                 $coursecontext->id,
@@ -380,7 +381,7 @@ class import_course_list implements \renderable, \templatable {
                     $modcontext = \context_module::instance($cm->id);
 
                     $module['id'] = $cm->id;
-                    $module['name'] = \core_external\util::format_string($cm->name, $modcontext->id);
+                    $module['name'] = util::format_string($cm->name, $modcontext->id);
                     $module['instance'] = $cm->instance;
                     $module['contextid'] = $modcontext->id;
                     $module['modname'] = (string) $cm->modname;
