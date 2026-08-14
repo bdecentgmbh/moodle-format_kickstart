@@ -40,10 +40,10 @@ $PAGE->set_url(new moodle_url('/course/format/kickstart/templates.php'));
 require_capability('format/kickstart:manage_templates', $context);
 // Check the template add or not.
 format_kickstart_check_format_template();
-$templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
-$templates = array_values(array_filter(array_unique($templates), 'strlen'));
+$templates = format_kickstart_get_templates();
 // Template sort action.
 if ($action && $templateid) {
+    require_sesskey();
     switch ($action) {
         case 'up':
             if (!in_array($templateid, $templates)) {

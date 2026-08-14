@@ -41,12 +41,7 @@ class behat_format_kickstart extends behat_base {
      * @Given /^I click on disable link single activity$/
      */
     public function i_click_on_disable_link_single_activity() {
-        global $CFG;
-        if ($CFG->branch <= '403') {
-            $this->execute('behat_general::i_click_on_in_the', ["Disable", "link", "Single activity format", "table_row"]);
-        } else {
-            $this->execute('behat_general::i_click_on_in_the', ["Disable", "link", "Single activity", "table_row"]);
-        }
+        $this->execute('behat_general::i_click_on_in_the', ["Disable", "link", "Single activity", "table_row"]);
     }
 
     /**
@@ -54,12 +49,7 @@ class behat_format_kickstart extends behat_base {
      * @Given /^I click on enable link custom sections$/
      */
     public function i_click_on_edit_link_custom_sections() {
-        global $CFG;
-        if ($CFG->branch <= '403') {
-            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Topics format", "table_row"]);
-        } else {
-            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Custom sections", "table_row"]);
-        }
+        $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Custom sections", "table_row"]);
     }
 
     /**
@@ -67,12 +57,7 @@ class behat_format_kickstart extends behat_base {
      * @Given /^I click on enable link single activity$/
      */
     public function i_click_on_edit_link_single_activity() {
-        global $CFG;
-        if ($CFG->branch <= '403') {
-            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Single activity format", "table_row"]);
-        } else {
-            $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Single activity", "table_row"]);
-        }
+        $this->execute('behat_general::i_click_on_in_the', ["Edit", "button", "Single activity", "table_row"]);
     }
 
     /**
@@ -92,23 +77,6 @@ class behat_format_kickstart extends behat_base {
      * @param string $format The course data
      */
     public function i_should_see_define_course_format($format) {
-        global $CFG;
-        if ($CFG->branch <= '403') {
-            switch ($format) {
-                case 'Single activity':
-                    $format = 'Single activity format';
-                    break;
-                case 'Social':
-                    $format = 'Social format';
-                    break;
-                case 'Custom sections':
-                    $format = 'Topics format';
-                    break;
-                case 'Weekly sections':
-                    $format = 'Weekly format';
-                    break;
-            }
-        }
         $this->execute('behat_general::assert_page_contains_text', [$format]);
     }
 
@@ -119,23 +87,6 @@ class behat_format_kickstart extends behat_base {
      * @param string $format The course data
      */
     public function i_should_not_see_define_course_format($format) {
-        global $CFG;
-        if ($CFG->branch <= '403') {
-            switch ($format) {
-                case 'Single activity':
-                    $format = 'Single activity format';
-                    break;
-                case 'Social':
-                    $format = 'Social format';
-                    break;
-                case 'Custom sections':
-                    $format = 'Topics format';
-                    break;
-                case 'Weekly sections':
-                    $format = 'Weekly format';
-                    break;
-            }
-        }
         $this->execute('behat_general::assert_page_not_contains_text', [$format]);
     }
 
@@ -195,11 +146,6 @@ class behat_format_kickstart extends behat_base {
      * @Given /^I click kickstart single activity format template$/
      */
     public function i_click_kickstart_single_activity_format_template() {
-        global $CFG;
-        if ($CFG->branch <= '403') {
-            $this->i_click_kickstart_template(".use-template[data-templatename=\"Single activity format\"]");
-        } else {
-            $this->i_click_kickstart_template(".use-template[data-templatename=\"Single activity\"]");
-        }
+        $this->i_click_kickstart_template(".use-template[data-templatename=\"Single activity\"]");
     }
 }

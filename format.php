@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->libdir . '/completionlib.php');
 
-$nav = optional_param('nav', 'coursetemplate', PARAM_TEXT);
+$nav = optional_param('nav', format_kickstart_get_default_nav(), PARAM_TEXT);
 
 $context = context_course::instance($course->id);
 // Retrieve course format option fields and add them to the $course object.

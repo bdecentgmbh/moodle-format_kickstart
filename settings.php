@@ -168,6 +168,37 @@ if ($ADMIN->fulltree) {
         get_string('defaultteacherinstructions_default', 'format_kickstart')
     ));
 
+    // Order and visibility of the pages in the Kickstart navigation dropdown.
+    // The page with the lowest order is the default; an order of 0 hides the page.
+    $settings->add(new admin_setting_heading(
+        'pageordersettings',
+        get_string('pageordersettings', 'format_kickstart'),
+        get_string('pageordersettings_desc', 'format_kickstart')
+    ));
+
+    $defaultpageorders = [
+        'coursetemplate' => 1,
+        'studentview' => 2,
+        'help' => 3,
+        'courselibrary' => 4,
+        'createtemplaefromcourse' => 5,
+    ];
+    $pages = format_kickstart_get_all_pages();
+    // Build the position dropdown: "Hide" for 0, then one entry per available page.
+    $pageorderoptions = [0 => get_string('hide', 'format_kickstart')];
+    for ($position = 1; $position <= count($pages); $position++) {
+        $pageorderoptions[$position] = $position;
+    }
+    foreach ($pages as $pagekey => $pagelabel) {
+        $settings->add(new admin_setting_configselect(
+            'format_kickstart/pageorder_' . $pagekey,
+            get_string('pageorder', 'format_kickstart', $pagelabel),
+            get_string('pageorder_desc', 'format_kickstart', $pagelabel),
+            $defaultpageorders[$pagekey] ?? 0,
+            $pageorderoptions
+        ));
+    }
+
     if (format_kickstart_has_pro()) {
         $options = [
             0 => get_string('no'),

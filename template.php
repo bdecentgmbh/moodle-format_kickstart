@@ -40,12 +40,13 @@ $PAGE->navbar->add(get_string('manage_templates', 'format_kickstart'), new moodl
 $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
 require_login();
 require_capability('format/kickstart:manage_templates', $context);
-$templates = isset($CFG->kickstart_templates) ? explode(",", $CFG->kickstart_templates) : [];
+$templates = format_kickstart_get_templates();
 if (format_kickstart_has_pro()) {
     require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
 }
 
-$editoroptions = ['maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
+$editoroptions = [
+    'maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
     'trusttext' => false, 'noclean' => true, 'context' => $context,
 ];
 
@@ -59,7 +60,8 @@ switch ($action) {
             redirect(new moodle_url('/course/format/kickstart/buypro.php'));
         }
 
-        $form = new \format_kickstart\form\template_form($PAGE->url, ['templatebgoptions' => $templatebgoptions,
+        $form = new \format_kickstart\form\template_form($PAGE->url, [
+            'templatebgoptions' => $templatebgoptions,
             'editoroptions' => $editoroptions,
         ]);
 
@@ -76,7 +78,7 @@ switch ($action) {
             $data->sort = (!empty($counttemplate)) ? $counttemplate + 1 : 1;
             $data->courseformat = 0;
             $id = $DB->insert_record('format_kickstart_template', $data);
-            array_push($templates, $id);
+            $templates[] = $id;
             set_config('kickstart_templates', implode(',', $templates));
             core_tag_tag::set_item_tags(
                 'format_kickstart',
@@ -164,7 +166,8 @@ switch ($action) {
         $template = $DB->get_record('format_kickstart_template', ['id' => $id], '*', MUST_EXIST);
         $template->tags = core_tag_tag::get_item_tags_array('format_kickstart', 'format_kickstart_template', $template->id);
 
-        $form = new \format_kickstart\form\template_form($PAGE->url, ['templatebgoptions' => $templatebgoptions,
+        $form = new \format_kickstart\form\template_form($PAGE->url, [
+            'templatebgoptions' => $templatebgoptions,
             'template' => (array) $template, 'editoroptions' => $editoroptions,
         ]);
 

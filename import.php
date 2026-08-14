@@ -35,7 +35,7 @@ $templateid = required_param('template_id', PARAM_INT);
 $PAGE->set_context(\context_course::instance($courseid));
 
 require_login();
-
+require_sesskey();
 require_capability('format/kickstart:import_from_template', $PAGE->context);
 
 \format_kickstart\course_importer::import_from_template($templateid, $courseid);

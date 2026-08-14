@@ -57,7 +57,7 @@ final class format_kickstart_test extends \advanced_testcase {
             'sortorder' => 10001,
             'enablecompletion' => 1,
         ]);
-        $module = $this->getDataGenerator()->create_module('forum', [
+        $this->getDataGenerator()->create_module('forum', [
             'course' => $course->id,
         ]);
         $template = new \stdClass();
@@ -169,7 +169,6 @@ final class format_kickstart_test extends \advanced_testcase {
         $format = "proline";
         $counttemplate = $DB->count_records("format_kickstart_template");
         format_kickstart_add_couseformat_template($templatename, $format, $counttemplate, true);
-        $count = $DB->count_records('format_kickstart_template');
         $this->assertTrue($DB->record_exists('format_kickstart_template', ['format' => $format, 'courseformat' => 1]));
     }
 
@@ -182,10 +181,12 @@ final class format_kickstart_test extends \advanced_testcase {
         $this->create_kickstart_template_options();
         $format = 'topics';
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
-        $this->assertTrue($DB->record_exists('format_kickstart_options', ['format' => $format,
+        $this->assertTrue($DB->record_exists('format_kickstart_options', [
+            'format' => $format,
             'templateid' => $template->id, 'name' => 'hiddensections',
         ]));
-        $this->assertTrue($DB->record_exists('format_kickstart_options', ['format' => $format,
+        $this->assertTrue($DB->record_exists('format_kickstart_options', [
+            'format' => $format,
             'templateid' => $template->id, 'name' => 'coursedisplay',
         ]));
     }
@@ -229,16 +230,142 @@ final class format_kickstart_test extends \advanced_testcase {
      * @return void
      */
     public function test_format_kickstart_remove_kickstart_templates(): void {
-        global $DB, $CFG, $SITE;
+        global $DB, $SITE;
         $format = 'topics';
         $template = $DB->get_record('format_kickstart_template', ['format' => $format, 'courseformat' => 1]);
         $this->create_kickstart_template_options();
         $this->assertTrue(!empty($DB->get_record('format_kickstart_template', ['id' => $template->id])));
-        $this->assertTrue(!empty($DB->get_records('course_format_options', ['courseid' => $SITE->id,
+        $this->assertTrue(!empty($DB->get_records('course_format_options', [
+            'courseid' => $SITE->id,
             'format' => $template->format,
         ])));
         format_kickstart_remove_kickstart_templates($template->id);
         $this->assertFalse($DB->get_record('format_kickstart_template', ['id' => $template->id]));
-        $this->assertFalse(array_search($template->id, explode(",", $CFG->kickstart_templates)));
+        $this->assertFalse(in_array($template->id, format_kickstart_get_templates()));
+    }
+
+    /**
+     * The base navigation pages are always available, in canonical order.
+     * @covers ::format_kickstart_get_all_pages
+     * @return void
+     */
+    public function test_format_kickstart_get_all_pages(): void {
+        $pages = format_kickstart_get_all_pages();
+        $this->assertArrayHasKey('coursetemplate', $pages);
+        $this->assertArrayHasKey('studentview', $pages);
+        $this->assertArrayHasKey('help', $pages);
+        // Canonical order: course template comes first.
+        $this->assertSame('coursetemplate', array_key_first($pages));
+    }
+
+    /**
+     * Without any configuration every page stays visible in canonical order.
+     * @covers ::format_kickstart_get_ordered_pages
+     * @return void
+     */
+    public function test_format_kickstart_get_ordered_pages_default(): void {
+        $keys = array_keys(format_kickstart_get_ordered_pages());
+        // All base pages are present.
+        $this->assertContains('coursetemplate', $keys);
+        $this->assertContains('studentview', $keys);
+        $this->assertContains('help', $keys);
+        // Canonical relative order is preserved.
+        $this->assertLessThan(array_search('studentview', $keys), array_search('coursetemplate', $keys));
+        $this->assertLessThan(array_search('help', $keys), array_search('studentview', $keys));
+    }
+
+    /**
+     * A configured order reorders the visible pages.
+     * @covers ::format_kickstart_get_ordered_pages
+     * @return void
+     */
+    public function test_format_kickstart_get_ordered_pages_reorder(): void {
+        set_config('pageorder_help', 1, 'format_kickstart');
+        set_config('pageorder_coursetemplate', 2, 'format_kickstart');
+        set_config('pageorder_studentview', 3, 'format_kickstart');
+
+        $keys = array_keys(format_kickstart_get_ordered_pages());
+        $this->assertLessThan(array_search('coursetemplate', $keys), array_search('help', $keys));
+        $this->assertLessThan(array_search('studentview', $keys), array_search('coursetemplate', $keys));
+    }
+
+    /**
+     * A page configured with order 0 is hidden from the dropdown.
+     * @covers ::format_kickstart_get_ordered_pages
+     * @return void
+     */
+    public function test_format_kickstart_get_ordered_pages_hide(): void {
+        set_config('pageorder_studentview', 0, 'format_kickstart');
+
+        $keys = array_keys(format_kickstart_get_ordered_pages());
+        $this->assertNotContains('studentview', $keys);
+        // Other pages remain visible.
+        $this->assertContains('coursetemplate', $keys);
+        $this->assertContains('help', $keys);
+    }
+
+    /**
+     * The default nav is the first visible page, with a safe fallback.
+     * @covers ::format_kickstart_get_default_nav
+     * @return void
+     */
+    public function test_format_kickstart_get_default_nav(): void {
+        // Lowest order wins as the default.
+        set_config('pageorder_coursetemplate', 5, 'format_kickstart');
+        set_config('pageorder_studentview', 9, 'format_kickstart');
+        set_config('pageorder_help', 1, 'format_kickstart');
+        $this->assertSame('help', format_kickstart_get_default_nav());
+
+        // When every available page is hidden it falls back to the course template.
+        foreach (array_keys(format_kickstart_get_all_pages()) as $key) {
+            set_config('pageorder_' . $key, 0, 'format_kickstart');
+        }
+        $this->assertSame('coursetemplate', format_kickstart_get_default_nav());
+    }
+
+    /**
+     * The action bar collapses to a plain title when only one page is visible.
+     * @covers \format_kickstart\output\general_action_bar::export_for_template
+     * @return void
+     */
+    public function test_general_action_bar_single_item(): void {
+        global $PAGE;
+        $course = $this->getDataGenerator()->create_course(['format' => 'kickstart']);
+        $context = \context_course::instance($course->id);
+
+        // Hide every page except the course template.
+        foreach (array_keys(format_kickstart_get_all_pages()) as $key) {
+            set_config('pageorder_' . $key, $key === 'coursetemplate' ? 1 : 0, 'format_kickstart');
+        }
+
+        $url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        $actionbar = new \format_kickstart\output\general_action_bar($context, $url, 'kickstart', 'coursetemplate');
+        $data = $actionbar->export_for_template($PAGE->get_renderer('format_kickstart'));
+
+        $this->assertArrayHasKey('singleitem', $data);
+        $this->assertArrayNotHasKey('generalnavselector', $data);
+        $this->assertEquals(get_string('coursetemplate', 'format_kickstart'), $data['title']);
+    }
+
+    /**
+     * The action bar renders the dropdown selector when several pages are visible.
+     * @covers \format_kickstart\output\general_action_bar::export_for_template
+     * @return void
+     */
+    public function test_general_action_bar_multiple_items(): void {
+        global $PAGE;
+        $course = $this->getDataGenerator()->create_course(['format' => 'kickstart']);
+        $context = \context_course::instance($course->id);
+
+        set_config('pageorder_coursetemplate', 1, 'format_kickstart');
+        set_config('pageorder_studentview', 2, 'format_kickstart');
+        set_config('pageorder_help', 3, 'format_kickstart');
+
+        $url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        $actionbar = new \format_kickstart\output\general_action_bar($context, $url, 'kickstart', 'coursetemplate');
+        $data = $actionbar->export_for_template($PAGE->get_renderer('format_kickstart'));
+
+        $this->assertArrayHasKey('generalnavselector', $data);
+        $this->assertArrayNotHasKey('singleitem', $data);
     }
 }

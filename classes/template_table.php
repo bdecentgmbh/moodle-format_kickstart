@@ -152,7 +152,7 @@ class template_table extends \table_sql {
             $status .= \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'disable', 'template' => $data->id]
+                    ['action' => 'disable', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon('t/hide', get_string('disable'), 'moodle', ['class' => 'iconsmall']),
                 ['id' => "sort-template-up-action"]
@@ -161,7 +161,7 @@ class template_table extends \table_sql {
             $status .= \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'enable', 'template' => $data->id]
+                    ['action' => 'enable', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon('t/show', get_string('enable'), 'moodle', ['class' => 'iconsmall']),
                 ['id' => "sort-template-up-action"]
@@ -188,7 +188,7 @@ class template_table extends \table_sql {
             $updown .= \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'up', 'template' => $data->id]
+                    ['action' => 'up', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon('t/up', $strup, 'moodle', ['class' => 'iconsmall']),
                 ['id' => "sort-template-up-action"]
@@ -201,7 +201,7 @@ class template_table extends \table_sql {
             $updown .= '&nbsp;' . \html_writer::link(
                 $templateurl->out(
                     false,
-                    ['action' => 'down', 'template' => $data->id]
+                    ['action' => 'down', 'template' => $data->id, 'sesskey' => sesskey()]
                 ),
                 $OUTPUT->pix_icon(
                     't/down',
@@ -252,7 +252,7 @@ class template_table extends \table_sql {
      * @throws \dml_exception
      */
     public function query_db($pagesize, $useinitialsbar = true) {
-        global $DB, $CFG;
+        global $DB;
         [$wsql, $params] = $this->get_sql_where();
         if ($wsql) {
             $wsql = 'AND ' . $wsql;
@@ -264,18 +264,19 @@ class template_table extends \table_sql {
         if ($sort) {
             $sql = $sql . ' ORDER BY ' . $sort;
         } else if (format_kickstart_has_pro()) {
-            if (!empty($CFG->kickstart_templates)) {
-                $orders = explode(",", $CFG->kickstart_templates);
-                $orders = array_filter(array_unique($orders), 'strlen');
-                if (!empty($orders)) {
-                    [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
-                    $sql .= "AND ID $insql";
-                    $subquery = "(CASE " . implode(" ", array_map(function ($value) use ($orders) {
-                        return "WHEN id = $value THEN " . array_search($value, $orders);
-                    }, $orders)) . " END)";
-                    $sql .= " ORDER BY $subquery";
-                    $params += $inparams;
+            $orders = format_kickstart_get_templates();
+            if (!empty($orders)) {
+                [$insql, $inparams] = $DB->get_in_or_equal($orders, SQL_PARAMS_NAMED);
+                $sql .= "AND id $insql";
+
+                $cases = [];
+                foreach ($orders as $order => $templateid) {
+                    $cases[] = "WHEN id = $templateid THEN $order";
                 }
+                $subquery = '(CASE ' . implode(' ', $cases) . ' END)';
+
+                $sql .= " ORDER BY $subquery";
+                $params += $inparams;
             }
         }
         if ($pagesize != -1) {

@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $observers = [
     [
-    'eventname' => 'core\event\config_log_created',
-    'callback' => '\format_kickstart\observer::format_kickstart_changeconfig',
+        'eventname' => 'core\event\config_log_created',
+        'callback' => '\format_kickstart\observer::format_kickstart_changeconfig',
     ],
 ];

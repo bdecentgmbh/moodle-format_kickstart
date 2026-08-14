@@ -39,8 +39,8 @@ require_capability('format/kickstart:import_from_template', $PAGE->context);
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
-$PAGE->set_title($template->title);
-$PAGE->set_heading($template->title);
+$PAGE->set_title(format_string($template->title));
+$PAGE->set_heading(format_string($template->title));
 $PAGE->navbar->add(get_string('courses'), new moodle_url('/course/index.php'));
 $PAGE->navbar->add($course->shortname, new moodle_url('/course/view.php', ['id' => $courseid]));
 $PAGE->navbar->add(get_string('usetemplate', 'format_kickstart'));

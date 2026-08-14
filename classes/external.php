@@ -24,16 +24,15 @@
  */
 namespace format_kickstart;
 
-defined('MOODLE_INTERNAL') || die();
-
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_value;
 use format_kickstart\course_importer;
-
-require_once($CFG->libdir . '/externallib.php');
 
 /**
  * define external class.
  */
-class external extends \external_api {
+class external extends external_api {
     /**
      * Parameters defintion to import the template.
      *
@@ -41,10 +40,10 @@ class external extends \external_api {
      */
     public static function import_template_parameters() {
 
-        return new \external_function_parameters(
+        return new external_function_parameters(
             [
-                'templateid' => new \external_value(PARAM_INT, 'Kickstart Template id'),
-                'courseid' => new \external_value(PARAM_INT, 'Course id'),
+                'templateid' => new external_value(PARAM_INT, 'Kickstart Template id'),
+                'courseid' => new external_value(PARAM_INT, 'Course id'),
             ],
         );
     }
@@ -59,13 +58,13 @@ class external extends \external_api {
         global $CFG;
         require_login();
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-        $context = \context_course::instance($courseid);
-        require_capability('format/kickstart:import_from_template', $context);
         $params = self::validate_parameters(
             self::import_template_parameters(),
             ['templateid' => $templateid, 'courseid' => $courseid]
         );
-        course_importer::import_from_template($templateid, $courseid);
+        $context = \context_course::instance($params['courseid']);
+        require_capability('format/kickstart:import_from_template', $context);
+        course_importer::import_from_template($params['templateid'], $params['courseid']);
         return true;
     }
 
@@ -74,6 +73,6 @@ class external extends \external_api {
      */
     public static function import_template_returns() {
 
-        return new \external_value(PARAM_BOOL, 'Import status');
+        return new external_value(PARAM_BOOL, 'Import status');
     }
 }

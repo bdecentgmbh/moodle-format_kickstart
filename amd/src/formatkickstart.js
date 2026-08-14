@@ -21,8 +21,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
  define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates',
-    'core/modal_events', 'core/modal_factory', 'core/toast'],
- function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalFactory, Toast) {
+    'core/modal_events', 'core/modal_save_cancel', 'core/toast'],
+ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalSaveCancel, Toast) {
 
     /**
      * Controls kicstart javascript.
@@ -93,22 +93,14 @@
         }
 
         var showcontentHandler = document.querySelectorAll(".import-course-list-section .show-content-button");
-            if (showcontentHandler) {
-                showcontentHandler.forEach((element) => {
-                    element.addEventListener('click', () => {
-                        str.get_strings([
-                            {key: 'showcontents', component: 'format_kickstart'},
-                            {key: 'hidecontents', component: 'format_kickstart'}
-                        ]).then(function(strings) {
-                            if (element.textContent.trim() === strings[0]) {
-                                element.textContent = strings[1];
-                            } else if (element.textContent.trim() === strings[1]) {
-                                element.textContent = strings[0];
-                            }
-                        });
-                    });
+        if (showcontentHandler) {
+            showcontentHandler.forEach((element) => {
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    self.toggleCourseContents(element);
                 });
-            }
+            });
+        }
 
         var importActivity = document.querySelectorAll(".import-course-list-section .activity-items .import-activity");
         if (importActivity) {
@@ -138,6 +130,67 @@
     Formatkickstart.prototype.menuid = null;
 
 
+    /**
+     * Toggle the course-contents accordion next to a "Show contents" button.
+     *
+     * The accordion is rendered empty by the server template; on first click we
+     * fetch the rendered partial via the get_library_coursecontents fragment and
+     * inject it. Subsequent clicks only flip visibility (and the button label).
+     *
+     * @param {HTMLElement} button The .show-content-button that was clicked.
+     */
+    Formatkickstart.prototype.toggleCourseContents = function(button) {
+        var self = this;
+        var courseid = button.getAttribute('data-courseid');
+        var maincourse = button.getAttribute('data-maincourse') || self.courseId;
+        var card = button.closest('.card-body');
+        if (!card) {
+            return;
+        }
+        var accordion = card.querySelector('.list-library-courses');
+        if (!accordion) {
+            return;
+        }
+
+        // Label toggle is the same as before (just expressed via state, not by
+        // comparing translated strings).
+        str.get_strings([
+            {key: 'showcontents', component: 'format_kickstart'},
+            {key: 'hidecontents', component: 'format_kickstart'}
+        ]).then(function(strings) {
+            var willShow = accordion.classList.contains('d-none');
+            button.textContent = willShow ? strings[1] : strings[0];
+            return willShow;
+        }).then(function(willShow) {
+            if (button.getAttribute('data-loaded') === '1' || !willShow) {
+                // Already populated, or we're hiding -- no fetch needed.
+                accordion.classList.toggle('d-none');
+                return;
+            }
+            // First-time expand: lazy-fetch the partial.
+            var args = {
+                courseid: courseid,
+                maincourse: maincourse
+            };
+            Fragment.loadFragment(
+                'format_kickstart',
+                'get_library_coursecontents',
+                self.contextId,
+                args
+            ).then(function(html, js) {
+                Templates.appendNodeContents(accordion, html, js);
+                button.setAttribute('data-loaded', '1');
+                accordion.classList.remove('d-none');
+                // Wire up the activity-import buttons in the freshly loaded partial.
+                accordion.querySelectorAll('.import-activity').forEach(function(el) {
+                    el.addEventListener('click', self.importActivityHandler.bind(self));
+                });
+                return null;
+            }).catch(notification.exception);
+        }).catch(notification.exception);
+    };
+
+
     Formatkickstart.prototype.importActivityHandler = function(event) {
         event.preventDefault();
         let self = this;
@@ -152,8 +205,7 @@
             modname: modname,
         };
 
-        ModalFactory.create({
-            type: ModalFactory.types.SAVE_CANCEL,
+        ModalSaveCancel.create({
             title: str.get_string('importactivity', 'format_kickstart'),
             body: Fragment.loadFragment('format_kickstart', 'get_import_module_box', self.contextId, args),
         }).then(function(modal) {

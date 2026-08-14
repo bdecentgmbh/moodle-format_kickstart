@@ -29,7 +29,7 @@ require_once($CFG->dirroot . '/course/format/kickstart/classes/output/general_ac
 global $USER, $DB;
 
 $id = required_param('id', PARAM_INT);
-$nav = optional_param('nav', 'coursetemplate', PARAM_TEXT);
+$nav = optional_param('nav', format_kickstart_get_default_nav(), PARAM_TEXT);
 
 $context = \context_course::instance($id);
 $PAGE->set_context($context);

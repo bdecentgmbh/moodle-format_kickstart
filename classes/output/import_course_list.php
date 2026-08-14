@@ -24,6 +24,7 @@
 
 namespace format_kickstart\output;
 
+use core_external\util;
 use renderer_base;
 
 /**
@@ -53,15 +54,23 @@ class import_course_list implements \renderable, \templatable {
     public $page;
 
     /**
+     * Summary of search
+     * @var string
+     */
+    public $search;
+
+    /**
      * Constructor for improt course list.
      * @param array $filtercustomfields
      * @param string $sorttype
      * @param int $page
+     * @param string $search
      */
-    public function __construct(array $filtercustomfields = [], string $sorttype = '', int $page = 0) {
+    public function __construct(array $filtercustomfields = [], string $sorttype = '', int $page = 0, string $search = '') {
         $this->filtercustomfields = $filtercustomfields;
         $this->sorttype = $sorttype;
         $this->page = $page;
+        $this->search = $search;
     }
 
     /**
@@ -73,7 +82,7 @@ class import_course_list implements \renderable, \templatable {
      * @throws \moodle_exception
      */
     public function export_for_template(renderer_base $output) {
-        global $CFG, $COURSE, $PAGE, $OUTPUT, $SITE;
+        global $COURSE, $PAGE, $OUTPUT, $SITE;
 
         // Obviously not... show the selector so one can be chosen.
         $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
@@ -82,7 +91,8 @@ class import_course_list implements \renderable, \templatable {
             $COURSE->id,
             $this->filtercustomfields,
             $this->sorttype,
-            $this->page
+            $this->page,
+            $this->search
         );
         $courses = [];
         $html = '';
@@ -90,11 +100,22 @@ class import_course_list implements \renderable, \templatable {
         $displaycourselibraryfields = get_config('format_kickstart', 'displaycourselibraryfields');
         $displaycourselibraryfields = explode(",", $displaycourselibraryfields);
 
-        $tagrenderer = $PAGE->get_renderer('core', 'tag');
         if ($component->get_count() === 0) {
             $html .= $OUTPUT->notification(get_string('nomatchingcourses', 'backup'));
         } else {
             $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
+
+            // Pre-load per-page metadata in batch so we don't issue N+1 queries
+            // inside the loop below.
+            $pagecourseids = [];
+            foreach ($component->get_results() as $course) {
+                if ($course->id != $SITE->id && $course->id != $COURSE->id) {
+                    $pagecourseids[] = $course->id;
+                }
+            }
+            $tagsbycourse        = $this->load_tags_for_courses($pagecourseids);
+            $customfieldsbycourse = $this->load_customfields_for_courses($pagecourseids);
+
             foreach ($component->get_results() as $course) {
                 if ($course->id == $SITE->id || $course->id == $COURSE->id) {
                     continue;
@@ -108,12 +129,24 @@ class import_course_list implements \renderable, \templatable {
                 }
 
                 $courseinfo = new \core_course_list_element($course);
+                // The search SELECT includes c.idnumber, c.startdate, c.summary,
+                // c.summaryformat and c.category to avoid per-course lazy loads via
+                // core_course_list_element::__get(). The list-element wrapper has its
+                // own copy of these on $courseinfo, so we can clear them from $course
+                // here: the template only renders idnumber / startdate when populated
+                // by the display-field branches below, and never references the others
+                // directly.
+                unset(
+                    $course->idnumber,
+                    $course->startdate,
+                    $course->summary,
+                    $course->summaryformat,
+                    $course->category
+                );
                 $customfields = [];
-                if ($courseinfo->has_custom_fields()) {
-                    $handler = \core_customfield\handler::get_handler('core_course', 'course');
-                    $fieldsdata = $handler->get_instance_data($course->id);
+                if (!empty($customfieldsbycourse[$course->id])) {
                     $customfieldoutput = $PAGE->get_renderer('core_customfield');
-                    foreach ($fieldsdata as $data) {
+                    foreach ($customfieldsbycourse[$course->id] as $data) {
                         $field = $data->get_field();
                         if (in_array('customfield_' . $field->get('shortname'), $displaycourselibraryfields)) {
                             $fd = new \core_customfield\output\field_data($data);
@@ -131,9 +164,8 @@ class import_course_list implements \renderable, \templatable {
                     ]);
                 }
 
-                $coursetags = \core_tag_tag::get_item_tags_array('core', 'course', $course->id);
                 if (in_array("tags", $displaycourselibraryfields)) {
-                    $course->tags = implode(', ', $coursetags);
+                    $course->tags = implode(', ', $tagsbycourse[$course->id] ?? []);
                 }
 
                 if (in_array("idnumber", $displaycourselibraryfields)) {
@@ -144,16 +176,18 @@ class import_course_list implements \renderable, \templatable {
                     $course->startdate = userdate($courseinfo->startdate, get_string('strftimedatetime', 'langconfig'));
                 }
 
-                // Get category path.
-                $category = \core_course_category::get($courseinfo->category, MUST_EXIST, true);
-                $categorypath = $category->get_nested_name(false, ' > ');
-
-                $path = $categorypath . " > " . $courseinfo->get_formatted_shortname();
                 if (in_array("categorypath", $displaycourselibraryfields)) {
-                    $course->categorypath = $path;
+                    // The core_course_category::get() result is statically cached, so this is
+                    // cheap on subsequent calls within the request. get_nested_name() walks the
+                    // parents using the same cache.
+                    $category = \core_course_category::get($courseinfo->category, MUST_EXIST, true);
+                    $course->categorypath = $category->get_nested_name(false, ' > ') . " > "
+                        . $courseinfo->get_formatted_shortname();
                 }
 
-                $course->contents = $this->get_course_contents($course->id);
+                // Course contents are loaded lazily via the
+                // format_kickstart_output_fragment_get_library_coursecontents fragment
+                // when the user clicks "Show contents".
                 $course->maincourse = $COURSE->id;
                 $courses[] = $course;
             }
@@ -183,6 +217,94 @@ class import_course_list implements \renderable, \templatable {
     }
 
     /**
+     * Batch-load tag names for a set of course IDs.
+     *
+     * Returns array keyed by courseid, each value an array of tag display names.
+     * One DB query instead of one per course.
+     *
+     * @param int[] $courseids
+     * @return array<int,string[]>
+     */
+    private function load_tags_for_courses(array $courseids) {
+        global $DB;
+        if (empty($courseids)) {
+            return [];
+        }
+        [$insql, $params] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+        $sql = "SELECT ti.id, ti.itemid AS courseid, t.rawname, t.name
+                  FROM {tag_instance} ti
+                  JOIN {tag} t ON t.id = ti.tagid
+                 WHERE ti.itemtype = 'course'
+                   AND ti.component = 'core'
+                   AND ti.itemid $insql
+              ORDER BY ti.itemid, ti.ordering, t.name";
+        $rows = $DB->get_records_sql($sql, $params);
+        $result = array_fill_keys($courseids, []);
+        foreach ($rows as $row) {
+            $result[$row->courseid][] = !empty($row->rawname) ? $row->rawname : $row->name;
+        }
+        return $result;
+    }
+
+    /**
+     * Batch-load customfield instance data for a set of course IDs.
+     *
+     * Returns array keyed by courseid, each value an array of
+     * \core_customfield\data_controller instances suitable for rendering via
+     * \core_customfield\output\field_data.
+     *
+     * One DB query fetches all data rows for the page; data_controller::create()
+     * is called with the already-fetched record and pre-built field controller so
+     * it does not issue any further queries.
+     *
+     * @param int[] $courseids
+     * @return array<int,\core_customfield\data_controller[]>
+     */
+    private function load_customfields_for_courses(array $courseids) {
+        global $DB;
+        if (empty($courseids)) {
+            return [];
+        }
+        $handler = \core_customfield\handler::get_handler('core_course', 'course');
+        $fieldsbyid = [];
+        foreach ($handler->get_fields() as $field) {
+            $fieldsbyid[$field->get('id')] = $field;
+        }
+
+        $result = array_fill_keys($courseids, []);
+        if (empty($fieldsbyid)) {
+            return $result;
+        }
+
+        [$insql, $params] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+        $rows = $DB->get_records_sql(
+            "SELECT cfd.* FROM {customfield_data} cfd WHERE cfd.instanceid $insql",
+            $params
+        );
+        foreach ($rows as $row) {
+            if (!isset($fieldsbyid[$row->fieldid])) {
+                continue;
+            }
+            try {
+                $result[$row->instanceid][] = \core_customfield\data_controller::create(
+                    0,
+                    $row,
+                    $fieldsbyid[$row->fieldid]
+                );
+            } catch (\Exception $e) {
+                // Field type plugin missing or row malformed; skip without failing
+                // the whole library render.
+                debugging(
+                    'Skipping customfield data row ' . $row->id . ': ' . $e->getMessage(),
+                    DEBUG_DEVELOPER
+                );
+                continue;
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Trim the summary of the section.
      * @param mixed $summary
      * @param mixed $trimchar
@@ -206,7 +328,6 @@ class import_course_list implements \renderable, \templatable {
      */
     public function get_course_contents($courseid) {
         global $CFG;
-        require_once($CFG->dirroot . '/lib/externallib.php');
         // Create return value.
         $coursecontents = [];
         $course = get_course($courseid);
@@ -233,7 +354,7 @@ class import_course_list implements \renderable, \templatable {
             $options = (object) ['noclean' => true];
 
             [$sectionvalues['summary'], $sectionvalues['summaryformat']] =
-            external_format_text(
+            util::format_text(
                 $section->summary,
                 $section->summaryformat,
                 $coursecontext->id,
@@ -260,7 +381,7 @@ class import_course_list implements \renderable, \templatable {
                     $modcontext = \context_module::instance($cm->id);
 
                     $module['id'] = $cm->id;
-                    $module['name'] = external_format_string($cm->name, $modcontext->id);
+                    $module['name'] = util::format_string($cm->name, $modcontext->id);
                     $module['instance'] = $cm->instance;
                     $module['contextid'] = $modcontext->id;
                     $module['modname'] = (string) $cm->modname;
@@ -285,7 +406,7 @@ class import_course_list implements \renderable, \templatable {
                     $module['uservisible'] = $cm->uservisible;
 
                     // Availability date (also send to user who can see hidden module).
-                    if ($CFG->enableavailability && ($canviewhidden || $canupdatecourse)) {
+                    if ($CFG->enableavailability && $canviewhidden) {
                         $module['availability'] = $cm->availability;
                     }
 
