@@ -24,6 +24,8 @@
 
 namespace format_kickstart\form;
 
+use core\context\system as context_system;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/formslib.php");
@@ -159,7 +161,7 @@ class template_form extends \moodleform {
             $mform->addHelpButton('restrictrole', 'restrictrole', 'format_kickstart');
 
             $roleoptions = [];
-            foreach (role_get_names(\context_system::instance()) as $role) {
+            foreach (role_get_names(context_system::instance()) as $role) {
                 $roleoptions[$role->id] = $role->localname;
             }
 
@@ -178,7 +180,7 @@ class template_form extends \moodleform {
                 'multiple' => true,
                 'valuehtmlcallback' => function ($userid) {
                     $user = \core_user::get_user($userid);
-                    return fullname($user, has_capability('moodle/site:viewfullnames', \context_system::instance()));
+                    return fullname($user, has_capability('moodle/site:viewfullnames', context_system::instance()));
                 },
             ];
 

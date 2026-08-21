@@ -22,25 +22,28 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-global $freetemplates;
-$freetemplates = [
-
-    '0' => [
-        'id' => 0,
-        'title' => 'demo test 1',
-        'description' => '<p dir="ltr" style="text-align: left;">test content of the block content</p>',
-        'tags' => [],
-        'backupfile' => 'course-10-online.mbz',
-        'preview_url' => '',
-        'restrictcohort' => 0,
-        'cohortids' => [],
-        'restrictcategory' => 0,
-        'categoryids' => [],
-        'includesubcategories' => 0,
-        'restrictrole' => 0,
-        'roleids' => [],
-        'descriptionformat' => 1,
-    ],
-];
+/**
+ * Get the free templates shipped with this plugin.
+ *
+ * @return array
+ */
+function format_kickstart_get_default_templates() {
+    return [
+        '0' => [
+            'id' => 0,
+            'title' => 'demo test 1',
+            'description' => '<p dir="ltr" style="text-align: left;">test content of the block content</p>',
+            'tags' => [],
+            'backupfile' => 'course-10-online.mbz',
+            'preview_url' => '',
+            'restrictcohort' => 0,
+            'cohortids' => [],
+            'restrictcategory' => 0,
+            'categoryids' => [],
+            'includesubcategories' => 0,
+            'restrictrole' => 0,
+            'roleids' => [],
+            'descriptionformat' => 1,
+        ],
+    ];
+}

@@ -24,8 +24,11 @@
 
 namespace format_kickstart\output;
 
+use core\context\course as context_course;
+use core\context\module as context_module;
+use core\output\renderer_base;
+use core\url as moodle_url;
 use core_external\util;
-use renderer_base;
 
 /**
  * Widget that displays courses to import inside course.
@@ -85,7 +88,7 @@ class import_course_list implements \renderable, \templatable {
         global $COURSE, $PAGE, $OUTPUT, $SITE;
 
         // Obviously not... show the selector so one can be chosen.
-        $url = new \moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
+        $url = new moodle_url('/local/kickstart_pro/import.php', ['id' => $COURSE->id]);
         $component = new import_courselibrary_search(
             ['url' => $url],
             $COURSE->id,
@@ -120,11 +123,11 @@ class import_course_list implements \renderable, \templatable {
                 if ($course->id == $SITE->id || $course->id == $COURSE->id) {
                     continue;
                 }
-                $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+                $course->url = new moodle_url('/course/view.php', ['id' => $course->id]);
 
                 if (!format_kickstart_has_pro() || in_array('fullname', $displaycourselibraryfields)) {
                     $course->fullnamecourse = format_string($course->fullname, true, [
-                        'context' => \context_course::instance($course->id),
+                        'context' => context_course::instance($course->id),
                     ]);
                 }
 
@@ -157,7 +160,7 @@ class import_course_list implements \renderable, \templatable {
                 $course->customfields = $customfields;
 
                 if (in_array("importcourse", $displaycourselibraryfields)) {
-                    $course->importurl = new \moodle_url('/local/kickstart_pro/import.php', [
+                    $course->importurl = new moodle_url('/local/kickstart_pro/import.php', [
                         'id' => $COURSE->id,
                         'importid' => $course->id,
                         'target' => $target,
@@ -210,7 +213,7 @@ class import_course_list implements \renderable, \templatable {
             'searchlabel' => get_string('showing', 'format_kickstart', ['count' => $component->get_count()]),
             'moreresults' => $component->has_more_results(),
             'prourl' => 'https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/',
-            'courseurl' => new \moodle_url('/course/view.php', ['id' => $COURSE->id]),
+            'courseurl' => new moodle_url('/course/view.php', ['id' => $COURSE->id]),
             'pagination' => $pagination,
             'showcontents' => in_array("showcontents", $displaycourselibraryfields) ? true : false,
         ];
@@ -331,7 +334,7 @@ class import_course_list implements \renderable, \templatable {
         // Create return value.
         $coursecontents = [];
         $course = get_course($courseid);
-        $coursecontext = \context_course::instance($course->id);
+        $coursecontext = context_course::instance($course->id);
         $modinfo = get_fast_modinfo($course);
         $modinfosections = $modinfo->get_sections();
         $sections = $modinfo->get_section_info_all();
@@ -378,7 +381,7 @@ class import_course_list implements \renderable, \templatable {
                     }
 
                     $module = [];
-                    $modcontext = \context_module::instance($cm->id);
+                    $modcontext = context_module::instance($cm->id);
 
                     $module['id'] = $cm->id;
                     $module['name'] = util::format_string($cm->name, $modcontext->id);
@@ -394,10 +397,10 @@ class import_course_list implements \renderable, \templatable {
                     if ($url) {
                         $module['url'] = $url->out(false);
                     } else {
-                        $module['url'] = (new \moodle_url('/mod/' . $cm->modname . '/view.php', ['id' => $cm->id]))->out(false);
+                        $module['url'] = (new moodle_url('/mod/' . $cm->modname . '/view.php', ['id' => $cm->id]))->out(false);
                     }
 
-                    $module['editurl'] = (new \moodle_url('/course/modedit.php', ['update' => $cm->id]))->out(false);
+                    $module['editurl'] = (new moodle_url('/course/modedit.php', ['update' => $cm->id]))->out(false);
 
                     $canviewhidden = has_capability('moodle/course:viewhiddenactivities', $modcontext);
 

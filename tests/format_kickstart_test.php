@@ -23,6 +23,10 @@
  */
 namespace format_kickstart;
 
+use core\context\course as context_course;
+use core\context\system as context_system;
+use core\url as moodle_url;
+
 /**
  * Test kickstart course format.
  *
@@ -69,7 +73,7 @@ final class format_kickstart_test extends \advanced_testcase {
         $fs = get_file_storage();
 
         $fileinfo = [
-            'contextid' => \context_system::instance()->id,
+            'contextid' => context_system::instance()->id,
             'component' => 'format_kickstart',
             'filearea' => 'course_backups',
             'itemid' => $template->id,
@@ -77,7 +81,7 @@ final class format_kickstart_test extends \advanced_testcase {
             'filename' => 'course-10-online.mbz',
         ];
 
-        $fs->create_file_from_pathname($fileinfo, $CFG->dirroot . '/course/format/kickstart/tests/course-10-online.mbz');
+        $fs->create_file_from_pathname($fileinfo, $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
 
         \format_kickstart\course_importer::import_from_template($template->id, $course->id);
 
@@ -116,7 +120,7 @@ final class format_kickstart_test extends \advanced_testcase {
         global $DB;
         $prevcount = $DB->count_records('format_kickstart_template');
         $template = $this->format_format_kickstart_template_info();
-        $context = \context_system::instance();
+        $context = context_system::instance();
         format_kickstart_create_template($template, 1, $context, 'format_kickstart');
         $count = $DB->count_records('format_kickstart_template');
         $this->assertEquals($prevcount + 1, $count);
@@ -331,14 +335,14 @@ final class format_kickstart_test extends \advanced_testcase {
     public function test_general_action_bar_single_item(): void {
         global $PAGE;
         $course = $this->getDataGenerator()->create_course(['format' => 'kickstart']);
-        $context = \context_course::instance($course->id);
+        $context = context_course::instance($course->id);
 
         // Hide every page except the course template.
         foreach (array_keys(format_kickstart_get_all_pages()) as $key) {
             set_config('pageorder_' . $key, $key === 'coursetemplate' ? 1 : 0, 'format_kickstart');
         }
 
-        $url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
         $actionbar = new \format_kickstart\output\general_action_bar($context, $url, 'kickstart', 'coursetemplate');
         $data = $actionbar->export_for_template($PAGE->get_renderer('format_kickstart'));
 
@@ -355,13 +359,13 @@ final class format_kickstart_test extends \advanced_testcase {
     public function test_general_action_bar_multiple_items(): void {
         global $PAGE;
         $course = $this->getDataGenerator()->create_course(['format' => 'kickstart']);
-        $context = \context_course::instance($course->id);
+        $context = context_course::instance($course->id);
 
         set_config('pageorder_coursetemplate', 1, 'format_kickstart');
         set_config('pageorder_studentview', 2, 'format_kickstart');
         set_config('pageorder_help', 3, 'format_kickstart');
 
-        $url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
         $actionbar = new \format_kickstart\output\general_action_bar($context, $url, 'kickstart', 'coursetemplate');
         $data = $actionbar->export_for_template($PAGE->get_renderer('format_kickstart'));
 

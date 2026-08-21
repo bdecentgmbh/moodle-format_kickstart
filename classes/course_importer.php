@@ -24,9 +24,11 @@
 
 namespace format_kickstart;
 
-defined('MOODLE_INTERNAL') || die();
-
+use core\context\course as context_course;
+use core\context\system as context_system;
 use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/format/kickstart/lib.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -54,7 +56,7 @@ class course_importer {
     public static function import_from_template($templateid, $courseid) {
         global $CFG, $DB, $PAGE, $USER;
         require_once($CFG->dirroot . "/course/lib.php");
-        $PAGE->set_context(\context_course::instance($courseid));
+        $PAGE->set_context(context_course::instance($courseid));
         $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
         // Before import, verify that user has access.
@@ -65,7 +67,7 @@ class course_importer {
         if (!$template->courseformat) {
             $fs = get_file_storage();
             $files = $fs->get_area_files(
-                \context_system::instance()->id,
+                context_system::instance()->id,
                 'format_kickstart',
                 'course_backups',
                 $template->id,
@@ -114,7 +116,7 @@ class course_importer {
         $event = \format_kickstart\event\course_imported::create([
             'objectid' => $courseid,
             'userid' => $USER->id,
-            'context' => \context_course::instance($courseid),
+            'context' => context_course::instance($courseid),
         ]);
         $event->trigger();
     }

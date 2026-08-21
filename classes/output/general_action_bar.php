@@ -16,8 +16,10 @@
 
 namespace format_kickstart\output;
 
-use moodle_url;
+use core\context;
+use core\output\renderer_base;
 use core\output\select_menu;
+use core\url as moodle_url;
 
 /**
  * Renderable class for the general action bar in the gradebook pages.
@@ -44,20 +46,20 @@ class general_action_bar {
 
     /**
      * Summary of context
-     * @var \context
+     * @var context
      */
     protected $context;
 
     /**
      * The class constructor.
      *
-     * @param \context $context The context object.
+     * @param context $context The context object.
      * @param moodle_url $activeurl The URL that should be set as active in the URL selector element.
      * @param string $activetype The type of the current gradebook page (report, settings, import, export, scales,
      *                           outcomes, letters).
      * @param string $activeplugin The plugin of the current gradebook page (grader, fullview, ...).
      */
-    public function __construct(\context $context, moodle_url $activeurl, string $activetype, string $activeplugin) {
+    public function __construct(context $context, moodle_url $activeurl, string $activetype, string $activeplugin) {
         $this->activeurl = $activeurl;
         $this->activetype = $activetype;
         $this->activeplugin = $activeplugin;
@@ -67,10 +69,10 @@ class general_action_bar {
     /**
      * Export the data for the mustache template.
      *
-     * @param \renderer_base $output renderer to be used to render the action bar elements.
+     * @param renderer_base $output renderer to be used to render the action bar elements.
      * @return array
      */
-    public function export_for_template(\renderer_base $output): array {
+    public function export_for_template(renderer_base $output): array {
         if ($this->context->contextlevel !== CONTEXT_COURSE) {
             return [];
         }
