@@ -24,6 +24,8 @@
 
 namespace format_kickstart\output;
 
+use core\context\system as context_system;
+use core\url as moodle_url;
 use format_kickstart\output\kickstartHandler;
 use html_writer;
 
@@ -52,8 +54,8 @@ trait kickstart_page {
                 ['name' => 'templatesview', 'courseid' => $this->courseid]
             );
             $content .= $OUTPUT->render_from_template('format_kickstart/course_template_header', [
-                'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php'),
-                'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
+                'managetemplateurl' => new moodle_url('/course/format/kickstart/templates.php'),
+                'canmanage' => has_capability('format/kickstart:manage_templates', context_system::instance()),
                 'listview' => ($templateview == 'list') ? true : false,
             ]);
             $content .= $output->render(new course_template_list($course, $USER->id, $this->params));

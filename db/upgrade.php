@@ -278,7 +278,13 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025022000, 'format', 'kickstart');
     }
 
-    format_kickstart_import_courseformat_template();
+    if ($oldversion < 2026061500) {
+        // Import the course format templates once for this release. New format
+        // plugins added later are picked up at runtime by
+        // format_kickstart_check_format_template().
+        format_kickstart_import_courseformat_template();
+        upgrade_plugin_savepoint(true, 2026061500, 'format', 'kickstart');
+    }
 
     if ($oldversion < 2026090100) {
         // Rename *_format to *format to match editor field convention.

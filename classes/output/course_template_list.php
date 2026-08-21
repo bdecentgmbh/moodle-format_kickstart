@@ -24,9 +24,11 @@
 
 namespace format_kickstart\output;
 
-defined('MOODLE_INTERNAL') || die();
+use core\context\system as context_system;
+use core\output\renderer_base;
+use core\url as moodle_url;
 
-use renderer_base;
+defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->dirroot/cohort/lib.php");
 require_once("$CFG->dirroot/course/format/kickstart/lib.php");
@@ -145,7 +147,7 @@ class course_template_list implements \renderable, \templatable {
                 $template->description_formatted = format_text(file_rewrite_pluginfile_urls(
                     $template->description,
                     'pluginfile.php',
-                    \context_system::instance()->id,
+                    context_system::instance()->id,
                     'format_kickstart',
                     'description',
                     $template->id
@@ -156,7 +158,7 @@ class course_template_list implements \renderable, \templatable {
                     $tags[] = '#' . $tag->get_display_name(false);
                 }
                 $template->hashtags = implode(' ', $tags);
-                $template->link = new \moodle_url('/course/format/kickstart/confirm.php', [
+                $template->link = new moodle_url('/course/format/kickstart/confirm.php', [
                     'template_id' => $template->id,
                     'course_id' => $COURSE->id,
                 ]);
@@ -177,7 +179,7 @@ class course_template_list implements \renderable, \templatable {
 
                     $fs = get_file_storage();
                     $files = $fs->get_area_files(
-                        \context_system::instance()->id,
+                        context_system::instance()->id,
                         'format_kickstart',
                         'course_backups',
                         $template->id,
@@ -229,9 +231,9 @@ class course_template_list implements \renderable, \templatable {
                 format_text($this->course->teacherinstructions, $this->course->teacherinstructionsformat) : '',
             'templateclass' => isset($templateview) && ($templateview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
-            'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
-            'createtemplateurl' => new \moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
-            'managetemplateurl' => new \moodle_url('/course/format/kickstart/templates.php'),
+            'canmanage' => has_capability('format/kickstart:manage_templates', context_system::instance()),
+            'createtemplateurl' => new moodle_url('/course/format/kickstart/template.php', ['action' => 'create']),
+            'managetemplateurl' => new moodle_url('/course/format/kickstart/templates.php'),
             'dataride' => $isbs5 ? 'data-bs-ride' : 'data-ride',
             'datainterval' => $isbs5 ? 'data-bs-interval' : 'data-interval',
             'dataslideto' => $isbs5 ? 'data-bs-slide-to' : 'data-slide-to',
