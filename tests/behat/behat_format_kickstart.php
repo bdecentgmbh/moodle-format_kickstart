@@ -23,9 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use Behat\Gherkin\Node\TableNode;
+use core\url as moodle_url;
+
 require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
 
-use Behat\Gherkin\Node\TableNode;
 
 /**
  * Kickstart course format steps definitions.

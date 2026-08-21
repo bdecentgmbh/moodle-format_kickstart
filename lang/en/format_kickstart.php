@@ -28,6 +28,7 @@ $string['automatictemplate_help'] = 'The course template was automatically appli
 $string['buypro'] = 'Buy Kickstart Pro';
 $string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="http://bdecent.de/kickstart">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';
+$string['cachedef_templates'] = 'Course format templates cache';
 $string['categorypath'] = "Category path";
 $string['choosesectionimportactivity'] = "Choose the section to import the activity";
 $string['confirmtemplate'] = 'Are you sure you want to use this Template "{$a->name}"?';

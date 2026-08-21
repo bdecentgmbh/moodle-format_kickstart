@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\context\system as context_system;
+use core\url as moodle_url;
+
 require(__DIR__ . '/../../../config.php');
 
 defined('MOODLE_INTERNAL') || die();

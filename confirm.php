@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\context\course as context_course;
+use core\url as moodle_url;
+
 require(__DIR__ . '/../../../config.php');
 require_once(__DIR__ . '/lib.php');
 
@@ -30,7 +33,7 @@ global $USER, $DB;
 $courseid = required_param('course_id', PARAM_INT);
 $templateid = required_param('template_id', PARAM_INT);
 
-$PAGE->set_context(\context_course::instance($courseid));
+$PAGE->set_context(context_course::instance($courseid));
 $PAGE->set_url(new moodle_url('/course/format/kickstart/confirm.php', ['template_id' => $templateid, 'course_id' => $courseid]));
 require_login();
 
@@ -51,5 +54,5 @@ $confirmstr = \html_writer::tag('h4', $template->title);
 $confirmstr .= \html_writer::tag('p', get_string('strconfirmtemplate', 'format_kickstart'));
 
 echo $OUTPUT->header();
-echo $OUTPUT->confirm($confirmstr, $continuebutton, new \moodle_url('/course/view.php', ['id' => $courseid]));
+echo $OUTPUT->confirm($confirmstr, $continuebutton, new moodle_url('/course/view.php', ['id' => $courseid]));
 echo $OUTPUT->footer();

@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\context\course as context_course;
+use core\url as moodle_url;
+
 require(__DIR__ . '/../../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once($CFG->dirroot . '/course/format/kickstart/classes/output/general_action_bar.php');
@@ -31,7 +34,7 @@ global $USER, $DB;
 $id = required_param('id', PARAM_INT);
 $nav = optional_param('nav', format_kickstart_get_default_nav(), PARAM_TEXT);
 
-$context = \context_course::instance($id);
+$context = context_course::instance($id);
 $PAGE->set_context($context);
 $pageurl = new moodle_url('/course/format/kickstart/list.php', ['id' => $id, 'nav' => $nav]);
 $PAGE->set_url($pageurl);
@@ -56,7 +59,7 @@ $actionbar = new format_kickstart\output\general_action_bar($context, $pageurl, 
 
 $PAGE->set_secondary_active_tab('kickstart-nav');
 
-$menus = format_kickstart_get_breadcump_menus();
+$menus = format_kickstart_get_breadcrumb_menus();
 $uniquetitle = $menus[$nav];
 
 $titlecomponents = [
@@ -74,12 +77,7 @@ echo html_writer::start_div('kickstart-page');
 
 echo $renderer->render_action_bar($actionbar);
 
-if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php')) {
-    require_once($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php');
-    $kickstartpage = new \local_kickstart_pro\output\kickstartHandlerWithPropage($course, $nav);
-} else {
-    $kickstartpage = new format_kickstart\output\kickstartHandler($course, $nav);
-}
+$kickstartpage = format_kickstart_get_kickstart_handler($course, $nav);
 
 echo $renderer->render_kickstart_page($kickstartpage);
 

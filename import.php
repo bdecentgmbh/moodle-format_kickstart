@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\context\course as context_course;
+use core\url as moodle_url;
 
 require(__DIR__ . '/../../../config.php');
 require_once(__DIR__ . '/lib.php');
@@ -32,7 +34,7 @@ global $USER, $DB;
 $courseid = required_param('course_id', PARAM_INT);
 $templateid = required_param('template_id', PARAM_INT);
 
-$PAGE->set_context(\context_course::instance($courseid));
+$PAGE->set_context(context_course::instance($courseid));
 
 require_login();
 require_sesskey();
