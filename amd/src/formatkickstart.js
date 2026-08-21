@@ -20,10 +20,9 @@
  * @copyright 2021, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates',
+define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates',
     'core/modal_events', 'core/modal_save_cancel', 'core/toast'],
- function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalSaveCancel, Toast) {
-
+function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalSaveCancel, Toast) {
     /**
      * Controls kicstart javascript.
      * @param {int} contextid
@@ -31,7 +30,7 @@
      * @param {int} menuid
      * @param {boolean} filteroptions
      * @return {void}
-    */
+     */
     var Formatkickstart = function(contextid, courseid, menuid, filteroptions) {
         var self = this;
         var useTemplate = document.querySelectorAll(".templates-block .use-template");
@@ -165,29 +164,43 @@
             if (button.getAttribute('data-loaded') === '1' || !willShow) {
                 // Already populated, or we're hiding -- no fetch needed.
                 accordion.classList.toggle('d-none');
-                return;
+                return null;
             }
             // First-time expand: lazy-fetch the partial.
             var args = {
                 courseid: courseid,
                 maincourse: maincourse
             };
-            Fragment.loadFragment(
-                'format_kickstart',
-                'get_library_coursecontents',
-                self.contextId,
-                args
-            ).then(function(html, js) {
-                Templates.appendNodeContents(accordion, html, js);
-                button.setAttribute('data-loaded', '1');
-                accordion.classList.remove('d-none');
-                // Wire up the activity-import buttons in the freshly loaded partial.
-                accordion.querySelectorAll('.import-activity').forEach(function(el) {
-                    el.addEventListener('click', self.importActivityHandler.bind(self));
-                });
-                return null;
-            }).catch(notification.exception);
+            return self.loadCourseContents(accordion, button, args);
         }).catch(notification.exception);
+    };
+
+
+    /**
+     * Lazy-fetch and inject the contents of a course into its accordion.
+     *
+     * @param {HTMLElement} accordion The accordion container to populate.
+     * @param {HTMLElement} button The "Show contents" button.
+     * @param {Object} args Fragment arguments (courseid, maincourse).
+     * @return {Promise}
+     */
+    Formatkickstart.prototype.loadCourseContents = function(accordion, button, args) {
+        var self = this;
+        return Fragment.loadFragment(
+            'format_kickstart',
+            'get_library_coursecontents',
+            self.contextId,
+            args
+        ).then(function(html, js) {
+            Templates.appendNodeContents(accordion, html, js);
+            button.setAttribute('data-loaded', '1');
+            accordion.classList.remove('d-none');
+            // Wire up the activity-import buttons in the freshly loaded partial.
+            accordion.querySelectorAll('.import-activity').forEach(function(el) {
+                el.addEventListener('click', self.importActivityHandler.bind(self));
+            });
+            return null;
+        });
     };
 
 
@@ -219,7 +232,7 @@
                 // Perform import.
                 self.importCourse(args);
                 modal.destroy();
-            }.bind(this));
+            });
 
             modal.getRoot().on(ModalEvents.cancel, function() {
                 var sectionId = $('#import-module-section').val();
@@ -228,25 +241,38 @@
                 // Perform import.
                 self.importCourse(args);
                 modal.destroy();
-            }.bind(this));
+            });
 
             modal.show();
-        }.bind(this));
+            return null;
+        }).catch(notification.exception);
     };
 
 
     Formatkickstart.prototype.importCourse = function(args) {
         var self = this;
-        var promise = Fragment.loadFragment('format_kickstart', 'import_activity_courselib', self.contextId, args);
-        promise.then((viewurl) => {
+        Fragment.loadFragment(
+            'format_kickstart',
+            'import_activity_courselib',
+            self.contextId, args
+        ).then((viewurl) => {
             if (args.action == 'view') {
                 window.location.href = viewurl;
-            } else {
-                str.get_string('importactivitysuccessfully', 'format_kickstart').then(function(string) {
-                    Toast.add(string, {type: 'success'});
-                });
+                return null;
             }
-        }).catch();
+            return self.notifyImportSuccess();
+        }).catch(notification.exception);
+    };
+
+
+    Formatkickstart.prototype.notifyImportSuccess = function() {
+        return str.get_string(
+            'importactivitysuccessfully',
+            'format_kickstart'
+        ).then(function(string) {
+            Toast.add(string, {type: 'success'});
+            return null;
+        });
     };
 
 
@@ -302,21 +328,20 @@
                 courseid: self.courseId,
                 menuid: self.menuid,
                 searchcourse: searchcourse,
-                customvalues : JSON.stringify(customvalues),
+                customvalues: JSON.stringify(customvalues),
                 sort: sort,
                 page: page,
             };
 
-            const promise = Fragment.loadFragment(
+            Fragment.loadFragment(
                 'format_kickstart',
                 'get_library_courselist',
                 self.contextId,
                 args
-            );
-
-            promise.then((html, js) => {
+            ).then((html, js) => {
                 Templates.replaceNode(courselist, html, js);
-            }).catch();
+                return null;
+            }).catch(notification.exception);
         }
     };
 
@@ -335,16 +360,15 @@
                 search: searchvalue,
             };
 
-            const promise = Fragment.loadFragment(
+            Fragment.loadFragment(
                 'format_kickstart',
                 'get_kickstart_templatelist',
                 self.contextId,
                 args
-            );
-
-            promise.then((html, js) => {
+            ).then((html, js) => {
                 Templates.replaceNode(templatelist, html, js);
-            }).catch();
+                return null;
+            }).catch(notification.exception);
         }
     };
 
@@ -387,21 +411,20 @@
             {key: 'import'},
             {key: 'no'}
         ]).done(function(s) {
-                notification.confirm(s[0], s[1], s[2], s[3], function() {
-                    document.querySelectorAll("body")[0].classList.add("kickstart-icon");
-                    Ajax.call([{
-                        methodname: 'format_kickstart_import_template',
-                        args: {templateid: templateId, courseid: self.courseId},
-                        done: function(response) {
-                            if (response) {
-                                let redirect = Config.wwwroot + "/course/view.php?id=" + self.courseId;
-                                window.location.assign(redirect);
-                            }
+            notification.confirm(s[0], s[1], s[2], s[3], function() {
+                document.querySelectorAll("body")[0].classList.add("kickstart-icon");
+                Ajax.call([{
+                    methodname: 'format_kickstart_import_template',
+                    args: {templateid: templateId, courseid: self.courseId},
+                    done: function(response) {
+                        if (response) {
+                            let redirect = Config.wwwroot + "/course/view.php?id=" + self.courseId;
+                            window.location.assign(redirect);
                         }
-                    }]);
-                });
-            }
-        );
+                    }
+                }]);
+            });
+        });
     };
 
     return {
