@@ -16,8 +16,8 @@
 
 namespace format_kickstart\event;
 
-use moodle_url;
 use coding_exception;
+use core\url as moodle_url;
 use moodle_exception;
 
 /**

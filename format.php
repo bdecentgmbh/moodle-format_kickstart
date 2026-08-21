@@ -22,12 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use format_kickstart\output\course_template_list;
+use core\context\course as context_course;
+use core\url as moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/filelib.php');
-require_once($CFG->libdir . '/completionlib.php');
 
 $nav = optional_param('nav', format_kickstart_get_default_nav(), PARAM_TEXT);
 
@@ -61,13 +59,7 @@ if (has_capability('format/kickstart:import_from_template', $context)) {
     $nav = 'studentview';
 }
 
-
-if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php')) {
-    require_once($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php');
-    $kickstartpage = new \local_kickstart_pro\output\kickstartHandlerWithPropage($course, $nav);
-} else {
-    $kickstartpage = new format_kickstart\output\kickstartHandler($course, $nav);
-}
+$kickstartpage = format_kickstart_get_kickstart_handler($course, $nav);
 
 echo $renderer->render_kickstart_page($kickstartpage);
 

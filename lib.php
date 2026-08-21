@@ -22,12 +22,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\context;
+use core\context\course as context_course;
+use core\context\module as context_module;
+use core\context\system as context_system;
+use core\output\renderer_base;
+use core\url as moodle_url;
+use format_kickstart\output\course_template_list;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/format/lib.php');
-
-
-use format_kickstart\output\course_template_list;
 
 /**
  * Main class for the Kickstart course format
@@ -368,34 +373,38 @@ function format_kickstart_create_template($template, $sort, $context, $component
     $id = $DB->insert_record('format_kickstart_template', $template);
     core_tag_tag::set_item_tags('format_kickstart', 'format_kickstart_template', $id, $context, $template->tags);
     if (isset($template->backupfile) && !empty($template->backupfile)) {
+        // Only the file name part may be used: the asset paths below are
+        // built from it, so reject anything containing a path.
+        $backupfilename = basename($template->backupfile);
         $filerecord = new stdClass();
         $filerecord->component = 'format_kickstart';
         $filerecord->contextid = $context->id;
         $filerecord->filearea = "course_backups";
         $filerecord->filepath = '/';
         $filerecord->itemid = $id;
-        $filerecord->filename = $template->backupfile;
-        $exist = check_record_exsist($filerecord);
+        $filerecord->filename = $backupfilename;
+        $exist = format_kickstart_check_record_exists($filerecord);
         if ($exist != 1) {
             if ($component == 'format_kickstart') {
-                $backuppath = $CFG->dirroot . "/course/format/kickstart/assets/templates/$template->backupfile";
+                $backuppath = $CFG->dirroot . "/course/format/kickstart/assets/templates/$backupfilename";
             } else if ($component == 'local_kickstart_pro') {
-                $backuppath = $CFG->dirroot . "/local/kickstart_pro/assets/templates/$template->backupfile";
+                $backuppath = $CFG->dirroot . "/local/kickstart_pro/assets/templates/$backupfilename";
             }
             $fs->create_file_from_pathname($filerecord, $backuppath);
         }
     }
     if (format_kickstart_has_pro() && isset($template->templatebackimg) && !empty($template->templatebackimg)) {
+        $backimagefilename = basename($template->templatebackimg);
         $filerecord = new stdClass();
         $filerecord->component = 'local_kickstart_pro';
         $filerecord->contextid = $context->id;
         $filerecord->filearea = "templatebackimg";
         $filerecord->filepath = '/';
         $filerecord->itemid = $id;
-        $filerecord->filename = $template->templatebackimg;
-        $exist = check_record_exsist($filerecord);
+        $filerecord->filename = $backimagefilename;
+        $exist = format_kickstart_check_record_exists($filerecord);
         if ($exist != 1) {
-            $imagepath = $CFG->dirroot . "/local/kickstart_pro/assets/$template->templatebackimg";
+            $imagepath = $CFG->dirroot . "/local/kickstart_pro/assets/$backimagefilename";
             $fs->create_file_from_pathname($filerecord, $imagepath);
         }
     }
@@ -411,11 +420,11 @@ function format_kickstart_create_template($template, $sort, $context, $component
 }
 
 /**
- * Does this file exist
+ * Check whether a file already exists in the template file areas.
  * @param object $filerecord
  * @return bool
  */
-function check_record_exsist($filerecord) {
+function format_kickstart_check_record_exists($filerecord) {
 
     $fs = get_file_storage();
     $exist = $fs->file_exists(
@@ -622,6 +631,32 @@ function format_kickstart_check_format_template() {
 }
 
 /**
+ * Get the Kickstart page handler, using the Pro implementation when available.
+ *
+ * @param \stdClass $course Course record.
+ * @param string $nav The active Kickstart navigation page.
+ * @return \format_kickstart\output\kickstartHandler
+ */
+function format_kickstart_get_kickstart_handler($course, $nav) {
+    global $CFG;
+    if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php')) {
+        require_once($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php');
+        return new \local_kickstart_pro\output\kickstartHandlerWithPropage($course, $nav);
+    }
+    return new format_kickstart\output\kickstartHandler($course, $nav);
+}
+
+/**
+ * Get the next sort value for a new course template.
+ *
+ * @return int
+ */
+function format_kickstart_get_next_template_sort() {
+    global $DB;
+    return (int) $DB->get_field('format_kickstart_template', 'MAX(sort)', []) + 1;
+}
+
+/**
  * Check whether a template may be imported into a course by a user.
  *
  * Enforces the same conditions the template listing applies
@@ -643,7 +678,7 @@ function format_kickstart_can_use_template($template, $courseid, $userid) {
     }
 
     // Template managers may use any template.
-    $coursecontext = \context_course::instance($courseid);
+    $coursecontext = context_course::instance($courseid);
     if (has_capability('format/kickstart:manage_templates', $coursecontext, $userid)) {
         return true;
     }
@@ -841,7 +876,7 @@ function format_kickstart_get_all_pages() {
 
     if (format_kickstart_has_pro()) {
         require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
-        $pages += local_kickstart_pro_get_breadcump_menus();
+        $pages += local_kickstart_pro_get_breadcrumb_menus();
     }
     return $pages;
 }
@@ -923,7 +958,7 @@ function format_kickstart_get_default_nav() {
  *
  * @return array An associative array of breadcrumb menu items
  */
-function format_kickstart_get_breadcump_menus() {
+function format_kickstart_get_breadcrumb_menus() {
     return format_kickstart_get_ordered_pages();
 }
 
@@ -945,7 +980,7 @@ function format_kickstart_get_action_selector_menus($courseid, $pageurl) {
 
     // The Pro create-template page stays gated behind its own capability.
     $cancreatetemplate = !format_kickstart_has_pro()
-        || has_capability('local/kickstart_pro:create_template_course', \context_course::instance($courseid));
+        || has_capability('local/kickstart_pro:create_template_course', context_course::instance($courseid));
 
     $menus = [];
     foreach (format_kickstart_get_ordered_pages() as $key => $label) {
@@ -979,7 +1014,7 @@ function format_kickstart_output_fragment_get_kickstart_templatelist($args) {
         $value = ($args['value'] === 'list') ? 'list' : 'tile';
     }
 
-    $context = \context_course::instance($course->id);
+    $context = context_course::instance($course->id);
     require_capability('format/kickstart:import_from_template', $context);
 
     $PAGE->requires->js_call_amd(
@@ -1035,7 +1070,7 @@ function format_kickstart_output_fragment_get_library_courselist($args) {
 
     $customvalues = json_decode($args['customvalues']);
     $course = get_course($args['courseid']);
-    $context = \context::instance_by_id($args['contextid']);
+    $context = context::instance_by_id($args['contextid']);
     $nav = $args['menuid'];
     $page = $args['page'];
 
@@ -1071,7 +1106,7 @@ function format_kickstart_output_fragment_get_library_coursecontents($args) {
     }
 
     // The required capability is the same one the library itself enforces.
-    require_capability('moodle/backup:backuptargetimport', \context_course::instance($courseid));
+    require_capability('moodle/backup:backuptargetimport', context_course::instance($courseid));
 
     $list = new \format_kickstart\output\import_course_list();
     $contents = $list->get_course_contents($courseid);
@@ -1108,7 +1143,7 @@ function format_kickstart_output_fragment_get_import_module_box($args) {
     global $OUTPUT;
 
     // Security checks.
-    $context = \context_course::instance($args['maincourse']);
+    $context = context_course::instance($args['maincourse']);
     require_capability('moodle/course:manageactivities', $context);
 
     $modinfo = get_fast_modinfo($args['maincourse']);
@@ -1148,7 +1183,7 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
     require_once($CFG->dirroot . '/course/format/classes/base.php');
     // Security checks.
-    $context = \context_course::instance($args['maincourse']);
+    $context = context_course::instance($args['maincourse']);
     require_capability('moodle/course:manageactivities', $context);
 
     // Use Moodle's backup/restore functionality.
@@ -1175,7 +1210,7 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     );
     // Set target section using settings.
     $plan = $rc->get_plan();
-    $cmcontext = \context_module::instance($args['cmid']);
+    $cmcontext = context_module::instance($args['cmid']);
 
     if (!$rc->execute_precheck()) {
         $precheckresults = $rc->get_precheck_results();
@@ -1210,13 +1245,13 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     moveto_module($cm, $targetsection);
     // Any state action mark the state cache as dirty.
     core_courseformat\base::session_cache_reset($maincourserecord);
-    $viewurl = new \moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);
+    $viewurl = new moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);
     if (
         $subsection = $DB->get_record('modules', ['name' => 'subsection']) && !empty($subsection) &&
         $subsection->id == $cm->module
     ) {
         $subsectionid = $DB->get_field('course_modules', 'id', ['itemid' => $newcmid, 'course' => $cm->course]);
-        $viewurl = new \moodle_url('/course/section.php', ['id' => $subsectionid]);
+        $viewurl = new moodle_url('/course/section.php', ['id' => $subsectionid]);
     }
 
     return $viewurl->out(false);
