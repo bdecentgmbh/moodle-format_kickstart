@@ -14,120 +14,108 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines Kicstart javascript.
+ * Defines Kickstart javascript.
  * @module   format_kickstart/formatkickstart
  * @category  Classes - autoloading
  * @copyright 2021, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/notification', 'core/config', 'core/ajax', 'core/fragment', 'core/templates',
-    'core/modal_events', 'core/modal_save_cancel', 'core/toast'],
-function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, ModalSaveCancel, Toast) {
+import $ from 'jquery';
+import * as Str from 'core/str';
+import Notification from 'core/notification';
+import Config from 'core/config';
+import Ajax from 'core/ajax';
+import Fragment from 'core/fragment';
+import Templates from 'core/templates';
+import ModalEvents from 'core/modal_events';
+import ModalSaveCancel from 'core/modal_save_cancel';
+import Toast from 'core/toast';
+
+/**
+ * Controls Kickstart javascript.
+ */
+class Formatkickstart {
     /**
-     * Controls kicstart javascript.
      * @param {int} contextid
      * @param {int} courseid
      * @param {int} menuid
      * @param {boolean} filteroptions
      * @return {void}
      */
-    var Formatkickstart = function(contextid, courseid, menuid, filteroptions) {
-        var self = this;
-        var useTemplate = document.querySelectorAll(".templates-block .use-template");
-        self.contextId = contextid;
-        self.courseId = courseid;
-        self.menuid = menuid;
-        if (useTemplate) {
-            useTemplate.forEach((element) => {
-                element.addEventListener('click', self.templateHandler.bind(this));
-            });
-        }
+    constructor(contextid, courseid, menuid, filteroptions) {
+        this.contextId = contextid;
+        this.courseId = courseid;
+        this.menuid = menuid;
+        this.confirmbutton = ".buttons .singlebutton form button";
+        this.loadiconElement = "#modal-footer span#load-action";
+        this.fullDescription = ".list-library-courses .trim-summary .section-summary-action";
+        this.trimDescription = ".list-library-courses .fullcontent-summary .section-summary-action";
+
+        this.registerEventListeners(filteroptions);
+    }
+
+    /**
+     * Bind the page event listeners.
+     *
+     * @param {boolean} filteroptions Whether the course library filters are shown.
+     * @return {void}
+     */
+    registerEventListeners(filteroptions) {
+        const useTemplate = document.querySelectorAll(".templates-block .use-template");
+        useTemplate.forEach((element) => {
+            element.addEventListener('click', (e) => this.templateHandler(e));
+        });
 
         if (filteroptions) {
-
-            var templateview = document.querySelectorAll(".kickstart-page .listing-view-block a");
-            if (templateview) {
-                templateview.forEach((element) => {
-                    element.addEventListener('click', self.templateviewHandler.bind(this));
-                });
-            }
-
-
-            var templatesearch = document.querySelectorAll(".kickstart-page #search-template");
-            if (templatesearch) {
-                templatesearch.forEach((element) => {
-                    element.addEventListener('change', self.templateSearchHandler.bind(this));
-                });
-            }
-
-            var librarycourse = document.querySelectorAll(".librarycourse-filter-item .filter-item");
-            if (librarycourse) {
-                librarycourse.forEach((element) => {
-                    element.addEventListener('change', self.libraryCourseHandler.bind(this));
-                });
-            }
-
-            var librarysort = document.querySelectorAll(".kickstart-courselibrary-sort.sort-options a");
-            if (librarysort) {
-                librarysort.forEach((element) => {
-                    element.addEventListener('click', (e) => {
-                        // Remove active class from all sort links
-                        librarysort.forEach(link => link.classList.remove('sort-active'));
-                        // Add active class to clicked element
-                        element.classList.add('sort-active');
-                        // Call the original handler
-                        self.libraryCourseHandler.bind(this)(e);
-                    });
-                });
-            }
-
-        }
-
-
-        var pagination = document.querySelectorAll(".kickstart-page .pagination li");
-        if (pagination) {
-            pagination.forEach((element) => {
-                element.addEventListener('click', self.libraryCourseHandler.bind(this));
+            const templateview = document.querySelectorAll(".kickstart-page .listing-view-block a");
+            templateview.forEach((element) => {
+                element.addEventListener('click', (e) => this.templateviewHandler(e));
             });
-        }
 
-        var showcontentHandler = document.querySelectorAll(".import-course-list-section .show-content-button");
-        if (showcontentHandler) {
-            showcontentHandler.forEach((element) => {
+            const templatesearch = document.querySelectorAll(".kickstart-page #search-template");
+            templatesearch.forEach((element) => {
+                element.addEventListener('change', (e) => this.templateSearchHandler(e));
+            });
+
+            const librarycourse = document.querySelectorAll(".librarycourse-filter-item .filter-item");
+            librarycourse.forEach((element) => {
+                element.addEventListener('change', (e) => this.libraryCourseHandler(e));
+            });
+
+            const librarysort = document.querySelectorAll(".kickstart-courselibrary-sort.sort-options a");
+            librarysort.forEach((element) => {
                 element.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    self.toggleCourseContents(element);
+                    // Remove active class from all sort links.
+                    librarysort.forEach(link => link.classList.remove('sort-active'));
+                    // Add active class to clicked element.
+                    element.classList.add('sort-active');
+                    // Call the original handler.
+                    this.libraryCourseHandler(e);
                 });
             });
         }
 
-        var importActivity = document.querySelectorAll(".import-course-list-section .activity-items .import-activity");
-        if (importActivity) {
-            importActivity.forEach((element) => {
-                element.addEventListener('click', self.importActivityHandler.bind(this));
+        const pagination = document.querySelectorAll(".kickstart-page .pagination li");
+        pagination.forEach((element) => {
+            element.addEventListener('click', (e) => this.libraryCourseHandler(e));
+        });
+
+        const showcontentHandler = document.querySelectorAll(".import-course-list-section .show-content-button");
+        showcontentHandler.forEach((element) => {
+            element.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleCourseContents(element);
             });
-        }
+        });
 
-        $('body').delegate(self.fullDescription, "click", self.fullmodcontentHandler.bind(this));
-        $('body').delegate(self.trimDescription, "click", self.trimmodcontentHandler.bind(this));
+        const importActivity = document.querySelectorAll(".import-course-list-section .activity-items .import-activity");
+        importActivity.forEach((element) => {
+            element.addEventListener('click', (e) => this.importActivityHandler(e));
+        });
 
-    };
-
-
-    Formatkickstart.prototype.confirmbutton = ".buttons .singlebutton form button";
-
-    Formatkickstart.prototype.loadiconElement = "#modal-footer span#load-action";
-
-    Formatkickstart.prototype.fullDescription = ".list-library-courses .trim-summary .section-summary-action";
-
-    Formatkickstart.prototype.trimDescription = ".list-library-courses .fullcontent-summary .section-summary-action";
-
-    Formatkickstart.prototype.contextId = null;
-
-    Formatkickstart.prototype.courseId = null;
-
-    Formatkickstart.prototype.menuid = null;
-
+        $('body').delegate(this.fullDescription, "click", (e) => this.fullmodcontentHandler(e));
+        $('body').delegate(this.trimDescription, "click", (e) => this.trimmodcontentHandler(e));
+    }
 
     /**
      * Toggle the course-contents accordion next to a "Show contents" button.
@@ -137,44 +125,43 @@ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, M
      * inject it. Subsequent clicks only flip visibility (and the button label).
      *
      * @param {HTMLElement} button The .show-content-button that was clicked.
+     * @return {void}
      */
-    Formatkickstart.prototype.toggleCourseContents = function(button) {
-        var self = this;
-        var courseid = button.getAttribute('data-courseid');
-        var maincourse = button.getAttribute('data-maincourse') || self.courseId;
-        var card = button.closest('.card-body');
+    toggleCourseContents(button) {
+        const courseid = button.getAttribute('data-courseid');
+        const maincourse = button.getAttribute('data-maincourse') || this.courseId;
+        const card = button.closest('.card-body');
         if (!card) {
             return;
         }
-        var accordion = card.querySelector('.list-library-courses');
+        const accordion = card.querySelector('.list-library-courses');
         if (!accordion) {
             return;
         }
 
         // Label toggle is the same as before (just expressed via state, not by
         // comparing translated strings).
-        str.get_strings([
+        Str.get_strings([
             {key: 'showcontents', component: 'format_kickstart'},
             {key: 'hidecontents', component: 'format_kickstart'}
-        ]).then(function(strings) {
-            var willShow = accordion.classList.contains('d-none');
+        ]).then((strings) => {
+            const willShow = accordion.classList.contains('d-none');
             button.textContent = willShow ? strings[1] : strings[0];
             return willShow;
-        }).then(function(willShow) {
+        }).then((willShow) => {
             if (button.getAttribute('data-loaded') === '1' || !willShow) {
                 // Already populated, or we're hiding -- no fetch needed.
                 accordion.classList.toggle('d-none');
                 return null;
             }
             // First-time expand: lazy-fetch the partial.
-            var args = {
+            const args = {
                 courseid: courseid,
-                maincourse: maincourse
+                maincourse: maincourse,
             };
-            return self.loadCourseContents(accordion, button, args);
-        }).catch(notification.exception);
-    };
-
+            return this.loadCourseContents(accordion, button, args);
+        }).catch(Notification.exception);
+    }
 
     /**
      * Lazy-fetch and inject the contents of a course into its accordion.
@@ -184,34 +171,35 @@ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, M
      * @param {Object} args Fragment arguments (courseid, maincourse).
      * @return {Promise}
      */
-    Formatkickstart.prototype.loadCourseContents = function(accordion, button, args) {
-        var self = this;
+    loadCourseContents(accordion, button, args) {
         return Fragment.loadFragment(
             'format_kickstart',
             'get_library_coursecontents',
-            self.contextId,
+            this.contextId,
             args
-        ).then(function(html, js) {
+        ).then((html, js) => {
             Templates.appendNodeContents(accordion, html, js);
             button.setAttribute('data-loaded', '1');
             accordion.classList.remove('d-none');
             // Wire up the activity-import buttons in the freshly loaded partial.
-            accordion.querySelectorAll('.import-activity').forEach(function(el) {
-                el.addEventListener('click', self.importActivityHandler.bind(self));
+            accordion.querySelectorAll('.import-activity').forEach((el) => {
+                el.addEventListener('click', (e) => this.importActivityHandler(e));
             });
             return null;
         });
-    };
+    }
 
-
-    Formatkickstart.prototype.importActivityHandler = function(event) {
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    importActivityHandler(event) {
         event.preventDefault();
-        let self = this;
-        var courseid = event.currentTarget.getAttribute('data-course');
-        var cmid = event.currentTarget.getAttribute('data-module');
-        var maincourse = event.currentTarget.getAttribute('data-maincourse');
-        var modname = event.currentTarget.getAttribute('data-modname');
-        var args = {
+        const courseid = event.currentTarget.getAttribute('data-course');
+        const cmid = event.currentTarget.getAttribute('data-module');
+        const maincourse = event.currentTarget.getAttribute('data-maincourse');
+        const modname = event.currentTarget.getAttribute('data-modname');
+        const args = {
             courseid: courseid,
             cmid: cmid,
             maincourse: maincourse,
@@ -219,114 +207,133 @@ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, M
         };
 
         ModalSaveCancel.create({
-            title: str.get_string('importactivity', 'format_kickstart'),
-            body: Fragment.loadFragment('format_kickstart', 'get_import_module_box', self.contextId, args),
-        }).then(function(modal) {
-            modal.setButtonText('save', str.get_string('importandview', 'format_kickstart'));
-            modal.setButtonText('cancel', str.get_string('importandreturn', 'format_kickstart'));
+            title: Str.get_string('importactivity', 'format_kickstart'),
+            body: Fragment.loadFragment('format_kickstart', 'get_import_module_box', this.contextId, args),
+        }).then((modal) => {
+            modal.setButtonText('save', Str.get_string('importandview', 'format_kickstart'));
+            modal.setButtonText('cancel', Str.get_string('importandreturn', 'format_kickstart'));
             // Handle form submission.
-            modal.getRoot().on(ModalEvents.save, function() {
-                var sectionId = $('#import-module-section').val();
+            modal.getRoot().on(ModalEvents.save, () => {
+                const sectionId = $('#import-module-section').val();
                 args.sectionid = sectionId;
                 args.action = 'view';
                 // Perform import.
-                self.importCourse(args);
+                this.importCourse(args);
                 modal.destroy();
             });
 
-            modal.getRoot().on(ModalEvents.cancel, function() {
-                var sectionId = $('#import-module-section').val();
+            modal.getRoot().on(ModalEvents.cancel, () => {
+                const sectionId = $('#import-module-section').val();
                 args.sectionid = sectionId;
                 args.action = 'return';
                 // Perform import.
-                self.importCourse(args);
+                this.importCourse(args);
                 modal.destroy();
             });
 
             modal.show();
             return null;
-        }).catch(notification.exception);
-    };
+        }).catch(Notification.exception);
+    }
 
-
-    Formatkickstart.prototype.importCourse = function(args) {
-        var self = this;
+    /**
+     * @param {Object} args
+     * @return {void}
+     */
+    importCourse(args) {
         Fragment.loadFragment(
             'format_kickstart',
             'import_activity_courselib',
-            self.contextId, args
+            this.contextId,
+            args
         ).then((viewurl) => {
             if (args.action == 'view') {
                 window.location.href = viewurl;
                 return null;
             }
-            return self.notifyImportSuccess();
-        }).catch(notification.exception);
-    };
+            return this.notifyImportSuccess();
+        }).catch(Notification.exception);
+    }
 
-
-    Formatkickstart.prototype.notifyImportSuccess = function() {
-        return str.get_string(
+    /**
+     * @return {Promise}
+     */
+    notifyImportSuccess() {
+        return Str.get_string(
             'importactivitysuccessfully',
             'format_kickstart'
-        ).then(function(string) {
+        ).then((string) => {
             Toast.add(string, {type: 'success'});
             return null;
         });
-    };
+    }
 
-
-    Formatkickstart.prototype.fullmodcontentHandler = function(event) {
-        var THIS = $(event.currentTarget);
-        let fullContent = $(THIS).closest('.accordion-item').find('.fullcontent-summary');
-        let trimcontent = $(THIS).closest('.accordion-item').find('.trim-summary');
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    fullmodcontentHandler(event) {
+        const target = $(event.currentTarget);
+        const fullContent = target.closest('.accordion-item').find('.fullcontent-summary');
+        const trimcontent = target.closest('.accordion-item').find('.trim-summary');
         if (trimcontent.hasClass('summary-show')) {
             trimcontent.removeClass('summary-show');
             fullContent.addClass('summary-show');
         }
-    };
+    }
 
-    Formatkickstart.prototype.trimmodcontentHandler = function(event) {
-        var THIS = $(event.currentTarget);
-        let fullContent = $(THIS).closest('.accordion-item').find('.fullcontent-summary');
-        let trimcontent = $(THIS).closest('.accordion-item').find('.trim-summary');
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    trimmodcontentHandler(event) {
+        const target = $(event.currentTarget);
+        const fullContent = target.closest('.accordion-item').find('.fullcontent-summary');
+        const trimcontent = target.closest('.accordion-item').find('.trim-summary');
         if (fullContent.hasClass('summary-show')) {
             fullContent.removeClass('summary-show');
             trimcontent.addClass('summary-show');
         }
-    };
+    }
 
-    Formatkickstart.prototype.libraryCourseHandler = function(event) {
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    libraryCourseHandler(event) {
         event.preventDefault();
         let page = event.currentTarget.getAttribute('data-page-number');
         page = page ? page - 1 : 0;
         let sort = event.currentTarget.getAttribute('data-sort');
         if (!sort) {
-           var sorthandler = document.querySelector(".kickstart-courselibrary-sort .sort-link.sort-active");
-           if (sorthandler) {
+            const sorthandler = document.querySelector(".kickstart-courselibrary-sort .sort-link.sort-active");
+            if (sorthandler) {
                 sort = sorthandler.getAttribute('data-sort');
-           }
+            }
         }
-        let searchcourse = document.querySelector("#search-course-library").value;
-        let customfieldsitems = document.querySelectorAll(".library-customfield-field.librarycourse-filter-item .filter-item");
-        let customvalues = {};
-        if (customfieldsitems) {
-            customfieldsitems.forEach((element) => {
-                customvalues[element.getAttribute("data-value")] = element.value;
-            });
-        }
-        this.getlibarycourse(searchcourse, customvalues, sort, page);
-    };
+        const searchcourse = document.querySelector("#search-course-library").value;
+        const customfieldsitems = document.querySelectorAll(".library-customfield-field.librarycourse-filter-item .filter-item");
+        const customvalues = {};
+        customfieldsitems.forEach((element) => {
+            customvalues[element.getAttribute("data-value")] = element.value;
+        });
+        this.getLibraryCourse(searchcourse, customvalues, sort, page);
+    }
 
-
-    Formatkickstart.prototype.getlibarycourse = function(searchcourse, customvalues, sort, page) {
-        let courselist = document.querySelector(".import-course-list-section");
+    /**
+     * @param {string} searchcourse
+     * @param {Object} customvalues
+     * @param {string} sort
+     * @param {int} page
+     * @return {void}
+     */
+    getLibraryCourse(searchcourse, customvalues, sort, page) {
+        const courselist = document.querySelector(".import-course-list-section");
         if (courselist) {
-            let self = this;
-            let args = {
-                contextid: self.contextId,
-                courseid: self.courseId,
-                menuid: self.menuid,
+            const args = {
+                contextid: this.contextId,
+                courseid: this.courseId,
+                menuid: this.menuid,
                 searchcourse: searchcourse,
                 customvalues: JSON.stringify(customvalues),
                 sort: sort,
@@ -336,25 +343,29 @@ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, M
             Fragment.loadFragment(
                 'format_kickstart',
                 'get_library_courselist',
-                self.contextId,
+                this.contextId,
                 args
             ).then((html, js) => {
                 Templates.replaceNode(courselist, html, js);
                 return null;
-            }).catch(notification.exception);
+            }).catch(Notification.exception);
         }
-    };
+    }
 
-    Formatkickstart.prototype.getKickstartTemplate = function(action, value) {
-        let templatelist = document.querySelector(".template-list");
-        let searchBox = document.querySelector(".kickstart-page #search-template");
-        let searchvalue = (searchBox != undefined) ? searchBox.value : '';
+    /**
+     * @param {string} action
+     * @param {string} value
+     * @return {void}
+     */
+    getKickstartTemplate(action, value) {
+        const templatelist = document.querySelector(".template-list");
+        const searchBox = document.querySelector(".kickstart-page #search-template");
+        const searchvalue = (searchBox != undefined) ? searchBox.value : '';
         if (templatelist) {
-            let self = this;
-            let args = {
-                contextid: self.contextId,
-                courseid: self.courseId,
-                menuid: self.menuid,
+            const args = {
+                contextid: this.contextId,
+                courseid: this.courseId,
+                menuid: this.menuid,
                 action: action,
                 value: value,
                 search: searchvalue,
@@ -363,22 +374,30 @@ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, M
             Fragment.loadFragment(
                 'format_kickstart',
                 'get_kickstart_templatelist',
-                self.contextId,
+                this.contextId,
                 args
             ).then((html, js) => {
                 Templates.replaceNode(templatelist, html, js);
                 return null;
-            }).catch(notification.exception);
+            }).catch(Notification.exception);
         }
-    };
+    }
 
-    Formatkickstart.prototype.templateSearchHandler = function(event) {
-        let value = event.currentTarget.value;
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    templateSearchHandler(event) {
+        const value = event.currentTarget.value;
         this.getKickstartTemplate('searchtemplate', value);
-    };
+    }
 
-    Formatkickstart.prototype.templateviewHandler = function(event) {
-        let value = event.currentTarget.getAttribute("data-value");
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    templateviewHandler(event) {
+        const value = event.currentTarget.getAttribute("data-value");
         const tileView = document.getElementById('tile-view');
         const listView = document.getElementById('list-view');
 
@@ -390,46 +409,52 @@ function($, str, notification, Config, Ajax, Fragment, Templates, ModalEvents, M
             tileView.classList.remove('active');
         }
         this.getKickstartTemplate('changetemplate', value);
-    };
+    }
 
-    Formatkickstart.prototype.templateHandler = function(event) {
-        var self = this;
+    /**
+     * @param {Event} event
+     * @return {void}
+     */
+    templateHandler(event) {
         event.preventDefault();
-        let templateName = event.target.getAttribute("data-templatename");
-        let templateId = event.target.getAttribute("data-template");
-        self.confirmImportTemplate(templateId, templateName);
-    };
+        const templateName = event.target.getAttribute("data-templatename");
+        const templateId = event.target.getAttribute("data-template");
+        this.confirmImportTemplate(templateId, templateName);
+    }
 
-    Formatkickstart.prototype.confirmImportTemplate = function(templateId, templateName) {
-        let self = this;
-        var plugindata = {
+    /**
+     * @param {string} templateId
+     * @param {string} templateName
+     * @return {void}
+     */
+    confirmImportTemplate(templateId, templateName) {
+        const plugindata = {
             name: templateName
         };
-        str.get_strings([
+        Str.get_strings([
             {key: 'confirm', component: 'core'},
             {key: 'confirmtemplate', param: plugindata, component: 'format_kickstart'},
             {key: 'import'},
             {key: 'no'}
-        ]).done(function(s) {
-            notification.confirm(s[0], s[1], s[2], s[3], function() {
-                document.querySelectorAll("body")[0].classList.add("kickstart-icon");
+        ]).then((s) => {
+            Notification.confirm(s[0], s[1], s[2], s[3], () => {
+                document.body.classList.add("kickstart-icon");
                 Ajax.call([{
                     methodname: 'format_kickstart_import_template',
-                    args: {templateid: templateId, courseid: self.courseId},
-                    done: function(response) {
+                    args: {templateid: templateId, courseid: this.courseId},
+                    done: (response) => {
                         if (response) {
-                            let redirect = Config.wwwroot + "/course/view.php?id=" + self.courseId;
+                            const redirect = Config.wwwroot + "/course/view.php?id=" + this.courseId;
                             window.location.assign(redirect);
                         }
-                    }
+                    },
                 }]);
             });
-        });
-    };
+            return null;
+        }).catch(Notification.exception);
+    }
+}
 
-    return {
-        init: function(contextid, courseid, menuid, filteroptions) {
-            return new Formatkickstart(contextid, courseid, menuid, filteroptions);
-        }
-    };
-});
+export const init = (contextid, courseid, menuid, filteroptions) => {
+    new Formatkickstart(contextid, courseid, menuid, filteroptions);
+};
