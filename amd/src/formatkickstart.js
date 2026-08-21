@@ -20,8 +20,7 @@
  * @copyright 2021, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import $ from 'jquery';
-import * as Str from 'core/str';
+import {getString, getStrings} from 'core/str';
 import Notification from 'core/notification';
 import Config from 'core/config';
 import Ajax from 'core/ajax';
@@ -113,8 +112,19 @@ class Formatkickstart {
             element.addEventListener('click', (e) => this.importActivityHandler(e));
         });
 
-        $('body').delegate(this.fullDescription, "click", (e) => this.fullmodcontentHandler(e));
-        $('body').delegate(this.trimDescription, "click", (e) => this.trimmodcontentHandler(e));
+        document.addEventListener('click', (e) => {
+            const action = e.target.closest(this.fullDescription);
+            if (action) {
+                this.fullmodcontentHandler(action);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const action = e.target.closest(this.trimDescription);
+            if (action) {
+                this.trimmodcontentHandler(action);
+            }
+        });
     }
 
     /**
@@ -141,7 +151,7 @@ class Formatkickstart {
 
         // Label toggle is the same as before (just expressed via state, not by
         // comparing translated strings).
-        Str.get_strings([
+        getStrings([
             {key: 'showcontents', component: 'format_kickstart'},
             {key: 'hidecontents', component: 'format_kickstart'}
         ]).then((strings) => {
@@ -207,15 +217,15 @@ class Formatkickstart {
         };
 
         ModalSaveCancel.create({
-            title: Str.get_string('importactivity', 'format_kickstart'),
+            title: getString('importactivity', 'format_kickstart'),
             body: Fragment.loadFragment('format_kickstart', 'get_import_module_box', this.contextId, args),
         }).then((modal) => {
-            modal.setButtonText('save', Str.get_string('importandview', 'format_kickstart'));
-            modal.setButtonText('cancel', Str.get_string('importandreturn', 'format_kickstart'));
+            modal.setButtonText('save', getString('importandview', 'format_kickstart'));
+            modal.setButtonText('cancel', getString('importandreturn', 'format_kickstart'));
             // Handle form submission.
             modal.getRoot().on(ModalEvents.save, () => {
-                const sectionId = $('#import-module-section').val();
-                args.sectionid = sectionId;
+                const sectionInput = document.querySelector('#import-module-section');
+                args.sectionid = sectionInput ? sectionInput.value : null;
                 args.action = 'view';
                 // Perform import.
                 this.importCourse(args);
@@ -223,8 +233,8 @@ class Formatkickstart {
             });
 
             modal.getRoot().on(ModalEvents.cancel, () => {
-                const sectionId = $('#import-module-section').val();
-                args.sectionid = sectionId;
+                const sectionInput = document.querySelector('#import-module-section');
+                args.sectionid = sectionInput ? sectionInput.value : null;
                 args.action = 'return';
                 // Perform import.
                 this.importCourse(args);
@@ -259,7 +269,7 @@ class Formatkickstart {
      * @return {Promise}
      */
     notifyImportSuccess() {
-        return Str.get_string(
+        return getString(
             'importactivitysuccessfully',
             'format_kickstart'
         ).then((string) => {
@@ -269,30 +279,36 @@ class Formatkickstart {
     }
 
     /**
-     * @param {Event} event
+     * @param {HTMLElement} action The .section-summary-action that was clicked.
      * @return {void}
      */
-    fullmodcontentHandler(event) {
-        const target = $(event.currentTarget);
-        const fullContent = target.closest('.accordion-item').find('.fullcontent-summary');
-        const trimcontent = target.closest('.accordion-item').find('.trim-summary');
-        if (trimcontent.hasClass('summary-show')) {
-            trimcontent.removeClass('summary-show');
-            fullContent.addClass('summary-show');
+    fullmodcontentHandler(action) {
+        const accordionItem = action.closest('.accordion-item');
+        if (!accordionItem) {
+            return;
+        }
+        const fullContent = accordionItem.querySelector('.fullcontent-summary');
+        const trimcontent = accordionItem.querySelector('.trim-summary');
+        if (trimcontent.classList.contains('summary-show')) {
+            trimcontent.classList.remove('summary-show');
+            fullContent.classList.add('summary-show');
         }
     }
 
     /**
-     * @param {Event} event
+     * @param {HTMLElement} action The .section-summary-action that was clicked.
      * @return {void}
      */
-    trimmodcontentHandler(event) {
-        const target = $(event.currentTarget);
-        const fullContent = target.closest('.accordion-item').find('.fullcontent-summary');
-        const trimcontent = target.closest('.accordion-item').find('.trim-summary');
-        if (fullContent.hasClass('summary-show')) {
-            fullContent.removeClass('summary-show');
-            trimcontent.addClass('summary-show');
+    trimmodcontentHandler(action) {
+        const accordionItem = action.closest('.accordion-item');
+        if (!accordionItem) {
+            return;
+        }
+        const fullContent = accordionItem.querySelector('.fullcontent-summary');
+        const trimcontent = accordionItem.querySelector('.trim-summary');
+        if (fullContent.classList.contains('summary-show')) {
+            fullContent.classList.remove('summary-show');
+            trimcontent.classList.add('summary-show');
         }
     }
 
@@ -431,7 +447,7 @@ class Formatkickstart {
         const plugindata = {
             name: templateName
         };
-        Str.get_strings([
+        getStrings([
             {key: 'confirm', component: 'core'},
             {key: 'confirmtemplate', param: plugindata, component: 'format_kickstart'},
             {key: 'import'},
