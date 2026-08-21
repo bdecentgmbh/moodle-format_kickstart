@@ -57,6 +57,11 @@ class course_importer {
         $PAGE->set_context(\context_course::instance($courseid));
         $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
+        // Before import, verify that user has access.
+        if (!format_kickstart_can_use_template($template, $courseid, $USER->id)) {
+            throw new \moodle_exception('templatenotavailable', 'format_kickstart');
+        }
+
         if (!$template->courseformat) {
             $fs = get_file_storage();
             $files = $fs->get_area_files(

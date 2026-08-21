@@ -47,7 +47,9 @@ if (format_kickstart_has_pro()) {
 
 $editoroptions = [
     'maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes,
-    'trusttext' => false, 'noclean' => true, 'context' => $context,
+    'trusttext' => false, 'context' => $context,
+    // Keep the contents intact on save. format_text() still cleans at display-time.
+    'noclean' => true,
 ];
 
 

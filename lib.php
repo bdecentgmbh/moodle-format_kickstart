@@ -614,6 +614,99 @@ function format_kickstart_check_format_template() {
 }
 
 /**
+ * Check whether a template may be imported into a course by a user.
+ *
+ * Enforces the same conditions the template listing applies
+ * (course_template_list::get_templates()): the template must be visible and
+ * enabled, and the user must satisfy any Pro cohort/category/user/role
+ * restrictions. Template managers are expected to bypass this via their own
+ * capability check before calling this function.
+ *
+ * @param \stdClass $template Template record.
+ * @param int $courseid
+ * @param int $userid
+ * @return bool
+ */
+function format_kickstart_can_use_template($template, $courseid, $userid) {
+    global $DB;
+
+    if (empty($template->visible) || empty($template->status)) {
+        return false;
+    }
+
+    // Template managers may use any template.
+    $coursecontext = \context_course::instance($courseid);
+    if (has_capability('format/kickstart:manage_templates', $coursecontext, $userid)) {
+        return true;
+    }
+
+    // No Pro restrictions on the template.
+    if (
+        empty($template->restrictcohort) && empty($template->restrictcategory)
+        && empty($template->restrictuser) && empty($template->restrictrole)
+    ) {
+        return true;
+    }
+
+    if (
+        $template->restrictuser && !empty($template->userids)
+        && !in_array($userid, json_decode($template->userids, true) ?: [])
+    ) {
+        return false;
+    }
+
+    if ($template->restrictcategory) {
+        $course = $DB->get_record('course', ['id' => $courseid], 'id,category', MUST_EXIST);
+
+        $categoryids = [];
+        $rootcategoryids = json_decode($template->categoryids, true) ?: [];
+        if (is_array($rootcategoryids)) {
+            foreach ($rootcategoryids as $categoryid) {
+                $coursecat = \core_course_category::get($categoryid, IGNORE_MISSING);
+                if ($coursecat) {
+                    $categoryids[] = $categoryid;
+                    if ($template->includesubcategories) {
+                        $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
+                    }
+                }
+            }
+        }
+        if (!in_array($course->category, $categoryids)) {
+            return false;
+        }
+    }
+
+    if ($template->restrictcohort) {
+        if (function_exists('cohort_get_user_cohorts')) {
+            $cohorts = cohort_get_user_cohorts($userid);
+        } else if (function_exists('totara_cohort_get_user_cohorts')) {
+            $cohorts = totara_cohort_get_user_cohorts($userid);
+        } else {
+            $cohorts = [];
+        }
+        $cohortids = [];
+        foreach ($cohorts as $cohort) {
+            $cohortids[] = $cohort->id;
+        }
+        if (!array_intersect(json_decode($template->cohortids, true) ?: [], $cohortids)) {
+            return false;
+        }
+    }
+
+    if ($template->restrictrole) {
+        $roleids = [];
+        foreach (get_user_roles($coursecontext, $userid) as $role) {
+            $roleids[] = $role->roleid;
+        }
+        if (!array_intersect(json_decode($template->roleids, true) ?: [], $roleids)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * Remove the kickstart template settings.
  * @param int $templateid
  */

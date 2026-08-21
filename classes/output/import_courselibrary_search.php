@@ -148,7 +148,7 @@ class import_courselibrary_search {
         $search = ''
     ) {
         $this->search = trim($search);
-        $this->maxresults = get_config('format_kickstart', 'courselibraryperpage');
+        $this->maxresults = max(10, (int) get_config('format_kickstart', 'courselibraryperpage'));
         $this->setup_restrictions();
         $this->currentcourseid = $currentcouseid;
         $this->customfields = $customfields;
@@ -290,13 +290,6 @@ class import_courselibrary_search {
             $params['currentcourseid'] = $this->currentcourseid;
         }
 
-        // Capability restriction (admins bypass).
-        if (!is_siteadmin() && !empty($this->requiredcapabilities)) {
-            [$capwhere, $capparams] = $this->get_capability_where();
-            $where  .= $capwhere;
-            $params += $capparams;
-        }
-
         // Search term -> IN-clause of matching course IDs.
         if ($this->get_search() !== '') {
             [$searchwhere, $searchparams] = $this->get_search_where();
@@ -317,37 +310,30 @@ class import_courselibrary_search {
     }
 
     /**
-     * Build the capability WHERE fragment using EXISTS subqueries.
+     * Whether the user has any of the required capabilities in a course.
      *
-     * Replaces the previous LEFT JOIN role_capabilities / role_assignments pattern,
-     * which fanned rows out and required DISTINCT.
+     * Core has_any_capability() handles all the accesslib complexity.
      *
-     * @return array [where, params]
+     * @param int $courseid
+     * @param int $userid
+     * @return bool
      */
-    private function get_capability_where() {
-        global $USER;
+    private function user_has_required_capabilities(int $courseid, int $userid): bool {
+        $context = \context_course::instance($courseid);
 
-        $conds  = [];
-        $params = [];
-        $i = 0;
+        // Check all of a user's required capabilities at once.
+        $capsbyuser = [];
         foreach ($this->requiredcapabilities as $cap) {
-            $userid = (isset($cap['user']) && is_int($cap['user'])) ? $cap['user'] : $USER->id;
-            $capparam  = "capability{$i}";
-            $userparam = "capuser{$i}";
-            $conds[] = "EXISTS (SELECT 1
-                                  FROM {role_capabilities} rc{$i}
-                                  JOIN {role_assignments}  ra{$i} ON ra{$i}.roleid = rc{$i}.roleid
-                                 WHERE rc{$i}.capability = :{$capparam}
-                                   AND ra{$i}.userid     = :{$userparam}
-                                   AND ra{$i}.contextid  = ctx.id)";
-            $params[$capparam]  = $cap['capability'];
-            $params[$userparam] = $userid;
-            $i++;
+            $uid = (isset($cap['user']) && is_int($cap['user'])) ? $cap['user'] : $userid;
+            $capsbyuser[$uid][] = $cap['capability'];
         }
-        if (empty($conds)) {
-            return ['', []];
+
+        foreach ($capsbyuser as $uid => $caps) {
+            if (has_any_capability($caps, $context, $uid)) {
+                return true;
+            }
         }
-        return [' AND (' . implode(' OR ', $conds) . ')', $params];
+        return false;
     }
 
     /**
@@ -481,8 +467,7 @@ class import_courselibrary_search {
      * @return int[]
      */
     private function get_limit_sql() {
-        $perpage = get_config('format_kickstart', 'courselibraryperpage');
-        return $this->normalise_limit_from_num($this->page * $perpage, $perpage);
+        return $this->normalise_limit_from_num($this->page * $this->maxresults, $this->maxresults);
     }
 
     /**
@@ -490,7 +475,7 @@ class import_courselibrary_search {
      * @return array|int|null
      */
     public function search() {
-        global $DB;
+        global $DB, $USER;
         if (!is_null($this->results)) {
             return $this->results;
         }
@@ -500,28 +485,48 @@ class import_courselibrary_search {
         [$sql, $params] = $this->get_searchsql();
         $orderby = $this->get_orderby_sql();
         [$limitfrom, $limitnum] = $this->get_limit_sql();
+        $limitto = $limitfrom + $limitnum;
 
-        // Count against the same WHERE by replacing the SELECT.
-        $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $sql);
-        $totalcourses = $DB->count_records_sql($countsql, $params);
-        $this->totalcountfull = (int) $totalcourses;
+        // Using core capability checks filters out rows in PHP.
+        $needsfilter = !is_siteadmin() && !empty($this->requiredcapabilities);
 
-        if ($totalcourses > 0) {
-            // Iterate while we have records and haven't reached $this->maxresults.
-            $resultset = $DB->get_recordset_sql($sql . $orderby, $params, $limitfrom, $limitnum);
+        if ($needsfilter) {
+            // By filtering in PHP, we get accurate capability checks, but that
+            // means that we need to do the SQL pagination in PHP too. Luckily,
+            // context and capability checks can be pre-cached in memory, so we
+            // do not need to do a bunch of extra queries to get the results.
+            $totalcourses = 0;
+            $resultset = $DB->get_recordset_sql($sql . $orderby, $params);
             foreach ($resultset as $result) {
                 \context_helper::preload_from_record($result);
-                // Check if we are over the limit.
-                if ($this->totalcount + 1 > $this->maxresults) {
-                    $this->hasmoreresults = true;
-                    break;
+                if (!$this->user_has_required_capabilities($result->id, $USER->id)) {
+                    continue;
                 }
-                // If not, then continue.
-                $this->totalcount++;
-                $this->results[$result->id] = $result;
+                if ($totalcourses >= $limitfrom && $totalcourses < $limitto) {
+                    $this->totalcount++;
+                    $this->results[$result->id] = $result;
+                }
+                $totalcourses++;
             }
             $resultset->close();
+        } else {
+            // Count against the same WHERE by replacing the SELECT.
+            $countsql = preg_replace('/^\s*SELECT\s.*?\sFROM\s/s', 'SELECT COUNT(*) FROM ', $sql);
+            $totalcourses = $DB->count_records_sql($countsql, $params);
+
+            if ($totalcourses > 0) {
+                $resultset = $DB->get_recordset_sql($sql . $orderby, $params, $limitfrom, $limitnum);
+                foreach ($resultset as $result) {
+                    \context_helper::preload_from_record($result);
+                    $this->totalcount++;
+                    $this->results[$result->id] = $result;
+                }
+                $resultset->close();
+            }
         }
+
+        $this->totalcountfull = (int) $totalcourses;
+        $this->hasmoreresults = $this->totalcountfull > $limitto;
 
         if ($this->sorttype == 'relevance' && !empty($this->results)) {
             // Compute all relevance scores in one batch (current course, tags,

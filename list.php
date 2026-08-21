@@ -58,8 +58,8 @@ $titlecomponents = [
     $uniquetitle,
     $context->get_context_name(false),
 ];
-$PAGE->set_title(implode(moodle_page::TITLE_SEPARATOR, $titlecomponents));
-$PAGE->set_heading($PAGE->course->fullname);
+$PAGE->set_title(format_string(implode(moodle_page::TITLE_SEPARATOR, $titlecomponents)));
+$PAGE->set_heading(format_string($PAGE->course->fullname));
 
 echo $OUTPUT->header();
 

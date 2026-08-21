@@ -78,8 +78,12 @@ trait kickstart_page {
                 $content .= $prorenderer->render(new \local_kickstart_pro\output\default_view($this->course));
             } else {
                 $course = course_get_format($this->course)->get_course();
-                $content .= html_writer::tag('h2', get_string('welcometo', 'format_kickstart')
-                    . " " . $this->course->fullname, ['class' => '"mt-3']);
+                $formattedname = format_string($this->course->fullname, true, ['context' => $this->context]);
+                $content .= html_writer::tag(
+                    'h2',
+                    get_string('welcometo', 'format_kickstart') . ' ' . $formattedname,
+                    ['class' => 'mt-3']
+                );
                 $content .= format_text($course->userinstructions['text'], $course->userinstructions['format']);
                 $content .= \html_writer::end_div();
             }
