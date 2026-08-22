@@ -1122,8 +1122,8 @@ function format_kickstart_output_fragment_get_library_coursecontents($args) {
     $data = [
         'contents'    => array_values($contents),
         'accordionid' => 'accordion-import-courses-' . $courseid,
-        'datatoggle'  => ($CFG->branch >= 500) ? 'data-bs-toggle' : 'data-toggle',
-        'datatarget'  => ($CFG->branch >= 500) ? 'data-bs-target' : 'data-target',
+        'datatoggle'  => 'data-bs-toggle',
+        'datatarget'  => 'data-bs-target',
     ];
 
     return $OUTPUT->render_from_template('local_kickstart_pro/import_course_contents', $data);
