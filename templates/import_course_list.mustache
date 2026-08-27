@@ -41,18 +41,18 @@
 
 {{^haspro}}
 <div class="clearfix mb-2">
-    <a href="{{prourl}}" target="_blank" class="btn btn-dark pull-right">{{#str}}goprotoenable, format_kickstart{{/str}}</a>
+    <a href="{{prourl}}" target="_blank" class="btn btn-dark pull-right">{{#str}} goprotoenable, format_kickstart {{/str}}</a>
     <h4 class="text-muted">{{#str}} migratefromcourses, format_kickstart {{/str}}</h4>
-    <p>{{#str}}importexplanation, format_kickstart{{/str}}</p>
+    <p>{{#str}} importexplanation, format_kickstart {{/str}}</p>
 </div>
 {{/haspro}}
 
 {{^haspro}}
     <form method="post" action="#" style="max-width: 300px">
         <div class="input-group">
-            <input disabled type="text" name="search" class="form-control" placeholder="{{#str}}search{{/str}}" aria-label="{{#str}}search{{/str}}">
+            <input disabled type="text" name="search" class="form-control" placeholder="{{#str}} search {{/str}}" aria-label="{{#str}} search {{/str}}">
             <div class="input-group-append">
-                <button class="btn btn-outline-secondary disabled" type="submit" disabled>{{#pix}}i/search, core{{/pix}}</button>
+                <button class="btn btn-outline-secondary disabled" type="submit" disabled aria-label="{{#str}} search, core {{/str}}">{{#pix}} i/search, core {{/pix}}</button>
             </div>
         </div>
     </form>
@@ -70,8 +70,8 @@
                         </div>
                         {{/.}}
                     {{/customfields}}
-                    <a href="#" class="btn btn-dark disabled pull-right">{{#str}}importcourse, format_kickstart{{/str}}</a>
-                    <a href="#" class="btn btn-outline-dark disabled pull-right mr-2">{{#str}} gotocourse, format_kickstart{{/str}}</a>
+                    <a href="#" class="btn btn-dark disabled pull-right">{{#str}} importcourse, format_kickstart {{/str}}</a>
+                    <a href="#" class="btn btn-outline-dark disabled pull-right mr-2">{{#str}} gotocourse, format_kickstart {{/str}}</a>
                 </div>
             </div>
         {{/courses}}
