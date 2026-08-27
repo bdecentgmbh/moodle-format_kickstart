@@ -150,15 +150,16 @@ class course_importer {
         }
 
         if (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') < 2) {
-            $settings['role_assignments'] =
-                (bool) get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments');
-            $settings['enrolments'] = (bool) (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') == 1)
-                ? \backup::ENROL_ALWAYS : \backup::ENROL_NEVER;
+            $keeproles = (bool) get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments');
+            $settings['keep_roles_and_enrolments'] = $keeproles;
+            $settings['role_assignments'] = !$keeproles;
+            $settings['enrolments'] = $keeproles ? \backup::ENROL_NEVER : \backup::ENROL_ALWAYS;
         }
 
         if (get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings') < 2) {
-            $settings['groups'] =
-                (bool) get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings');
+            $keepgroups = (bool) get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings');
+            $settings['keep_groups_and_groupings'] = $keepgroups;
+            $settings['groups'] = !$keepgroups;
         }
 
         try {
