@@ -80,10 +80,9 @@ class format_kickstart extends core_courseformat\base {
      * Definitions of the additional options that this course format uses for course
      *
      * Kickstart format uses the following options:
-     * - userinstructions
-     * - userinstructions_format
-     * - teacherinstructions
-     * - teacherinstructions_format
+     * - templatesview
+     * - userinstructions_editor (userinstructions and userinstructionsformat)
+     * - teacherinstructions_editor (teacherinstructions and teacherinstructionsformat)
      *
      * @param bool $foreditform
      * @return array of options
@@ -108,7 +107,7 @@ class format_kickstart extends core_courseformat\base {
                     ],
                     'default' => get_config('format_kickstart', 'defaulttemplatesview'),
                 ],
-                'userinstructions' => [
+                'userinstructions_editor' => [
                     'label' => new lang_string('userinstructions', 'format_kickstart'),
                     'help' => 'userinstructions',
                     'help_component' => 'format_kickstart',
@@ -119,12 +118,7 @@ class format_kickstart extends core_courseformat\base {
                     'type' => PARAM_RAW,
                     'element_type' => 'editor',
                 ],
-                'userinstructions_format' => [
-                    'element_type' => 'hidden',
-                    'type' => PARAM_INT,
-                    'label' => 'hidden',
-                ],
-                'teacherinstructions' => [
+                'teacherinstructions_editor' => [
                     'label' => new lang_string('teacherinstructions', 'format_kickstart'),
                     'help' => 'teacherinstructions',
                     'help_component' => 'format_kickstart',
@@ -135,15 +129,40 @@ class format_kickstart extends core_courseformat\base {
                     'type' => PARAM_RAW,
                     'element_type' => 'editor',
                 ],
-                'teacherinstructions_format' => [
-                    'element_type' => 'hidden',
-                    'type' => PARAM_INT,
-                    'label' => 'hidden',
-                ],
             ];
         }
 
         return $courseformatoptions;
+    }
+
+    /**
+     * Override: Add support for _editor fields until MDL-83042 lands.
+     *
+     * @param null|int|stdClass|section_info $section If null, return course format options.
+     * @return array the list of configuration settings
+     */
+    public function get_format_options($section = null) {
+        $options = parent::get_format_options($section);
+
+        // This is required until MDL-83042 is merged in all supported branches.
+        $optiondefs = $section === null ? $this->course_format_options() : $this->section_format_options();
+        foreach ($optiondefs as $optionname => $option) {
+            if (isset($options[$optionname])) {
+                expand_value($options, $options, $option, $optionname);
+            }
+        }
+
+        return $options;
+    }
+
+    /**
+     * Return the plugin configs for external functions.
+     *
+     * @return array the list of configuration settings
+     */
+    public function get_config_for_external() {
+        // Return everything (nothing to hide).
+        return $this->get_format_options();
     }
 
     /**
@@ -182,7 +201,15 @@ class format_kickstart extends core_courseformat\base {
             if (array_key_exists('default', $option)) {
                 $defaultoptions[$key] = $option['default'];
             }
-            $cached[$key] = ($sectionid === 0 || !empty($option['cache']));
+            expand_value($defaultoptions, $defaultoptions, $option, $key);
+            $iscached = ($sectionid === 0 || !empty($option['cache']));
+            $cached[$key] = $iscached;
+            if (substr($key, -7) === '_editor') {
+                // Editor options expand into <name> and <name>format; cache those too.
+                $name = substr($key, 0, -7);
+                $cached[$name] = $iscached;
+                $cached[$name . 'format'] = $iscached;
+            }
         }
         $records = $DB->get_records(
             'course_format_options',
@@ -218,8 +245,6 @@ class format_kickstart extends core_courseformat\base {
                     // No need to call rebuild_course_cache().
                 }
 
-                $newvalue = !is_array($newvalue) ? $newvalue : $newvalue['text'];
-
                 $DB->insert_record('course_format_options', [
                     'courseid' => $this->courseid,
                     'format' => $this->format,
@@ -230,7 +255,15 @@ class format_kickstart extends core_courseformat\base {
             }
         }
         if ($needrebuild) {
-            rebuild_course_cache($this->courseid, true);
+            if ($sectionid) {
+                // Invalidate the section cache by given section id.
+                course_modinfo::purge_course_section_cache_by_id($this->courseid, $sectionid);
+                // Partial rebuild sections that have been invalidated.
+                rebuild_course_cache($this->courseid, true, true);
+            } else {
+                // Full rebuild if sectionid is null.
+                rebuild_course_cache($this->courseid);
+            }
         }
         if ($changed) {
             // Reset internal caches.
@@ -243,32 +276,6 @@ class format_kickstart extends core_courseformat\base {
     }
 
     /**
-     * Updates format options for a course
-     *
-     * In case if course format was changed to 'topics', we try to copy options
-     * 'coursedisplay' and 'hiddensections' from the previous format.
-     *
-     * @param stdClass|array $data return value from {moodleform::get_data()} or array with data
-     * @param stdClass $oldcourse if this function is called from {update_course()}
-     *     this object contains information about the course before update
-     * @return bool whether there were any changes to the options values
-     */
-    public function update_course_format_options($data, $oldcourse = null) {
-        $data = (array) $data;
-
-        if (isset($data['userinstructions']) && is_array($data['userinstructions'])) {
-            $data['userinstructions_format'] = $data['userinstructions']['format'];
-            $data['userinstructions'] = $data['userinstructions']['text'];
-        }
-        if (isset($data['teacherinstructions']) && is_array($data['teacherinstructions'])) {
-            $data['teacherinstructions_format'] = $data['teacherinstructions']['format'];
-            $data['teacherinstructions'] = $data['teacherinstructions']['text'];
-        }
-
-        return $this->update_format_options($data);
-    }
-
-    /**
      * Returns a record from course database table plus additional fields
      * that course format defines
      *
@@ -277,17 +284,18 @@ class format_kickstart extends core_courseformat\base {
     public function get_course() {
         $course = parent::get_course();
 
-        if (is_string($course->userinstructions)) {
-            $course->userinstructions = [
-                'text' => $course->userinstructions,
-                'format' => $course->userinstructions_format,
-            ];
+        // These should not be needed, but just in case.
+        if (!isset($course->userinstructions)) {
+            $course->userinstructions = '';
         }
-        if (is_string($course->teacherinstructions)) {
-            $course->teacherinstructions = [
-                'text' => $course->teacherinstructions,
-                'format' => $course->teacherinstructions_format,
-            ];
+        if (!isset($course->userinstructionsformat)) {
+            $course->userinstructionsformat = FORMAT_HTML;
+        }
+        if (!isset($course->teacherinstructions)) {
+            $course->teacherinstructions = '';
+        }
+        if (!isset($course->teacherinstructionsformat)) {
+            $course->teacherinstructionsformat = FORMAT_HTML;
         }
 
         return $course;

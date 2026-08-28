@@ -226,7 +226,7 @@ class course_template_list implements \renderable, \templatable {
             'has_pro' => format_kickstart_has_pro(),
             'ajaxscript' => (AJAX_SCRIPT) ? true : false,
             'teacherinstructions' => isset($this->course->teacherinstructions) ?
-                format_text($this->course->teacherinstructions['text'], $this->course->teacherinstructions['format']) : '',
+                format_text($this->course->teacherinstructions, $this->course->teacherinstructionsformat) : '',
             'templateclass' => isset($templateview) && ($templateview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),

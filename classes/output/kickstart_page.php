@@ -84,7 +84,7 @@ trait kickstart_page {
                     get_string('welcometo', 'format_kickstart') . ' ' . $formattedname,
                     ['class' => 'mt-3']
                 );
-                $content .= format_text($course->userinstructions['text'], $course->userinstructions['format']);
+                $content .= format_text($course->userinstructions, $course->userinstructionsformat);
                 $content .= \html_writer::end_div();
             }
             return $content;
