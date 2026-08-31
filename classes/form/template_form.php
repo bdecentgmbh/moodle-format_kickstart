@@ -196,6 +196,35 @@ class template_form extends \moodleform {
                 $mform->setDefault('restrictuser', 1);
             }
             $mform->hideIf('userids', 'restrictuser');
+
+            if (!$courseautotemplate) {
+                $mform->addElement('header', 'autotemplatesection', get_string('autotemplatesection', 'format_kickstart'));
+
+                $mform->addElement('advcheckbox', 'autoapply', get_string('autoapply', 'format_kickstart'));
+                $mform->setType('autoapply', PARAM_BOOL);
+                $mform->addHelpButton('autoapply', 'autoapply', 'format_kickstart');
+
+                // Deliberately unfiltered: this form requires manage_templates.
+                $autocategories = \core_course_category::make_categories_list();
+                $mform->addElement(
+                    'autocomplete',
+                    'autoapplycategoryids',
+                    get_string('autoapplycategoryids', 'format_kickstart'),
+                    $autocategories,
+                    ['multiple' => true]
+                );
+                $mform->addHelpButton('autoapplycategoryids', 'autoapplycategoryids', 'format_kickstart');
+                $mform->hideIf('autoapplycategoryids', 'autoapply');
+
+                $mform->addElement(
+                    'advcheckbox',
+                    'autoapplysubcategories',
+                    get_string('autoapplysubcategories', 'format_kickstart')
+                );
+                $mform->setType('autoapplysubcategories', PARAM_BOOL);
+                $mform->addHelpButton('autoapplysubcategories', 'autoapplysubcategories', 'format_kickstart');
+                $mform->hideIf('autoapplysubcategories', 'autoapply');
+            }
         }
 
         if ($checkformat) {
@@ -229,5 +258,26 @@ class template_form extends \moodleform {
         }
 
         $this->add_action_buttons();
+    }
+
+    /**
+     * Validate the submitted template data.
+     *
+     * @param array $data submitted data.
+     * @param array $files submitted files.
+     * @return array list of errors.
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        // Automatic application needs at least one category unless the course
+        // custom field mechanism can select this template instead.
+        if (
+            !empty($data['autoapply']) &&
+            empty($data['autoapplycategoryids']) &&
+            !get_config('format_kickstart', 'autotemplatecustomfield')
+        ) {
+            $errors['autoapplycategoryids'] = get_string('autoapplynocategories', 'format_kickstart');
+        }
+        return $errors;
     }
 }

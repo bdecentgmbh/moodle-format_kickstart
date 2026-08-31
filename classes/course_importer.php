@@ -46,6 +46,9 @@ class course_importer {
      *
      * @param int $templateid
      * @param int $courseid
+     * @param array $options optional behaviour tweaks:
+     *      'checkavailability' (bool, default true) verify the current user may use the template;
+     *      'target' (int|null, default null) restore target overriding the importtarget setting.
      * @throws \base_plan_exception
      * @throws \base_setting_exception
      * @throws \coding_exception
@@ -53,15 +56,18 @@ class course_importer {
      * @throws \moodle_exception
      * @throws \restore_controller_exception
      */
-    public static function import_from_template($templateid, $courseid) {
+    public static function import_from_template($templateid, $courseid, array $options = []) {
         global $CFG, $DB, $PAGE, $USER;
         require_once($CFG->dirroot . "/course/lib.php");
         $PAGE->set_context(context_course::instance($courseid));
         $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
-        // Before import, verify that user has access.
-        if (!format_kickstart_can_use_template($template, $courseid, $USER->id)) {
-            throw new \moodle_exception('templatenotavailable', 'format_kickstart');
+        // Before import, verify that user has access. Trusted system processes
+        // (e.g. the automatic template task running as admin) may disable this.
+        if ($options['checkavailability'] ?? true) {
+            if (!format_kickstart_can_use_template($template, $courseid, $USER->id)) {
+                throw new \moodle_exception('templatenotavailable', 'format_kickstart');
+            }
         }
 
         if (!$template->courseformat) {
@@ -84,7 +90,7 @@ class course_importer {
             $backuptempdir = make_backup_temp_directory('template' . $templateid);
             $files[0]->extract_to_pathname($fp, $backuptempdir);
 
-            self::import('template' . $templateid, $courseid);
+            self::import('template' . $templateid, $courseid, $options['target'] ?? null);
         } else {
             $course = (array) $DB->get_record('course', ['id' => $courseid]);
             $course['format'] = $template->format;
@@ -126,12 +132,13 @@ class course_importer {
      *
      * @param string $backuptempdir
      * @param int $courseid
+     * @param int|null $target restore target, defaults to the importtarget setting.
      * @throws \base_plan_exception
      * @throws \base_setting_exception
      * @throws \dml_exception
      * @throws \restore_controller_exception
      */
-    public static function import($backuptempdir, $courseid) {
+    public static function import($backuptempdir, $courseid, $target = null) {
         global $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);
@@ -166,7 +173,7 @@ class course_importer {
 
         try {
             // Now restore the course.
-            $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
+            $target = $target ?? (get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING);
             $rc = new \restore_controller(
                 $backuptempdir,
                 $course->id,

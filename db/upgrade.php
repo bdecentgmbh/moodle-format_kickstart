@@ -305,5 +305,27 @@ function xmldb_format_kickstart_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026090100, 'format', 'kickstart');
     }
 
+    if ($oldversion < 2026093000) {
+        $table = new xmldb_table('format_kickstart_template');
+
+        $field = new xmldb_field('autoapply', XMLDB_TYPE_INTEGER, '1', null, null, null, 0, 'format');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('autoapplycategoryids', XMLDB_TYPE_TEXT, null, null, null, null, null, 'autoapply');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('autoapplysubcategories', XMLDB_TYPE_INTEGER, '1', null, null, null, 0, 'autoapplycategoryids');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Kickstart savepoint reached.
+        upgrade_plugin_savepoint(true, 2026093000, 'format', 'kickstart');
+    }
+
     return true;
 }

@@ -112,6 +112,57 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Importing a restricted template as an unprivileged user must fail by default.
+     * @covers ::import_from_template
+     */
+    public function test_import_from_template_availability_enforced(): void {
+        [$templateid, $courseid] = $this->create_restricted_courseformat_template();
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('templatenotavailable', 'format_kickstart'));
+        \format_kickstart\course_importer::import_from_template($templateid, $courseid);
+    }
+
+    /**
+     * The checkavailability option lets trusted processes bypass the availability check.
+     * @covers ::import_from_template
+     */
+    public function test_import_from_template_availability_bypassed(): void {
+        global $DB;
+        [$templateid, $courseid] = $this->create_restricted_courseformat_template();
+        \format_kickstart\course_importer::import_from_template($templateid, $courseid, [
+            'checkavailability' => false,
+        ]);
+        $this->assertEquals('topics', $DB->get_field('course', 'format', ['id' => $courseid]));
+    }
+
+    /**
+     * Create a course format template restricted to another user, plus a course,
+     * and switch to an unprivileged user.
+     *
+     * @return array [templateid, courseid]
+     */
+    protected function create_restricted_courseformat_template(): array {
+        global $DB;
+        $course = $this->getDataGenerator()->create_course(['format' => 'weeks']);
+        $otheruser = $this->getDataGenerator()->create_user();
+        $template = new \stdClass();
+        $template->title = 'Restricted template';
+        $template->description = '';
+        $template->descriptionformat = FORMAT_HTML;
+        $template->courseformat = 1;
+        $template->format = 'topics';
+        $template->restrictuser = 1;
+        $template->userids = json_encode([$otheruser->id]);
+        $template->visible = 1;
+        $template->status = 1;
+        $templateid = $DB->insert_record('format_kickstart_template', $template);
+
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        return [$templateid, $course->id];
+    }
+
+    /**
      * Case to test the external method to create template.
      * @covers ::format_kickstart_create_template
      * @return void

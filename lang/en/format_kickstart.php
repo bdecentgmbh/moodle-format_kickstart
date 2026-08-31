@@ -22,9 +22,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['autoapply'] = 'Automatically apply to new courses';
+$string['autoapply_help'] = 'If checked, this template is automatically applied to newly created empty courses in the assigned course categories, without anyone having to access the course. Only courses using the Kickstart format are considered, a template is never applied to a course that already has content, and it is applied at most once per course.';
+$string['autoapplycategoryids'] = 'Apply in categories';
+$string['autoapplycategoryids_help'] = 'New courses created in these categories will automatically get this template applied.';
+$string['autoapplynocategories'] = 'Select at least one category, or configure the course custom field for automatic templates in the Kickstart settings.';
+$string['autoapplysubcategories'] = 'Include subcategories';
+$string['autoapplysubcategories_help'] = 'If checked, new courses in subcategories of the assigned categories will also get this template applied.';
 $string['automatictemplate'] = 'Automatic template';
 $string['automatictemplate_desc'] = 'If only one template is available to the user it will automatically be imported. The user will be notified on the page when this happens.';
 $string['automatictemplate_help'] = 'The course template was automatically applied. If you require a different template, please contact the system administrator.';
+$string['autotemplatecustomfield'] = 'Custom field for automatic templates';
+$string['autotemplatecustomfield_desc'] = 'Course custom field whose value selects the template (by title) to automatically apply to a newly created course. The value set in this field takes precedence over the category assignment of templates. Create the field yourself under course custom fields; only short text or dropdown fields that are locked and hidden (visible to nobody) are offered here, because the field controls course content and must not be editable or visible to ordinary users.';
+$string['autotemplateoncreation'] = 'Apply templates on course creation';
+$string['autotemplateoncreation_desc'] = 'If enabled, templates are automatically applied to newly created courses using the Kickstart format, based on the template category assignments or the configured course custom field. Only empty courses are affected and a template is applied at most once per course.';
+$string['autotemplatesection'] = 'Automatic template application';
 $string['buypro'] = 'Buy Kickstart Pro';
 $string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="http://bdecent.de/kickstart">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';

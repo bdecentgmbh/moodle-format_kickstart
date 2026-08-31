@@ -26,7 +26,7 @@ use core\url as moodle_url;
 
 defined('MOODLE_INTERNAL') || die;
 
-global $CFG;
+global $CFG, $DB;
 
 require_once("$CFG->dirroot/course/format/kickstart/lib.php");
 require_once("$CFG->dirroot/backup/util/includes/backup_includes.php");
@@ -53,6 +53,42 @@ if ($ADMIN->fulltree) {
             new lang_string('automatictemplate', 'format_kickstart'),
             new lang_string('automatictemplate_desc', 'format_kickstart'),
             1
+        ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'format_kickstart/autotemplateoncreation',
+            new lang_string('autotemplateoncreation', 'format_kickstart'),
+            new lang_string('autotemplateoncreation_desc', 'format_kickstart'),
+            0
+        ));
+
+        // Course custom field used to select the template to automatically apply.
+        // Only locked and hidden select/text fields qualify - the field controls
+        // course content, so ordinary users must not be able to set or see it.
+        $autotemplatefields = ['' => new lang_string('none')];
+        $customfields = $DB->get_records_sql("
+            SELECT f.id, f.name, f.shortname, f.type, f.configdata
+              FROM {customfield_field} f
+              JOIN {customfield_category} c ON c.id = f.categoryid
+             WHERE c.component = 'core_course' AND c.area = 'course'
+          ORDER BY f.name ASC");
+        foreach ($customfields as $customfield) {
+            if (!in_array($customfield->type, ['select', 'text'])) {
+                continue;
+            }
+            $configdata = json_decode($customfield->configdata, true) ?: [];
+            if (empty($configdata['locked']) || !empty($configdata['visibility'])) {
+                continue;
+            }
+            $autotemplatefields[$customfield->shortname] = format_string($customfield->name) .
+                ' (' . $customfield->shortname . ')';
+        }
+        $settings->add(new admin_setting_configselect(
+            'format_kickstart/autotemplatecustomfield',
+            new lang_string('autotemplatecustomfield', 'format_kickstart'),
+            new lang_string('autotemplatecustomfield_desc', 'format_kickstart'),
+            '',
+            $autotemplatefields
         ));
         $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
         $settings->add(new admin_setting_configstoredfile(

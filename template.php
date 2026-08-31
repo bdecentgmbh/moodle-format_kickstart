@@ -78,6 +78,7 @@ switch ($action) {
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
                 $data->userids = json_encode($data->userids);
+                $data->autoapplycategoryids = json_encode($data->autoapplycategoryids ?? []);
             }
             $data->sort = format_kickstart_get_next_template_sort();
             $data->courseformat = 0;
@@ -197,6 +198,7 @@ switch ($action) {
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
                 $data->userids = json_encode($data->userids);
+                $data->autoapplycategoryids = json_encode($data->autoapplycategoryids ?? []);
             }
             $DB->update_record('format_kickstart_template', $data);
 
@@ -263,6 +265,8 @@ switch ($action) {
                 $template->categoryids = isset($template->categoryids) ? json_decode($template->categoryids, true) : [];
                 $template->roleids = isset($template->roleids) ? json_decode($template->roleids, true) : [];
                 $template->userids = isset($template->userids) ? json_decode($template->userids, true) : [];
+                $template->autoapplycategoryids = isset($template->autoapplycategoryids)
+                    ? json_decode($template->autoapplycategoryids, true) : [];
             }
             // Check the template is normal or course format.
             if (!$template->courseformat) {
