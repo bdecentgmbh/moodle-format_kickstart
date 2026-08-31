@@ -82,6 +82,23 @@ class format_kickstart extends core_courseformat\base {
     }
 
     /**
+     * Notice rendered above the course content, e.g. while an automatic
+     * template application is pending for this course.
+     *
+     * @return null|\renderable null for no output or a course_notice renderable
+     */
+    public function course_content_header() {
+        global $CFG;
+        if (format_kickstart_has_pro()) {
+            require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
+            if (function_exists('local_kickstart_pro_autotemplate_notice')) {
+                return local_kickstart_pro_autotemplate_notice($this->get_course());
+            }
+        }
+        return null;
+    }
+
+    /**
      * Definitions of the additional options that this course format uses for course
      *
      * Kickstart format uses the following options:
