@@ -112,6 +112,39 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * The extracted backup directory is unique per import and removed afterwards,
+     * so concurrent imports of the same template cannot collide.
+     * @covers ::import_from_template
+     */
+    public function test_import_tempdir_cleanup(): void {
+        global $CFG, $DB;
+        $course1 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+        $template = new \stdClass();
+        $template->title = 'Cleanup template';
+        $template->description = '';
+        $template->descriptionformat = FORMAT_HTML;
+        $template->id = $DB->insert_record('format_kickstart_template', $template);
+
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname([
+            'contextid' => context_system::instance()->id,
+            'component' => 'format_kickstart',
+            'filearea' => 'course_backups',
+            'itemid' => $template->id,
+            'filepath' => '/',
+            'filename' => 'course-10-online.mbz',
+        ], $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course1->id);
+        \format_kickstart\course_importer::import_from_template($template->id, $course2->id);
+
+        $this->assertGreaterThan(0, $DB->count_records('course_modules', ['course' => $course1->id]));
+        $this->assertGreaterThan(0, $DB->count_records('course_modules', ['course' => $course2->id]));
+        $this->assertEmpty(glob($CFG->backuptempdir . '/template' . $template->id . '_*'));
+    }
+
+    /**
      * Importing a restricted template as an unprivileged user must fail by default.
      * @covers ::import_from_template
      */

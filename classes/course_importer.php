@@ -87,10 +87,18 @@ class course_importer {
             }
 
             $fp = get_file_packer('application/vnd.moodle.backup');
-            $backuptempdir = make_backup_temp_directory('template' . $templateid);
+            // Use a unique directory per import: concurrent imports of the same
+            // template (e.g. parallel adhoc tasks during bulk course creation)
+            // must not extract over each other's files mid-restore.
+            $backupdirname = 'template' . $templateid . '_' . $courseid . '_' . random_string(6);
+            $backuptempdir = make_backup_temp_directory($backupdirname);
             $files[0]->extract_to_pathname($fp, $backuptempdir);
 
-            self::import('template' . $templateid, $courseid, $options['target'] ?? null);
+            try {
+                self::import($backupdirname, $courseid, $options['target'] ?? null);
+            } finally {
+                fulldelete($backuptempdir);
+            }
         } else {
             $course = (array) $DB->get_record('course', ['id' => $courseid]);
             $course['format'] = $template->format;
