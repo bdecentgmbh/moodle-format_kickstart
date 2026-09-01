@@ -1211,10 +1211,8 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     // Any state action mark the state cache as dirty.
     core_courseformat\base::session_cache_reset($maincourserecord);
     $viewurl = new \moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);
-    if (
-        $subsection = $DB->get_record('modules', ['name' => 'subsection']) && !empty($subsection) &&
-        $subsection->id == $cm->module
-    ) {
+    $subsection = $DB->get_record('modules', ['name' => 'subsection']);
+    if ($subsection && $subsection->id == $cm->module) {
         $subsectionid = $DB->get_field('course_modules', 'id', ['itemid' => $newcmid, 'course' => $cm->course]);
         $viewurl = new \moodle_url('/course/section.php', ['id' => $subsectionid]);
     }

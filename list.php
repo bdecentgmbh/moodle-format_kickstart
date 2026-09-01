@@ -40,6 +40,11 @@ $course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_login($course);
 
+// Show student view to users without the import capability.
+if (!has_capability('format/kickstart:import_from_template', $context)) {
+    $nav = 'studentview';
+}
+
 $PAGE->requires->js_call_amd(
     'format_kickstart/formatkickstart',
     'init',
