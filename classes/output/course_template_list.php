@@ -76,23 +76,8 @@ class course_template_list implements \renderable, \templatable {
      * @throws \moodle_exception
      */
     public function get_templates() {
-        global $DB, $COURSE, $CFG, $USER;
+        global $DB, $COURSE, $CFG;
         $limit = format_kickstart_has_pro() ? 0 : 2 * 2;
-        $cohorts = [];
-        if (function_exists('cohort_get_user_cohorts')) {
-            $cohorts = cohort_get_user_cohorts($this->userid);
-        } else if (function_exists('totara_cohort_get_user_cohorts')) {
-            $cohorts = totara_cohort_get_user_cohorts($this->userid);
-        }
-        $cohortids = [];
-        foreach ($cohorts as $cohort) {
-            $cohortids[] = $cohort->id;
-        }
-
-        $roleids = [];
-        foreach (get_user_roles(\context_course::instance($this->course->id)) as $role) {
-            $roleids[] = $role->roleid;
-        }
 
         // Add search conditions.
         $searchconditions = [];
@@ -152,37 +137,9 @@ class course_template_list implements \renderable, \templatable {
         $templatecount = 0;
         if (!empty($listtemplates)) {
             foreach ($listtemplates as $template) {
-                // Apply template access if pro is installed.
-                if (format_kickstart_has_pro()) {
-                    $categoryids = [];
-                    if ($template->categoryids) {
-                        $rootcategoryids = json_decode($template->categoryids, true);
-                        if (is_array($rootcategoryids)) {
-                            foreach ($rootcategoryids as $categoryid) {
-                                $coursecat = \core_course_category::get($categoryid, IGNORE_MISSING);
-                                if ($coursecat) {
-                                    $categoryids[] = $categoryid;
-                                    if ($template->includesubcategories) {
-                                        $categoryids = array_merge($categoryids, $coursecat->get_all_children_ids());
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (!has_capability('format/kickstart:manage_templates', \context_course::instance($this->course->id))) {
-                        if (
-                            ($template->restrictcohort && !array_intersect(json_decode($template->cohortids, true), $cohortids)) ||
-                            ($template->restrictcategory && !in_array($this->course->category, $categoryids)) ||
-                            ($template->restrictuser && $template->userids && !in_array(
-                                $USER->id,
-                                json_decode($template->userids, true)
-                            )) ||
-                            ($template->restrictrole && !array_intersect(json_decode($template->roleids, true), $roleids))
-                        ) {
-                            continue;
-                        }
-                    }
+                // Skip templates the user may not use.
+                if (!format_kickstart_can_use_template($template, $this->course->id, $this->userid)) {
+                    continue;
                 }
 
                 $template->description_formatted = format_text(file_rewrite_pluginfile_urls(
@@ -269,7 +226,7 @@ class course_template_list implements \renderable, \templatable {
             'has_pro' => format_kickstart_has_pro(),
             'ajaxscript' => (AJAX_SCRIPT) ? true : false,
             'teacherinstructions' => isset($this->course->teacherinstructions) ?
-                format_text($this->course->teacherinstructions['text'], $this->course->teacherinstructions['format']) : '',
+                format_text($this->course->teacherinstructions, $this->course->teacherinstructionsformat) : '',
             'templateclass' => isset($templateview) && ($templateview == 'list') ? 'kickstart-list-view' : 'kickstart-tile-view',
             'notemplates' => empty($templates),
             'canmanage' => has_capability('format/kickstart:manage_templates', \context_system::instance()),
