@@ -54,6 +54,13 @@ if ($ADMIN->fulltree) {
             new lang_string('automatictemplate_desc', 'format_kickstart'),
             1
         ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'format_kickstart/applyrestrictionstomanagers',
+            new lang_string('applyrestrictionstomanagers', 'format_kickstart'),
+            new lang_string('applyrestrictionstomanagers_desc', 'format_kickstart'),
+            0
+        ));
         $templatebgoptions = ['maxfiles' => 10, 'subdirs' => 0, 'accepted_types' => ['.jpg', '.png']];
         $settings->add(new admin_setting_configstoredfile(
             'format_kickstart/templatebackimages',

@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['applyrestrictionstomanagers'] = 'Apply template access restrictions to managers';
+$string['applyrestrictionstomanagers_desc'] = 'If enabled, template access restrictions (cohorts, categories, users and roles) also apply to users with the "Manage templates" capability, including site administrators. They only see and can use the templates available to them, and the automatic template applies to them as well. If disabled, these users always see all templates; templates with access restrictions are marked with a "Restricted" badge.';
 $string['automatictemplate'] = 'Automatic template';
 $string['automatictemplate_desc'] = 'If only one template is available to the user it will automatically be imported. The user will be notified on the page when this happens.';
 $string['automatictemplate_help'] = 'The course template was automatically applied. If you require a different template, please contact the system administrator.';
@@ -199,6 +201,8 @@ $string['restrictcategory'] = 'Restrict by categories';
 $string['restrictcategory_help'] = 'If enabled, only courses within the selected categories will have access to this template.';
 $string['restrictcohort'] = 'Restrict by cohorts';
 $string['restrictcohort_help'] = 'If enabled, only members of the selected cohorts will have access to this template.';
+$string['restrictedtemplate'] = 'Restricted';
+$string['restrictedtemplate_title'] = 'This template has access restrictions and is not available to all users.';
 $string['restrictrole'] = 'Restrict by roles';
 $string['restrictrole_help'] = 'If enabled, only users with the selected roles will have access to this template.';
 $string['restrictuser'] = "Restrict by user";

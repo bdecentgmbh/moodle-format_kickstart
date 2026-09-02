@@ -503,3 +503,17 @@ body#page-course-format-kickstart-template.template-designer-format #fitem_id_co
 }
 
 /* End of Kickstart Interface template */
+
+/* Badge marking templates that are not available to all users. */
+.template-list .kickstart-restricted-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    margin-left: 0.25rem;
+    border-radius: 10rem;
+    background-color: #f0ad4e;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    vertical-align: middle;
+    white-space: nowrap;
+}

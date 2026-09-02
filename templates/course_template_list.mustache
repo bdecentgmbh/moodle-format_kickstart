@@ -28,6 +28,7 @@
             "description_formatted": "This is a test template",
             "hashtags": "#tag1 #tag2",
             "isplaceholder": false,
+            "restricted": false,
             "link": "https://example.com/test/"
         }]
     }
@@ -67,7 +68,7 @@
                             </div>
                             {{/isbackimages}}
                             <div class="card-content">
-                                <h5 class="card-title">{{{title}}}</h5>
+                                <h5 class="card-title">{{{title}}}{{#restricted}} <span class="kickstart-restricted-badge" title="{{#str}} restrictedtemplate_title, format_kickstart {{/str}}">{{#str}} restrictedtemplate, format_kickstart {{/str}}</span>{{/restricted}}</h5>
                                 <p class="card-text">{{{description_formatted}}}</p>
                                 <small class="text-muted">{{hashtags}}</small>
                             </div>
