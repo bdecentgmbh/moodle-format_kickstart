@@ -657,13 +657,31 @@ function format_kickstart_get_next_template_sort() {
 }
 
 /**
+ * Check whether a user bypasses the template access restrictions.
+ *
+ * Users holding the manage_templates capability (site admins always do) see
+ * and use every template, unless the applyrestrictionstomanagers setting is
+ * enabled to apply the template access restrictions to them as well.
+ *
+ * @param context $context Context to check the capability in.
+ * @param int $userid
+ * @return bool
+ */
+function format_kickstart_template_restrictions_bypassed($context, $userid) {
+    if (get_config('format_kickstart', 'applyrestrictionstomanagers')) {
+        return false;
+    }
+    return has_capability('format/kickstart:manage_templates', $context, $userid);
+}
+
+/**
  * Check whether a template may be imported into a course by a user.
  *
  * Enforces the same conditions the template listing applies
  * (course_template_list::get_templates()): the template must be visible and
  * enabled, and the user must satisfy any Pro cohort/category/user/role
- * restrictions. Template managers are expected to bypass this via their own
- * capability check before calling this function.
+ * restrictions. Template managers (including site admins) bypass the
+ * restrictions unless the applyrestrictionstomanagers setting is enabled.
  *
  * @param \stdClass $template Template record.
  * @param int $courseid
@@ -677,9 +695,10 @@ function format_kickstart_can_use_template($template, $courseid, $userid) {
         return false;
     }
 
-    // Template managers may use any template.
+    // Template managers may use any template, unless the restrictions are
+    // configured to apply to them as well.
     $coursecontext = context_course::instance($courseid);
-    if (has_capability('format/kickstart:manage_templates', $coursecontext, $userid)) {
+    if (format_kickstart_template_restrictions_bypassed($coursecontext, $userid)) {
         return true;
     }
 

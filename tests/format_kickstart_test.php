@@ -141,6 +141,149 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Case to check that admins and template managers bypass template access
+     * restrictions while applyrestrictionstomanagers is disabled (default).
+     * @covers ::format_kickstart_can_use_template
+     */
+    public function test_can_use_template_privileged_bypass_by_default(): void {
+        global $DB, $USER;
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $cohort = $generator->create_cohort();
+        $template = $this->create_restricted_template([
+            'restrictcohort' => 1,
+            'cohortids' => [$cohort->id],
+        ]);
+
+        // Site admin is not in the cohort but bypasses the restriction.
+        $this->assertTrue(format_kickstart_can_use_template($template, $course->id, $USER->id));
+
+        // Users with the manage_templates capability bypass the restriction too.
+        $manager = $generator->create_user();
+        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $generator->role_assign($managerrole->id, $manager->id, context_system::instance()->id);
+        $this->assertTrue(format_kickstart_can_use_template($template, $course->id, $manager->id));
+
+        // Regular users do not.
+        $user = $generator->create_user();
+        $this->assertFalse(format_kickstart_can_use_template($template, $course->id, $user->id));
+    }
+
+    /**
+     * Case to check that restrictions apply to admins and template managers
+     * when applyrestrictionstomanagers is enabled.
+     * @covers ::format_kickstart_can_use_template
+     */
+    public function test_can_use_template_restrictions_apply_to_privileged(): void {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/cohort/lib.php');
+        set_config('applyrestrictionstomanagers', 1, 'format_kickstart');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $cohort = $generator->create_cohort();
+        $template = $this->create_restricted_template([
+            'restrictcohort' => 1,
+            'cohortids' => [$cohort->id],
+        ]);
+
+        // Admin is not in the cohort, so the template is not available.
+        $this->assertFalse(format_kickstart_can_use_template($template, $course->id, $USER->id));
+        cohort_add_member($cohort->id, $USER->id);
+        $this->assertTrue(format_kickstart_can_use_template($template, $course->id, $USER->id));
+
+        // A manager only satisfies a role restriction listing their role.
+        $manager = $generator->create_user();
+        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $generator->role_assign($managerrole->id, $manager->id, context_system::instance()->id);
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
+        $teachertemplate = $this->create_restricted_template([
+            'restrictrole' => 1,
+            'roleids' => [$teacherrole->id],
+        ]);
+        $this->assertFalse(format_kickstart_can_use_template($teachertemplate, $course->id, $manager->id));
+        $managertemplate = $this->create_restricted_template([
+            'restrictrole' => 1,
+            'roleids' => [$managerrole->id],
+        ]);
+        $this->assertTrue(format_kickstart_can_use_template($managertemplate, $course->id, $manager->id));
+
+        // Templates without restrictions stay available to everyone.
+        $plain = $this->create_restricted_template([]);
+        $this->assertTrue(format_kickstart_can_use_template($plain, $course->id, $USER->id));
+    }
+
+    /**
+     * Case to check the template list flags restricted templates for users
+     * seeing them through the manage_templates bypass.
+     * @covers \format_kickstart\output\course_template_list::get_templates
+     */
+    public function test_course_template_list_restricted_flag(): void {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/cohort/lib.php');
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['format' => 'kickstart']);
+        $cohort = $generator->create_cohort();
+        // Hide the templates created during install to stay within the limit.
+        $DB->set_field('format_kickstart_template', 'visible', 0);
+        $this->create_restricted_template([
+            'title' => 'restricted template',
+            'restrictcohort' => 1,
+            'cohortids' => [$cohort->id],
+        ]);
+        $this->create_restricted_template(['title' => 'plain template']);
+
+        // Admin sees both templates, only the restricted one is flagged.
+        $list = new \format_kickstart\output\course_template_list($course, $USER->id);
+        $templates = [];
+        foreach ($list->get_templates() as $template) {
+            $templates[$template->title] = $template;
+        }
+        $this->assertArrayHasKey('restricted template', $templates);
+        $this->assertNotEmpty($templates['restricted template']->restricted);
+        $this->assertEmpty($templates['plain template']->restricted);
+
+        // A regular user satisfying the restriction gets no flag.
+        $user = $generator->create_user();
+        cohort_add_member($cohort->id, $user->id);
+        $list = new \format_kickstart\output\course_template_list($course, $user->id);
+        $templates = [];
+        foreach ($list->get_templates() as $template) {
+            $templates[$template->title] = $template;
+        }
+        $this->assertArrayHasKey('restricted template', $templates);
+        $this->assertEmpty($templates['restricted template']->restricted);
+
+        // With the setting enabled the admin no longer sees the restricted template.
+        set_config('applyrestrictionstomanagers', 1, 'format_kickstart');
+        $list = new \format_kickstart\output\course_template_list($course, $USER->id);
+        $titles = array_column($list->get_templates(), 'title');
+        $this->assertNotContains('restricted template', $titles);
+        $this->assertContains('plain template', $titles);
+    }
+
+    /**
+     * Create a template with the given access restrictions.
+     *
+     * @param array $restrictions Template fields to override.
+     * @return \stdClass The created template record.
+     */
+    protected function create_restricted_template(array $restrictions): \stdClass {
+        global $DB;
+        $template = $this->format_format_kickstart_template_info();
+        foreach ($restrictions as $field => $value) {
+            $template->$field = $value;
+        }
+        $id = format_kickstart_create_template(
+            $template,
+            format_kickstart_get_next_template_sort(),
+            context_system::instance(),
+            'format_kickstart'
+        );
+        return $DB->get_record('format_kickstart_template', ['id' => $id]);
+    }
+
+    /**
      * Get the template info.
      */
     public function format_format_kickstart_template_info(): object {

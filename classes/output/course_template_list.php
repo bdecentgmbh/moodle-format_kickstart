@@ -24,6 +24,7 @@
 
 namespace format_kickstart\output;
 
+use core\context\course as context_course;
 use core\context\system as context_system;
 use core\output\renderer_base;
 use core\url as moodle_url;
@@ -137,12 +138,22 @@ class course_template_list implements \renderable, \templatable {
         }
 
         $templatecount = 0;
+        $restrictionsbypassed = format_kickstart_template_restrictions_bypassed(
+            context_course::instance($this->course->id),
+            $this->userid
+        );
         if (!empty($listtemplates)) {
             foreach ($listtemplates as $template) {
                 // Skip templates the user may not use.
                 if (!format_kickstart_can_use_template($template, $this->course->id, $this->userid)) {
                     continue;
                 }
+
+                // Flag templates a privileged user only sees through the bypass,
+                // so the list can mark them as not available to all users.
+                $template->restricted = $restrictionsbypassed && (!empty($template->restrictcohort)
+                    || !empty($template->restrictcategory) || !empty($template->restrictuser)
+                    || !empty($template->restrictrole));
 
                 $template->description_formatted = format_text(file_rewrite_pluginfile_urls(
                     $template->description,
