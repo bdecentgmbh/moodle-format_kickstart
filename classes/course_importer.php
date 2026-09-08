@@ -178,7 +178,11 @@ class course_importer {
 
             foreach ($settings as $settingname => $value) {
                 $setting = $rc->get_plan()->get_setting($settingname);
-                if ($setting->get_status() == \base_setting::LOCKED_BY_PERMISSION) {
+                // The template import controls these settings itself, so clear
+                // locks coming from permissions or from locked site restore
+                // defaults before setting the value (as core does for course
+                // duplication in restore_controller_dbops::force_enable_settings()).
+                if ($setting->get_status() != \base_setting::NOT_LOCKED) {
                     $setting->set_status(\base_setting::NOT_LOCKED);
                 }
                 $setting->set_value($value);
