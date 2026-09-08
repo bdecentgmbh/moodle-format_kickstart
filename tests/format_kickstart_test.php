@@ -108,6 +108,54 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Testing the import template while the site restore defaults are locked.
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_locked_restore_defaults(): void {
+        global $DB, $CFG;
+
+        // Lock the restore default settings the importer overrides
+        // (Site administration > Courses > Backups > General restore defaults).
+        $lockedconfigs = [
+            'restore_general_users_locked',
+            'restore_replace_overwrite_conf_locked',
+            'restore_replace_course_fullname_locked',
+            'restore_replace_course_shortname_locked',
+            'restore_replace_course_startdate_locked',
+            'restore_replace_keep_roles_and_enrolments_locked',
+            'restore_replace_keep_groups_and_groupings_locked',
+        ];
+        foreach ($lockedconfigs as $config) {
+            set_config($config, 1, 'restore');
+        }
+
+        $course = $this->getDataGenerator()->create_course();
+        $template = new \stdClass();
+        $template->title = 'locked restore defaults';
+        $template->description = '';
+        $template->descriptionformat = 1;
+        $template->id = $DB->insert_record('format_kickstart_template', $template);
+
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname([
+            'contextid' => \context_system::instance()->id,
+            'component' => 'format_kickstart',
+            'filearea' => 'course_backups',
+            'itemid' => $template->id,
+            'filepath' => '/',
+            'filename' => 'course-10-online.mbz',
+        ], $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
      * Case to test the external method to create template.
      * @covers ::format_kickstart_create_template
      * @return void
