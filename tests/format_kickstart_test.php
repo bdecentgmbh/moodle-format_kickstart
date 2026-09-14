@@ -131,14 +131,58 @@ final class format_kickstart_test extends \advanced_testcase {
         }
 
         $course = $this->getDataGenerator()->create_course();
+        $template = $this->create_template_with_backup('locked restore defaults');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
+     * Testing the import template with the merge import target.
+     *
+     * Core locks keep_roles_and_enrolments and keep_groups_and_groupings by
+     * config for every restore target that is not "deleting", so importing
+     * with the "Merge Kickstart templates into courses" import target must
+     * work even though no restore default is locked in the site
+     * administration.
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_merge_import_target(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+        set_config('importtarget', \backup::TARGET_EXISTING_ADDING, 'format_kickstart');
+
+        $course = $this->getDataGenerator()->create_course();
+        $template = $this->create_template_with_backup('merge import target');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
+     * Create a course template using the bundled backup file.
+     *
+     * @param string $title Template title.
+     * @return \stdClass Template record.
+     */
+    protected function create_template_with_backup(string $title): \stdClass {
+        global $CFG, $DB;
         $template = new \stdClass();
-        $template->title = 'locked restore defaults';
+        $template->title = $title;
         $template->description = '';
         $template->descriptionformat = 1;
         $template->id = $DB->insert_record('format_kickstart_template', $template);
 
-        $fs = get_file_storage();
-        $fs->create_file_from_pathname([
+        get_file_storage()->create_file_from_pathname([
             'contextid' => \context_system::instance()->id,
             'component' => 'format_kickstart',
             'filearea' => 'course_backups',
@@ -147,12 +191,7 @@ final class format_kickstart_test extends \advanced_testcase {
             'filename' => 'course-10-online.mbz',
         ], $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
 
-        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
-
-        // The import went through and the course identity was preserved.
-        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
-        $this->assertEquals($course->fullname, $updatecourse->fullname);
-        $this->assertEquals($course->shortname, $updatecourse->shortname);
+        return $template;
     }
 
     /**
