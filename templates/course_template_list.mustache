@@ -39,7 +39,7 @@
 
 <div class="template-list {{templateclass}}">
     {{#notemplates}}
-        <p class="alert alert-warning">{{#str}}notemplates, format_kickstart{{/str}}</p>
+        <p class="alert alert-warning">{{#str}} notemplates, format_kickstart {{/str}}</p>
     {{/notemplates}}
     {{#templates}}
             <div class="card-deck mb-2 templates-block">
@@ -74,13 +74,13 @@
                         </div>
                         <div class="card-footer">
                             {{^waitingadhoctask}}
-                                <a href="{{{link}}}" data-template="{{id}}" data-templatename="{{title}}" class="btn btn-primary use-template">{{#str}}usetemplate, format_kickstart{{/str}}</a>
+                                <a href="{{{link}}}" data-template="{{id}}" data-templatename="{{title}}" class="btn btn-primary use-template">{{#str}} usetemplate, format_kickstart {{/str}}</a>
                             {{/waitingadhoctask}}
                             {{#waitingadhoctask}}
                                 <span class="template-wait-info"> {{#str}} waitingadhoctasktemplate, format_kickstart {{/str}}</span>
                             {{/waitingadhoctask}}
                             {{#preview_url}}
-                                <a href="{{preview_url}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}}preview{{/str}}</a>
+                                <a href="{{preview_url}}" target="_blank" class="btn btn-outline-primary pull-right">{{#str}} preview {{/str}}</a>
                             {{/preview_url}}
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                         <div class="card-body d-flex">
                             <div class="align-self-center text-center w-100">
                                 <p class="card-text">{{{title}}}</p>
-                                <a href="{{{link}}}" target="_blank" class="btn btn-dark">{{#str}}learnmore, format_kickstart{{/str}}</a>
+                                <a href="{{{link}}}" target="_blank" class="btn btn-dark">{{#str}} learnmore, format_kickstart {{/str}}</a>
                             </div>
                         </div>
                     </div>

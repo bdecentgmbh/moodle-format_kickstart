@@ -24,20 +24,47 @@
 
 namespace format_kickstart\privacy;
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\provider as metadata_provider;
+use core_privacy\local\request\writer;
+use core_privacy\local\request\user_preference_provider;
+
 /**
- * Privacy Subsystem for format_kickstart implementing null_provider.
+ * Privacy Subsystem for format_kickstart.
  *
  * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements metadata_provider, user_preference_provider {
     /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
+     * Describe the metadata stored by this plugin.
      *
-     * @return  string
+     * @param collection $collection
+     * @return collection
      */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_user_preference('template_table_pagesize', 'privacy:metadata:template_table_pagesize');
+        return $collection;
+    }
+
+    /**
+     * Export all user preferences for the plugin.
+     *
+     * @param int $userid The userid of the user whose data is to be exported.
+     */
+    public static function export_user_preferences(int $userid): void {
+        $pagesize = get_user_preferences('template_table_pagesize', null, $userid);
+        if ($pagesize !== null) {
+            $preference = (object) [
+                'value' => $pagesize,
+                'description' => get_string('privacy:metadata:template_table_pagesize', 'format_kickstart'),
+            ];
+            writer::export_user_preference(
+                'format_kickstart',
+                'template_table_pagesize',
+                $pagesize,
+                $preference
+            );
+        }
     }
 }

@@ -63,6 +63,7 @@ class external extends external_api {
             ['templateid' => $templateid, 'courseid' => $courseid]
         );
         $context = \context_course::instance($params['courseid']);
+        self::validate_context($context);
         require_capability('format/kickstart:import_from_template', $context);
         course_importer::import_from_template($params['templateid'], $params['courseid']);
         return true;

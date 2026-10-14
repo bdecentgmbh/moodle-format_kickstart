@@ -40,6 +40,11 @@ $course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_login($course);
 
+// Show student view to users without the import capability.
+if (!has_capability('format/kickstart:import_from_template', $context)) {
+    $nav = 'studentview';
+}
+
 $PAGE->requires->js_call_amd(
     'format_kickstart/formatkickstart',
     'init',
@@ -58,8 +63,8 @@ $titlecomponents = [
     $uniquetitle,
     $context->get_context_name(false),
 ];
-$PAGE->set_title(implode(moodle_page::TITLE_SEPARATOR, $titlecomponents));
-$PAGE->set_heading($PAGE->course->fullname);
+$PAGE->set_title(format_string(implode(moodle_page::TITLE_SEPARATOR, $titlecomponents)));
+$PAGE->set_heading(format_string($PAGE->course->fullname));
 
 echo $OUTPUT->header();
 

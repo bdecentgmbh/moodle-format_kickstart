@@ -28,11 +28,21 @@
  */
 function xmldb_format_kickstart_uninstall() {
     global $DB, $SITE;
-    $DB->delete_records_select(
-        'course_format_options',
-        "courseid = :siteid AND format != :site",
-        ["siteid" => $SITE->id, 'site' => 'site'],
+
+    // Only remove course format options created by this plugin.
+    $formats = $DB->get_fieldset_select(
+        'format_kickstart_template',
+        'DISTINCT format',
+        "courseformat = 1 AND format IS NOT NULL AND format <> '' AND format <> 'site'"
     );
+    if (!empty($formats)) {
+        [$insql, $inparams] = $DB->get_in_or_equal($formats, SQL_PARAMS_NAMED);
+        $DB->delete_records_select(
+            'course_format_options',
+            "courseid = :siteid AND format $insql",
+            $inparams + ['siteid' => $SITE->id],
+        );
+    }
     unset_config('kickstart_templates');
     return true;
 }

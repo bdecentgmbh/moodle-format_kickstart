@@ -280,5 +280,24 @@ function xmldb_format_kickstart_upgrade($oldversion) {
 
     format_kickstart_import_courseformat_template();
 
+    if ($oldversion < 2026090100) {
+        // Rename *_format to *format to match editor field convention.
+        $DB->set_field(
+            'course_format_options',
+            'name',
+            'teacherinstructionsformat',
+            ['name' => 'teacherinstructions_format', 'format' => 'kickstart']
+        );
+
+        $DB->set_field(
+            'course_format_options',
+            'name',
+            'userinstructionsformat',
+            ['name' => 'userinstructions_format', 'format' => 'kickstart']
+        );
+
+        upgrade_plugin_savepoint(true, 2026090100, 'format', 'kickstart');
+    }
+
     return true;
 }

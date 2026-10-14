@@ -122,7 +122,7 @@ class import_course_list implements \renderable, \templatable {
                 }
                 $course->url = new \moodle_url('/course/view.php', ['id' => $course->id]);
 
-                if (in_array("fullname", $displaycourselibraryfields)) {
+                if (!format_kickstart_has_pro() || in_array('fullname', $displaycourselibraryfields)) {
                     $course->fullnamecourse = format_string($course->fullname, true, [
                         'context' => \context_course::instance($course->id),
                     ]);
@@ -196,7 +196,7 @@ class import_course_list implements \renderable, \templatable {
         $pagination = $OUTPUT->paging_bar(
             $component->get_total_course_count(),
             $page,
-            get_config('format_kickstart', 'courselibraryperpage'),
+            max(10, (int) get_config('format_kickstart', 'courselibraryperpage')),
             $PAGE->url
         );
         return [
