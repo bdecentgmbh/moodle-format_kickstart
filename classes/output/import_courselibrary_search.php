@@ -24,6 +24,10 @@
 
 namespace format_kickstart\output;
 
+use core\context\course as context_course;
+use core\context\user as context_user;
+use core\url as moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 
 // Require both the backup and restore libs.
@@ -198,7 +202,7 @@ class import_courselibrary_search {
      * Sets the page URL
      * @param moodle_url $url
      */
-    public function set_url(\moodle_url $url) {
+    public function set_url(moodle_url $url) {
         $this->url = $url;
     }
 
@@ -319,7 +323,7 @@ class import_courselibrary_search {
      * @return bool
      */
     private function user_has_required_capabilities(int $courseid, int $userid): bool {
-        $context = \context_course::instance($courseid);
+        $context = context_course::instance($courseid);
 
         // Check all of a user's required capabilities at once.
         $capsbyuser = [];
@@ -596,7 +600,7 @@ class import_courselibrary_search {
         $favouriteids = [];
         if (!empty($this->weights['starred']) && $this->weights['starred'] > 0) {
             $ufservice = \core_favourites\service_factory::get_service_for_user_context(
-                \context_user::instance($USER->id)
+                context_user::instance($USER->id)
             );
             $userfavourites = $ufservice->find_all_favourites('core_course', ['courses']);
             foreach ($userfavourites as $fav) {
@@ -728,7 +732,7 @@ class import_courselibrary_search {
         }
 
         if ($this->weights['starred'] > 0) {
-            $ufservice = \core_favourites\service_factory::get_service_for_user_context(\context_user::instance($USER->id));
+            $ufservice = \core_favourites\service_factory::get_service_for_user_context(context_user::instance($USER->id));
 
             // Get all favorite courses for current user.
             $userfavorites = $ufservice->find_all_favourites('core_course', ['courses']);

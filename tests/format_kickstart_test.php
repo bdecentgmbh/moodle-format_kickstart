@@ -23,6 +23,10 @@
  */
 namespace format_kickstart;
 
+use core\context\course as context_course;
+use core\context\system as context_system;
+use core\url as moodle_url;
+
 /**
  * Test kickstart course format.
  *
@@ -69,7 +73,7 @@ final class format_kickstart_test extends \advanced_testcase {
         $fs = get_file_storage();
 
         $fileinfo = [
-            'contextid' => \context_system::instance()->id,
+            'contextid' => context_system::instance()->id,
             'component' => 'format_kickstart',
             'filearea' => 'course_backups',
             'itemid' => $template->id,
@@ -77,7 +81,7 @@ final class format_kickstart_test extends \advanced_testcase {
             'filename' => 'course-10-online.mbz',
         ];
 
-        $fs->create_file_from_pathname($fileinfo, $CFG->dirroot . '/course/format/kickstart/tests/course-10-online.mbz');
+        $fs->create_file_from_pathname($fileinfo, $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
 
         \format_kickstart\course_importer::import_from_template($template->id, $course->id);
 
@@ -108,6 +112,93 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Testing the import template while the site restore defaults are locked.
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_locked_restore_defaults(): void {
+        global $DB, $CFG;
+
+        // Lock the restore default settings the importer overrides
+        // (Site administration > Courses > Backups > General restore defaults).
+        $lockedconfigs = [
+            'restore_general_users_locked',
+            'restore_replace_overwrite_conf_locked',
+            'restore_replace_course_fullname_locked',
+            'restore_replace_course_shortname_locked',
+            'restore_replace_course_startdate_locked',
+            'restore_replace_keep_roles_and_enrolments_locked',
+            'restore_replace_keep_groups_and_groupings_locked',
+        ];
+        foreach ($lockedconfigs as $config) {
+            set_config($config, 1, 'restore');
+        }
+
+        $course = $this->getDataGenerator()->create_course();
+        $template = $this->create_template_with_backup('locked restore defaults');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
+     * Testing the import template with the merge import target.
+     *
+     * Core locks keep_roles_and_enrolments and keep_groups_and_groupings by
+     * config for every restore target that is not "deleting", so importing
+     * with the "Merge Kickstart templates into courses" import target must
+     * work even though no restore default is locked in the site
+     * administration.
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_merge_import_target(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+        set_config('importtarget', \backup::TARGET_EXISTING_ADDING, 'format_kickstart');
+
+        $course = $this->getDataGenerator()->create_course();
+        $template = $this->create_template_with_backup('merge import target');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
+     * Create a course template using the bundled backup file.
+     *
+     * @param string $title Template title.
+     * @return \stdClass Template record.
+     */
+    protected function create_template_with_backup(string $title): \stdClass {
+        global $CFG, $DB;
+        $template = new \stdClass();
+        $template->title = $title;
+        $template->description = '';
+        $template->descriptionformat = 1;
+        $template->id = $DB->insert_record('format_kickstart_template', $template);
+
+        get_file_storage()->create_file_from_pathname([
+            'contextid' => context_system::instance()->id,
+            'component' => 'format_kickstart',
+            'filearea' => 'course_backups',
+            'itemid' => $template->id,
+            'filepath' => '/',
+            'filename' => 'course-10-online.mbz',
+        ], $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
+
+        return $template;
+    }
+
+    /**
      * Case to test the external method to create template.
      * @covers ::format_kickstart_create_template
      * @return void
@@ -116,7 +207,7 @@ final class format_kickstart_test extends \advanced_testcase {
         global $DB;
         $prevcount = $DB->count_records('format_kickstart_template');
         $template = $this->format_format_kickstart_template_info();
-        $context = \context_system::instance();
+        $context = context_system::instance();
         format_kickstart_create_template($template, 1, $context, 'format_kickstart');
         $count = $DB->count_records('format_kickstart_template');
         $this->assertEquals($prevcount + 1, $count);
@@ -134,6 +225,149 @@ final class format_kickstart_test extends \advanced_testcase {
             $pluginstatus = true;
         }
         $this->assertEquals(format_kickstart_has_pro(), $pluginstatus);
+    }
+
+    /**
+     * Case to check that admins and template managers bypass template access
+     * restrictions while applyrestrictionstomanagers is disabled (default).
+     * @covers ::format_kickstart_can_use_template
+     */
+    public function test_can_use_template_privileged_bypass_by_default(): void {
+        global $DB, $USER;
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $cohort = $generator->create_cohort();
+        $template = $this->create_restricted_template([
+            'restrictcohort' => 1,
+            'cohortids' => [$cohort->id],
+        ]);
+
+        // Site admin is not in the cohort but bypasses the restriction.
+        $this->assertTrue(format_kickstart_can_use_template($template, $course->id, $USER->id));
+
+        // Users with the manage_templates capability bypass the restriction too.
+        $manager = $generator->create_user();
+        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $generator->role_assign($managerrole->id, $manager->id, context_system::instance()->id);
+        $this->assertTrue(format_kickstart_can_use_template($template, $course->id, $manager->id));
+
+        // Regular users do not.
+        $user = $generator->create_user();
+        $this->assertFalse(format_kickstart_can_use_template($template, $course->id, $user->id));
+    }
+
+    /**
+     * Case to check that restrictions apply to admins and template managers
+     * when applyrestrictionstomanagers is enabled.
+     * @covers ::format_kickstart_can_use_template
+     */
+    public function test_can_use_template_restrictions_apply_to_privileged(): void {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/cohort/lib.php');
+        set_config('applyrestrictionstomanagers', 1, 'format_kickstart');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $cohort = $generator->create_cohort();
+        $template = $this->create_restricted_template([
+            'restrictcohort' => 1,
+            'cohortids' => [$cohort->id],
+        ]);
+
+        // Admin is not in the cohort, so the template is not available.
+        $this->assertFalse(format_kickstart_can_use_template($template, $course->id, $USER->id));
+        cohort_add_member($cohort->id, $USER->id);
+        $this->assertTrue(format_kickstart_can_use_template($template, $course->id, $USER->id));
+
+        // A manager only satisfies a role restriction listing their role.
+        $manager = $generator->create_user();
+        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $generator->role_assign($managerrole->id, $manager->id, context_system::instance()->id);
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
+        $teachertemplate = $this->create_restricted_template([
+            'restrictrole' => 1,
+            'roleids' => [$teacherrole->id],
+        ]);
+        $this->assertFalse(format_kickstart_can_use_template($teachertemplate, $course->id, $manager->id));
+        $managertemplate = $this->create_restricted_template([
+            'restrictrole' => 1,
+            'roleids' => [$managerrole->id],
+        ]);
+        $this->assertTrue(format_kickstart_can_use_template($managertemplate, $course->id, $manager->id));
+
+        // Templates without restrictions stay available to everyone.
+        $plain = $this->create_restricted_template([]);
+        $this->assertTrue(format_kickstart_can_use_template($plain, $course->id, $USER->id));
+    }
+
+    /**
+     * Case to check the template list flags restricted templates for users
+     * seeing them through the manage_templates bypass.
+     * @covers \format_kickstart\output\course_template_list::get_templates
+     */
+    public function test_course_template_list_restricted_flag(): void {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/cohort/lib.php');
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['format' => 'kickstart']);
+        $cohort = $generator->create_cohort();
+        // Hide the templates created during install to stay within the limit.
+        $DB->set_field('format_kickstart_template', 'visible', 0);
+        $this->create_restricted_template([
+            'title' => 'restricted template',
+            'restrictcohort' => 1,
+            'cohortids' => [$cohort->id],
+        ]);
+        $this->create_restricted_template(['title' => 'plain template']);
+
+        // Admin sees both templates, only the restricted one is flagged.
+        $list = new \format_kickstart\output\course_template_list($course, $USER->id);
+        $templates = [];
+        foreach ($list->get_templates() as $template) {
+            $templates[$template->title] = $template;
+        }
+        $this->assertArrayHasKey('restricted template', $templates);
+        $this->assertNotEmpty($templates['restricted template']->restricted);
+        $this->assertEmpty($templates['plain template']->restricted);
+
+        // A regular user satisfying the restriction gets no flag.
+        $user = $generator->create_user();
+        cohort_add_member($cohort->id, $user->id);
+        $list = new \format_kickstart\output\course_template_list($course, $user->id);
+        $templates = [];
+        foreach ($list->get_templates() as $template) {
+            $templates[$template->title] = $template;
+        }
+        $this->assertArrayHasKey('restricted template', $templates);
+        $this->assertEmpty($templates['restricted template']->restricted);
+
+        // With the setting enabled the admin no longer sees the restricted template.
+        set_config('applyrestrictionstomanagers', 1, 'format_kickstart');
+        $list = new \format_kickstart\output\course_template_list($course, $USER->id);
+        $titles = array_column($list->get_templates(), 'title');
+        $this->assertNotContains('restricted template', $titles);
+        $this->assertContains('plain template', $titles);
+    }
+
+    /**
+     * Create a template with the given access restrictions.
+     *
+     * @param array $restrictions Template fields to override.
+     * @return \stdClass The created template record.
+     */
+    protected function create_restricted_template(array $restrictions): \stdClass {
+        global $DB;
+        $template = $this->format_format_kickstart_template_info();
+        foreach ($restrictions as $field => $value) {
+            $template->$field = $value;
+        }
+        $id = format_kickstart_create_template(
+            $template,
+            format_kickstart_get_next_template_sort(),
+            context_system::instance(),
+            'format_kickstart'
+        );
+        return $DB->get_record('format_kickstart_template', ['id' => $id]);
     }
 
     /**
@@ -331,14 +565,14 @@ final class format_kickstart_test extends \advanced_testcase {
     public function test_general_action_bar_single_item(): void {
         global $PAGE;
         $course = $this->getDataGenerator()->create_course(['format' => 'kickstart']);
-        $context = \context_course::instance($course->id);
+        $context = context_course::instance($course->id);
 
         // Hide every page except the course template.
         foreach (array_keys(format_kickstart_get_all_pages()) as $key) {
             set_config('pageorder_' . $key, $key === 'coursetemplate' ? 1 : 0, 'format_kickstart');
         }
 
-        $url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
         $actionbar = new \format_kickstart\output\general_action_bar($context, $url, 'kickstart', 'coursetemplate');
         $data = $actionbar->export_for_template($PAGE->get_renderer('format_kickstart'));
 
@@ -355,13 +589,13 @@ final class format_kickstart_test extends \advanced_testcase {
     public function test_general_action_bar_multiple_items(): void {
         global $PAGE;
         $course = $this->getDataGenerator()->create_course(['format' => 'kickstart']);
-        $context = \context_course::instance($course->id);
+        $context = context_course::instance($course->id);
 
         set_config('pageorder_coursetemplate', 1, 'format_kickstart');
         set_config('pageorder_studentview', 2, 'format_kickstart');
         set_config('pageorder_help', 3, 'format_kickstart');
 
-        $url = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
         $actionbar = new \format_kickstart\output\general_action_bar($context, $url, 'kickstart', 'coursetemplate');
         $data = $actionbar->export_for_template($PAGE->get_renderer('format_kickstart'));
 

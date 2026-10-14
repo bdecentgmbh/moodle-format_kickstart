@@ -42,9 +42,6 @@ jobs:
           - php: '8.2'
             moodle-branch: 'MOODLE_500_STABLE'
             database: 'mariadb'
-          - php: '8.2'
-            moodle-branch: 'MOODLE_405_STABLE'
-            database: 'pgsql'
 
     steps:
       - name: Check out repository code
@@ -106,7 +103,7 @@ jobs:
 
       - name: Grunt
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci grunt
+        run: moodle-plugin-ci grunt --max-lint-warnings 0
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}
@@ -115,11 +112,11 @@ jobs:
       - name: Behat features
         id: behat
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci behat --profile chrome
+        run: moodle-plugin-ci behat --profile chrome --scss-deprecations
 
       - name: Upload Behat Faildump
         if: ${{ failure() && steps.behat.outcome == 'failure' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Behat Faildump (${{ join(matrix.*, ', ') }})
           path: ${{ github.workspace }}/moodledata/behat_dump

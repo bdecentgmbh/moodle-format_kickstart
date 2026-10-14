@@ -24,9 +24,11 @@
 
 namespace format_kickstart;
 
-defined('MOODLE_INTERNAL') || die();
-
+use core\context\course as context_course;
+use core\context\system as context_system;
 use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/format/kickstart/lib.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -54,7 +56,7 @@ class course_importer {
     public static function import_from_template($templateid, $courseid) {
         global $CFG, $DB, $PAGE, $USER;
         require_once($CFG->dirroot . "/course/lib.php");
-        $PAGE->set_context(\context_course::instance($courseid));
+        $PAGE->set_context(context_course::instance($courseid));
         $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
         // Before import, verify that user has access.
@@ -65,7 +67,7 @@ class course_importer {
         if (!$template->courseformat) {
             $fs = get_file_storage();
             $files = $fs->get_area_files(
-                \context_system::instance()->id,
+                context_system::instance()->id,
                 'format_kickstart',
                 'course_backups',
                 $template->id,
@@ -114,7 +116,7 @@ class course_importer {
         $event = \format_kickstart\event\course_imported::create([
             'objectid' => $courseid,
             'userid' => $USER->id,
-            'context' => \context_course::instance($courseid),
+            'context' => context_course::instance($courseid),
         ]);
         $event->trigger();
     }
@@ -134,6 +136,7 @@ class course_importer {
 
         $course = $DB->get_record('course', ['id' => $courseid]);
         $details = \backup_general_helper::get_backup_information($backuptempdir);
+        $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
         $settings = [
             'overwrite_conf' => true,
             'course_shortname' => $course->shortname,
@@ -149,14 +152,16 @@ class course_importer {
             }
         }
 
-        if (get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') < 2) {
+        // Core only allows these settings when replacing content.
+        $replacing = ($target == \backup::TARGET_CURRENT_DELETING || $target == \backup::TARGET_EXISTING_DELETING);
+        if ($replacing && get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments') < 2) {
             $keeproles = (bool) get_config('format_kickstart', 'restore_replace_keep_roles_and_enrolments');
             $settings['keep_roles_and_enrolments'] = $keeproles;
             $settings['role_assignments'] = !$keeproles;
             $settings['enrolments'] = $keeproles ? \backup::ENROL_NEVER : \backup::ENROL_ALWAYS;
         }
 
-        if (get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings') < 2) {
+        if ($replacing && get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings') < 2) {
             $keepgroups = (bool) get_config('format_kickstart', 'restore_replace_keep_groups_and_groupings');
             $settings['keep_groups_and_groupings'] = $keepgroups;
             $settings['groups'] = !$keepgroups;
@@ -164,7 +169,6 @@ class course_importer {
 
         try {
             // Now restore the course.
-            $target = get_config('format_kickstart', 'importtarget') ?: \backup::TARGET_EXISTING_DELETING;
             $rc = new \restore_controller(
                 $backuptempdir,
                 $course->id,
@@ -176,7 +180,11 @@ class course_importer {
 
             foreach ($settings as $settingname => $value) {
                 $setting = $rc->get_plan()->get_setting($settingname);
-                if ($setting->get_status() == \base_setting::LOCKED_BY_PERMISSION) {
+                // The template import controls these settings itself, so clear
+                // locks coming from permissions or from locked site restore
+                // defaults before setting the value (as core does for course
+                // duplication in restore_controller_dbops::force_enable_settings()).
+                if ($setting->get_status() != \base_setting::NOT_LOCKED) {
                     $setting->set_status(\base_setting::NOT_LOCKED);
                 }
                 $setting->set_value($value);

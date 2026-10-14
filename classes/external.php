@@ -24,6 +24,7 @@
  */
 namespace format_kickstart;
 
+use core\context\course as context_course;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
@@ -62,7 +63,7 @@ class external extends external_api {
             self::import_template_parameters(),
             ['templateid' => $templateid, 'courseid' => $courseid]
         );
-        $context = \context_course::instance($params['courseid']);
+        $context = context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('format/kickstart:import_from_template', $context);
         course_importer::import_from_template($params['templateid'], $params['courseid']);

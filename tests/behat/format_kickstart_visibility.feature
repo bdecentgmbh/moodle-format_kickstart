@@ -62,7 +62,7 @@ Feature: Check the kickstart course format features.
     And I press "Create template"
     And I set the following fields to these values:
       | Title | Test template 1|
-    And I upload "/course/format/kickstart/tests/course-10-online.mbz" file to "Course backup file (.mbz)" filemanager
+    And I upload "/course/format/kickstart/assets/templates/course-10-online.mbz" file to "Course backup file (.mbz)" filemanager
     And I press "Save changes"
     And I should see "Template successfully created"
     And I press "Create template"

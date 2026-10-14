@@ -22,6 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\context\system as context_system;
+use core\url as moodle_url;
+
 require(__DIR__ . '/../../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once($CFG->libdir . "/formslib.php");
@@ -70,14 +73,13 @@ switch ($action) {
         if ($data = $form->get_data()) {
             $data->description = $data->description_editor['text'];
             $data->descriptionformat = $data->description_editor['format'];
-            $counttemplate = $DB->count_records("format_kickstart_template");
             if (format_kickstart_has_pro()) {
                 $data->cohortids = json_encode($data->cohortids);
                 $data->categoryids = json_encode($data->categoryids);
                 $data->roleids = json_encode($data->roleids);
                 $data->userids = json_encode($data->userids);
             }
-            $data->sort = (!empty($counttemplate)) ? $counttemplate + 1 : 1;
+            $data->sort = format_kickstart_get_next_template_sort();
             $data->courseformat = 0;
             $id = $DB->insert_record('format_kickstart_template', $data);
             $templates[] = $id;
@@ -135,7 +137,7 @@ switch ($action) {
                 $draftitem = file_get_submitted_draft_itemid('templatebackimages');
                 file_prepare_draft_area(
                     $draftitem,
-                    \context_system::instance()->id,
+                    context_system::instance()->id,
                     'format_kickstart',
                     'templatebackimages',
                     0,

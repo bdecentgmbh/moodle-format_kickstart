@@ -22,12 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['applyrestrictionstomanagers'] = 'Apply template access restrictions to managers';
+$string['applyrestrictionstomanagers_desc'] = 'If enabled, template access restrictions (cohorts, categories, users and roles) also apply to users with the "Manage templates" capability, including site administrators. They only see and can use the templates available to them, and the automatic template applies to them as well. If disabled, these users always see all templates; templates with access restrictions are marked with a "Restricted" badge.';
 $string['automatictemplate'] = 'Automatic template';
 $string['automatictemplate_desc'] = 'If only one template is available to the user it will automatically be imported. The user will be notified on the page when this happens.';
 $string['automatictemplate_help'] = 'The course template was automatically applied. If you require a different template, please contact the system administrator.';
 $string['buypro'] = 'Buy Kickstart Pro';
 $string['buypromaxtemplates'] = 'You are using the maximum number (<b>4</b>) of templates allowed in Kickstart free edition. To create more templates, purchase <a target="_blank" href="http://bdecent.de/kickstart">Kickstart Pro</a>.';
 $string['buyprosummary'] = 'To unlock all Kickstart features purchase Kickstart Pro.';
+$string['cachedef_templates'] = 'Course format templates cache';
 $string['categorypath'] = "Category path";
 $string['choosesectionimportactivity'] = "Choose the section to import the activity";
 $string['confirmtemplate'] = 'Are you sure you want to use this Template "{$a->name}"?';
@@ -198,6 +201,8 @@ $string['restrictcategory'] = 'Restrict by categories';
 $string['restrictcategory_help'] = 'If enabled, only courses within the selected categories will have access to this template.';
 $string['restrictcohort'] = 'Restrict by cohorts';
 $string['restrictcohort_help'] = 'If enabled, only members of the selected cohorts will have access to this template.';
+$string['restrictedtemplate'] = 'Restricted';
+$string['restrictedtemplate_title'] = 'This template has access restrictions and is not available to all users.';
 $string['restrictrole'] = 'Restrict by roles';
 $string['restrictrole_help'] = 'If enabled, only users with the selected roles will have access to this template.';
 $string['restrictuser'] = "Restrict by user";
