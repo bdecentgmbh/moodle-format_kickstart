@@ -132,7 +132,7 @@ class course_importer {
      * @throws \restore_controller_exception
      */
     public static function import($backuptempdir, $courseid) {
-        global $USER, $DB;
+        global $CFG, $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);
         $details = \backup_general_helper::get_backup_information($backuptempdir);
@@ -192,10 +192,26 @@ class course_importer {
             $rc->execute_precheck();
             $rc->execute_plan();
             $rc->destroy();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if ($rc) {
-                \core\notification::error(get_string('restorefailed', 'format_kickstart', $rc->get_status()));
+                // Drop restore temp tables left behind by a failed restore, the
+                // same cleanup core applies when restore prechecks fail.
+                try {
+                    $dbman = $DB->get_manager();
+                    if ($dbman->table_exists('backup_ids_temp') && $dbman->table_exists('backup_files_temp')) {
+                        \restore_controller_dbops::drop_restore_temp_tables($rc->get_restoreid());
+                    }
+                } catch (\Throwable $cleanuperror) {
+                    debugging('Kickstart restore cleanup failed: ' . $cleanuperror->getMessage(), DEBUG_DEVELOPER);
+                }
+
+                \core\notification::error(
+                    get_string('restorefailed', 'format_kickstart', $rc->get_status()) . ' - ' . $e->getMessage()
+                );
             }
+
+            $trace = strtr($e->getTraceAsString(), [$CFG->dirroot . '/' => '']);
+            debugging('Kickstart restore failed: ' . $e->getMessage() . "\n" . $trace, DEBUG_DEVELOPER);
             throw $e;
         } finally {
             // Reset some settings.

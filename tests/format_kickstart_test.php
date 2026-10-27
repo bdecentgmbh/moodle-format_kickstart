@@ -23,6 +23,8 @@
  */
 namespace format_kickstart;
 
+use backup;
+use backup_controller;
 use core\context\course as context_course;
 use core\context\system as context_system;
 use core\url as moodle_url;
@@ -83,7 +85,7 @@ final class format_kickstart_test extends \advanced_testcase {
 
         $fs->create_file_from_pathname($fileinfo, $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
 
-        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+        $this->import_template($template, $course);
 
         $updatecourse = $DB->get_record('course', ['id' => $course->id]);
 
@@ -137,7 +139,7 @@ final class format_kickstart_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $template = $this->create_template_with_backup('locked restore defaults');
 
-        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+        $this->import_template($template, $course);
 
         // The import went through and the course identity was preserved.
         $updatecourse = $DB->get_record('course', ['id' => $course->id]);
@@ -152,24 +154,74 @@ final class format_kickstart_test extends \advanced_testcase {
      * config for every restore target that is not "deleting", so importing
      * with the "Merge Kickstart templates into courses" import target must
      * work even though no restore default is locked in the site
-     * administration.
+     * administration. The template content is merged into the course while
+     * the existing content is kept.
+     *
      * @covers \format_kickstart\course_importer::import
      * @return void
      */
     public function test_importing_with_merge_import_target(): void {
-        global $CFG, $DB;
-        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-        set_config('importtarget', \backup::TARGET_EXISTING_ADDING, 'format_kickstart');
+        global $DB;
 
-        $course = $this->getDataGenerator()->create_course();
-        $template = $this->create_template_with_backup('merge import target');
+        $template = $this->create_template_from_course($this->create_source_course());
+        $target = $this->create_target_course(true);
 
-        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+        set_config('importtarget', backup::TARGET_EXISTING_ADDING, 'format_kickstart');
+        $this->import_template($template, $target);
 
-        // The import went through and the course identity was preserved.
-        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
-        $this->assertEquals($course->fullname, $updatecourse->fullname);
-        $this->assertEquals($course->shortname, $updatecourse->shortname);
+        // The existing forum was kept and the template forum was added.
+        $this->assertTrue($DB->record_exists('forum', ['course' => $target->id, 'name' => 'Target forum']));
+        $this->assertTrue($DB->record_exists('forum', ['course' => $target->id, 'name' => 'Source forum']));
+        $this->assert_template_content_restored($target, 2);
+        $this->assert_course_identity_preserved($target);
+    }
+
+    /**
+     * Testing the import template with the replace import target.
+     *
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_replace_import_target(): void {
+        global $DB;
+
+        $template = $this->create_template_from_course($this->create_source_course());
+        $target = $this->create_target_course(true);
+
+        set_config('importtarget', backup::TARGET_EXISTING_DELETING, 'format_kickstart');
+        $this->import_template($template, $target);
+
+        // The existing forum was replaced by the template forum.
+        $this->assertFalse($DB->record_exists('forum', ['course' => $target->id, 'name' => 'Target forum']));
+        $this->assertTrue($DB->record_exists('forum', ['course' => $target->id, 'name' => 'Source forum']));
+        $this->assert_template_content_restored($target, 1);
+        $this->assert_course_identity_preserved($target);
+    }
+
+    /**
+     * Testing the import template with the replace target on a course that
+     * previously received template content through a merge import.
+     *
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_replace_after_merge(): void {
+        global $DB;
+
+        $template = $this->create_template_from_course($this->create_source_course());
+        $target = $this->create_target_course();
+
+        // First merge the template into the course.
+        set_config('importtarget', backup::TARGET_EXISTING_ADDING, 'format_kickstart');
+        $this->import_template($template, $target);
+        $this->assertSame(1, $DB->count_records('subsection', ['course' => $target->id]));
+
+        // Then replace the course content with the same template.
+        set_config('importtarget', backup::TARGET_EXISTING_DELETING, 'format_kickstart');
+        $this->import_template($template, $target);
+
+        $this->assert_template_content_restored($target, 1);
+        $this->assert_course_identity_preserved($target);
     }
 
     /**
@@ -194,6 +246,177 @@ final class format_kickstart_test extends \advanced_testcase {
             'filepath' => '/',
             'filename' => 'course-10-online.mbz',
         ], $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
+
+        return $template;
+    }
+
+    /**
+     * Create the target course used by the import tests.
+     *
+     * @param bool $withforum Whether to add a pre-existing forum.
+     * @return \stdClass Target course.
+     */
+    protected function create_target_course(bool $withforum = false): \stdClass {
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Target course',
+            'shortname' => 'target',
+            'format' => 'kickstart',
+        ]);
+        if ($withforum) {
+            $this->getDataGenerator()->create_module('forum', [
+                'course' => $course->id,
+                'name' => 'Target forum',
+            ]);
+        }
+
+        return $course;
+    }
+
+    /**
+     * Assert the template content was restored into the given course.
+     *
+     * @param \stdClass $course Target course.
+     * @param int $forums Expected number of forums in the course.
+     */
+    protected function assert_template_content_restored(\stdClass $course, int $forums): void {
+        global $DB;
+
+        $this->assertSame($forums, $DB->count_records('forum', ['course' => $course->id]));
+        $this->assertSame(1, $DB->count_records('label', ['course' => $course->id]));
+        $this->assertSame(1, $DB->count_records('subsection', ['course' => $course->id]));
+        $this->assertSame(1, $DB->count_records('page', ['course' => $course->id]));
+
+        // The page must be inside the section delegated to the subsection.
+        $subsection = $DB->get_record('subsection', ['course' => $course->id], '*', MUST_EXIST);
+        $delegated = $DB->get_record('course_sections', [
+            'course' => $course->id,
+            'component' => 'mod_subsection',
+            'itemid' => $subsection->id,
+        ]);
+        $this->assertNotEmpty($delegated, 'The delegated section was not restored.');
+
+        $pagemoduleid = $DB->get_field('modules', 'id', ['name' => 'page'], MUST_EXIST);
+        $pagecm = $DB->get_record('course_modules', [
+            'course' => $course->id,
+            'module' => $pagemoduleid,
+        ], '*', MUST_EXIST);
+        $this->assertEquals($delegated->id, $pagecm->section, 'The page is not inside the delegated section.');
+    }
+
+    /**
+     * Import the given template into the course.
+     *
+     * @param \stdClass $template Template record.
+     * @param \stdClass $course Target course.
+     */
+    protected function import_template(\stdClass $template, \stdClass $course): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+        course_importer::import_from_template($template->id, $course->id);
+    }
+
+    /**
+     * Assert the course identity fields were preserved by the import.
+     *
+     * @param \stdClass $course Target course.
+     */
+    protected function assert_course_identity_preserved(\stdClass $course): void {
+        global $DB;
+
+        $updated = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertSame($course->fullname, $updated->fullname);
+        $this->assertSame($course->shortname, $updated->shortname);
+    }
+
+    /**
+     * Create a source course with a forum, a label, a subsection module
+     * containing a page in its delegated section, a quiz with a question and
+     * a block.
+     *
+     * @return \stdClass Source course.
+     */
+    protected function create_source_course(): \stdClass {
+        $course = $this->getDataGenerator()->create_course([
+            'fullname' => 'Source course',
+            'shortname' => 'source',
+        ]);
+        $this->getDataGenerator()->create_module('forum', [
+            'course' => $course->id,
+            'name' => 'Source forum',
+        ]);
+        $this->getDataGenerator()->create_module('label', ['course' => $course->id]);
+        $subsection = $this->getDataGenerator()->create_module('subsection', [
+            'course' => $course->id,
+            'name' => 'Part one',
+        ]);
+
+        $modinfo = get_fast_modinfo($course);
+        $delegated = $modinfo->get_section_info_by_component('mod_subsection', $subsection->id);
+        $this->assertNotEmpty($delegated, 'The subsection did not create a delegated section.');
+
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'section' => $delegated->section,
+        ]);
+
+        // A quiz with a question in the course question bank.
+        $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Source quiz',
+        ]);
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $questiongenerator->create_question_category([
+            'contextid' => context_course::instance($course->id)->id,
+        ]);
+        $questiongenerator->create_question('truefalse', null, ['category' => $category->id]);
+
+        // A block in the course context.
+        $this->getDataGenerator()->create_block('online_users', [
+            'parentcontextid' => context_course::instance($course->id)->id,
+        ]);
+
+        return $course;
+    }
+
+    /**
+     * Back the given course up and register the backup as a template.
+     *
+     * @param \stdClass $course Course to back up.
+     * @return \stdClass Template record.
+     */
+    protected function create_template_from_course(\stdClass $course): \stdClass {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $course->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_GENERAL,
+            get_admin()->id
+        );
+        $bc->execute_plan();
+        $results = $bc->get_results();
+        $file = $results['backup_destination'];
+        $tempfile = make_request_directory() . '/template.mbz';
+        $file->copy_content_to($tempfile);
+        $bc->destroy();
+
+        $template = new \stdClass();
+        $template->title = 'Sample template';
+        $template->description = '';
+        $template->descriptionformat = 1;
+        $template->id = $DB->insert_record('format_kickstart_template', $template);
+
+        get_file_storage()->create_file_from_pathname([
+            'contextid' => context_system::instance()->id,
+            'component' => 'format_kickstart',
+            'filearea' => 'course_backups',
+            'itemid' => $template->id,
+            'filepath' => '/',
+            'filename' => 'template.mbz',
+        ], $tempfile);
 
         return $template;
     }
