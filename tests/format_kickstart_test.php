@@ -225,6 +225,62 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Section summaries are trimmed by word count, ignoring whitespace and
+     * non-breaking space variations.
+     *
+     * @covers \format_kickstart\output\import_course_list::sectionsummary_trim_char
+     * @return void
+     */
+    public function test_sectionsummary_trim_char(): void {
+        $courselist = new \format_kickstart\output\import_course_list();
+
+        // Summaries within the limit are not trimmed, so no button is shown.
+        $this->assertSame('', $courselist->sectionsummary_trim_char($this->get_summary_words(22), 23));
+        $this->assertSame('', $courselist->sectionsummary_trim_char($this->get_summary_words(23), 23));
+
+        // Longer summaries are cut after the configured number of words.
+        $this->assertSame(
+            $this->get_summary_words(23) . '...',
+            $courselist->sectionsummary_trim_char($this->get_summary_words(24), 23)
+        );
+        $this->assertSame(
+            $this->get_summary_words(23) . '...',
+            $courselist->sectionsummary_trim_char($this->get_summary_words(60), 23)
+        );
+
+        // Non-breaking spaces and repeated whitespace do not change the word count.
+        $this->assertSame(
+            $this->get_summary_words(23) . '...',
+            $courselist->sectionsummary_trim_char(str_replace(' ', '&nbsp;', $this->get_summary_words(24)), 23)
+        );
+        $this->assertSame(
+            '',
+            $courselist->sectionsummary_trim_char(str_replace(' ', '  ', $this->get_summary_words(23)), 23)
+        );
+
+        // The method returns plain text; the template is responsible for escaping it.
+        $this->assertSame(
+            'Question & Answers...',
+            $courselist->sectionsummary_trim_char(format_string('Question & Answers session'), 3)
+        );
+    }
+
+    /**
+     * Build a formatted sample summary of the given number of words.
+     *
+     * @param int $count Number of words.
+     * @return string
+     */
+    protected function get_summary_words(int $count): string {
+        $words = [];
+        for ($i = 1; $i <= $count; $i++) {
+            $words[] = 'word' . $i;
+        }
+
+        return format_string('<p>' . implode(' ', $words) . '</p>');
+    }
+
+    /**
      * Create a course template using the bundled backup file.
      *
      * @param string $title Template title.
