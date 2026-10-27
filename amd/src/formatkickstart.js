@@ -28,7 +28,7 @@ import Fragment from 'core/fragment';
 import Templates from 'core/templates';
 import ModalEvents from 'core/modal_events';
 import ModalSaveCancel from 'core/modal_save_cancel';
-import Toast from 'core/toast';
+import {add as addToast} from 'core/toast';
 
 /**
  * Controls Kickstart javascript.
@@ -273,7 +273,7 @@ class Formatkickstart {
             'importactivitysuccessfully',
             'format_kickstart'
         ).then((string) => {
-            Toast.add(string, {type: 'success'});
+            addToast(string, {type: 'success'});
             return null;
         });
     }
