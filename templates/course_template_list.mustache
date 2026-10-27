@@ -51,11 +51,11 @@
                             <div class="image-block">
                                 <div id="carousel-template-{{id}}" class="carousel slide" {{dataride}}="carousel" {{datainterval}}="2000">
                                     {{#showimageindicators}}
-                                    <ol class="carousel-indicators">
+                                    <div class="carousel-indicators">
                                         {{#backimages}}
-                                        <li {{datatarget}}="#carousel-template-{{id}}" {{dataslideto}}="{{pos}}" class="{{#active}} active{{/active}}"></li>
+                                        <button type="button" {{datatarget}}="#carousel-template-{{id}}" {{dataslideto}}="{{pos}}"{{#active}} class="active" aria-current="true"{{/active}} aria-label="{{slidelabel}}"></button>
                                         {{/backimages}}
-                                    </ol>
+                                    </div>
                                     {{/showimageindicators}}
                                     <div class="carousel-inner">
                                         {{#backimages}}

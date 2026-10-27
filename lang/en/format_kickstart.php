@@ -216,6 +216,7 @@ $string['selectvalue'] = "All";
 $string['shortname'] = "Short name:";
 $string['showcontents'] = "Show contents";
 $string['showing'] = 'Showing {$a->count} course(s)';
+$string['slide'] = 'Slide {$a}';
 $string['sortby'] = "Sort by:";
 $string['sortbyalpha'] = 'Alphabetically';
 $string['sortbylastaccessed'] = 'Last accessed';
