@@ -24,8 +24,8 @@
 
 namespace format_kickstart\output;
 
-use context_course;
-
+use core\context;
+use core\context\course as context_course;
 
 /**
  * Implements the kickstart page handler.
@@ -51,7 +51,7 @@ class kickstartHandler {
 
     /**
      * Summary of context
-     * @var \context
+     * @var context
      */
     public $context;
 

@@ -22,24 +22,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-require(__DIR__ . "/freetemplates.php");
-require_once(__DIR__ . "/lib.php");
+use core\context\system as context_system;
 
 /**
  * Install templates
  */
 function install_templates() {
-    global $freetemplates, $DB;
+    require_once(__DIR__ . '/freetemplates.php');
+    require_once(__DIR__ . '/lib.php');
+
     $context = context_system::instance();
-    $cnt = $DB->count_records('format_kickstart_template');
-    if (!empty($freetemplates)) {
-        foreach ($freetemplates as $template) {
-            $template = (object) $template;
-            // Create template and add it to the configured templates list.
-            $cnt++;
-            format_kickstart_create_template($template, $cnt, $context, 'format_kickstart');
-        }
+    $cnt = format_kickstart_get_next_template_sort();
+    foreach (format_kickstart_get_default_templates() as $template) {
+        $template = (object) $template;
+        // Create template and add it to the configured templates list.
+        format_kickstart_create_template($template, $cnt, $context, 'format_kickstart');
+        $cnt++;
     }
 }
