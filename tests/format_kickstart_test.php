@@ -108,6 +108,149 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Testing the import template while the site restore defaults are locked.
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_locked_restore_defaults(): void {
+        global $DB, $CFG;
+
+        // Lock the restore default settings the importer overrides
+        // (Site administration > Courses > Backups > General restore defaults).
+        $lockedconfigs = [
+            'restore_general_users_locked',
+            'restore_replace_overwrite_conf_locked',
+            'restore_replace_course_fullname_locked',
+            'restore_replace_course_shortname_locked',
+            'restore_replace_course_startdate_locked',
+            'restore_replace_keep_roles_and_enrolments_locked',
+            'restore_replace_keep_groups_and_groupings_locked',
+        ];
+        foreach ($lockedconfigs as $config) {
+            set_config($config, 1, 'restore');
+        }
+
+        $course = $this->getDataGenerator()->create_course();
+        $template = $this->create_template_with_backup('locked restore defaults');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
+     * Testing the import template with the merge import target.
+     *
+     * Core locks keep_roles_and_enrolments and keep_groups_and_groupings by
+     * config for every restore target that is not "deleting", so importing
+     * with the "Merge Kickstart templates into courses" import target must
+     * work even though no restore default is locked in the site
+     * administration.
+     * @covers \format_kickstart\course_importer::import
+     * @return void
+     */
+    public function test_importing_with_merge_import_target(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+        set_config('importtarget', \backup::TARGET_EXISTING_ADDING, 'format_kickstart');
+
+        $course = $this->getDataGenerator()->create_course();
+        $template = $this->create_template_with_backup('merge import target');
+
+        \format_kickstart\course_importer::import_from_template($template->id, $course->id);
+
+        // The import went through and the course identity was preserved.
+        $updatecourse = $DB->get_record('course', ['id' => $course->id]);
+        $this->assertEquals($course->fullname, $updatecourse->fullname);
+        $this->assertEquals($course->shortname, $updatecourse->shortname);
+    }
+
+    /**
+     * Section summaries are trimmed by word count, ignoring whitespace and
+     * non-breaking space variations.
+     *
+     * @covers \format_kickstart\output\import_course_list::sectionsummary_trim_char
+     * @return void
+     */
+    public function test_sectionsummary_trim_char(): void {
+        $courselist = new \format_kickstart\output\import_course_list();
+
+        // Summaries within the limit are not trimmed, so no button is shown.
+        $this->assertSame('', $courselist->sectionsummary_trim_char($this->get_summary_words(22), 23));
+        $this->assertSame('', $courselist->sectionsummary_trim_char($this->get_summary_words(23), 23));
+
+        // Longer summaries are cut after the configured number of words.
+        $this->assertSame(
+            $this->get_summary_words(23) . '...',
+            $courselist->sectionsummary_trim_char($this->get_summary_words(24), 23)
+        );
+        $this->assertSame(
+            $this->get_summary_words(23) . '...',
+            $courselist->sectionsummary_trim_char($this->get_summary_words(60), 23)
+        );
+
+        // Non-breaking spaces and repeated whitespace do not change the word count.
+        $this->assertSame(
+            $this->get_summary_words(23) . '...',
+            $courselist->sectionsummary_trim_char(str_replace(' ', '&nbsp;', $this->get_summary_words(24)), 23)
+        );
+        $this->assertSame(
+            '',
+            $courselist->sectionsummary_trim_char(str_replace(' ', '  ', $this->get_summary_words(23)), 23)
+        );
+
+        // The method returns plain text; the template is responsible for escaping it.
+        $this->assertSame(
+            'Question & Answers...',
+            $courselist->sectionsummary_trim_char(format_string('Question & Answers session'), 3)
+        );
+    }
+
+    /**
+     * Build a formatted sample summary of the given number of words.
+     *
+     * @param int $count Number of words.
+     * @return string
+     */
+    protected function get_summary_words(int $count): string {
+        $words = [];
+        for ($i = 1; $i <= $count; $i++) {
+            $words[] = 'word' . $i;
+        }
+
+        return format_string('<p>' . implode(' ', $words) . '</p>');
+    }
+
+    /**
+     * Create a course template using the bundled backup file.
+     *
+     * @param string $title Template title.
+     * @return \stdClass Template record.
+     */
+    protected function create_template_with_backup(string $title): \stdClass {
+        global $CFG, $DB;
+        $template = new \stdClass();
+        $template->title = $title;
+        $template->description = '';
+        $template->descriptionformat = 1;
+        $template->id = $DB->insert_record('format_kickstart_template', $template);
+
+        get_file_storage()->create_file_from_pathname([
+            'contextid' => \context_system::instance()->id,
+            'component' => 'format_kickstart',
+            'filearea' => 'course_backups',
+            'itemid' => $template->id,
+            'filepath' => '/',
+            'filename' => 'course-10-online.mbz',
+        ], $CFG->dirroot . '/course/format/kickstart/assets/templates/course-10-online.mbz');
+
+        return $template;
+    }
+
+    /**
      * Case to test the external method to create template.
      * @covers ::format_kickstart_create_template
      * @return void
