@@ -53,12 +53,12 @@ This plugin calls functions and classes of Kickstart Pro directly, so the two mu
 - PHPUnit: `tests/format_kickstart_test.php`, including imports with locked restore defaults, with both import
   targets, and the template access checks.
 - Behat: `tests/behat/`.
-- CI: `.github/workflows/moodle-ci.yml` runs `moodle-plugin-ci` on Moodle 4.5, 5.0, 5.1 and 5.2.
+- CI: `.github/workflows/moodle-ci.yml` runs `moodle-plugin-ci` on Moodle 4.5, 5.0, 5.1 and 5.2. It runs on pull requests and on pushes to `main`, and can be started by hand.
 
 ## Releases
 
 Publish a release on GitHub. `.github/workflows/release.yml` does the rest, after Moodle Plugin CI has passed on the
-tagged commit. `<release>` is `$plugin->release` from `version.php`.
+tagged commit. CI does not run on other commits, so tag the head of a pull request or a commit on `main`. `<release>` is `$plugin->release` from `version.php`.
 
 | | Pre-release ("Set as a pre-release") | Release |
 |---|---|---|
