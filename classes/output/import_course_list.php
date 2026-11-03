@@ -306,15 +306,26 @@ class import_course_list implements \renderable, \templatable {
 
     /**
      * Trim the summary of the section.
-     * @param mixed $summary
-     * @param mixed $trimchar
+     *
+     * @param string $summary Section summary as plain text.
+     * @param int $trimchar Maximum number of words to display.
+     * @return string Trimmed summary ending in ellipsis, or '' when no trimming is needed.
      */
     public function sectionsummary_trim_char($summary, $trimchar = 25) {
-
-        if (str_word_count($summary) < $trimchar) {
+        $trimchar = (int) $trimchar;
+        // Decode entities and collapse all whitespace, including non-breaking
+        // and other Unicode spaces, so words are counted and split consistently.
+        $summary = html_entity_decode($summary, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $summary = trim(preg_replace('/[\s\p{Z}]+/u', ' ', $summary));
+        if ($summary === '') {
             return '';
         }
+
         $arrstr = explode(" ", $summary);
+        if (count($arrstr) <= $trimchar) {
+            return '';
+        }
+
         $slicearr = array_slice($arrstr, 0, $trimchar);
         $strarr = implode(" ", $slicearr);
         $strarr .= '...';
