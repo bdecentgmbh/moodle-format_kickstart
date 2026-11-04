@@ -16,7 +16,7 @@ a course, see the [teacher guide](teacher-guide.md).
 
 ## Requirements
 
-Moodle 4.5 to 5.2. No other plugins are needed.
+Moodle 5.0 to 5.2. No other plugins are needed. For Moodle 4.5, use Kickstart format 1.5.
 
 [Kickstart Pro](https://bdecent.de/products/moodle-plugins/kickstart-course-wizard-pro/)
 (`local_kickstart_pro`) adds more templates, access restrictions for templates, a course library and
@@ -45,6 +45,13 @@ and then upgrade once. If you install ZIP files in the browser, Moodle needs Kic
 install Kickstart Pro right after it, because some pages can fail until both are updated.
 
 Moodle does not allow going back to an older version without restoring a backup of your site.
+
+### Upgrading to 1.6
+
+- Moodle 5.0 is now the minimum. Sites on Moodle 4.5 stay on Kickstart format 1.5.
+- With Kickstart Pro, there is a new setting, *Apply template access restrictions to managers*. It is off,
+  so nothing changes until you enable it.
+- If a template cannot be restored, the error message now includes the reason.
 
 ## Course templates
 
@@ -116,7 +123,7 @@ Go to *Site administration > Plugins > Course formats > Kickstart format > Gener
 
 | Capability | Default roles | Allows |
 |---|---|---|
-| `format/kickstart:manage_templates` | Manager | Creating, editing, enabling, disabling and deleting templates. Checked in the system context. Holders can use every template |
+| `format/kickstart:manage_templates` | Manager | Creating, editing, enabling, disabling and deleting templates. Checked in the system context. Holders can use every template, unless Kickstart Pro is set to apply template restrictions to them |
 | `format/kickstart:import_from_template` | Manager, Course creator, Editing teacher | Seeing the Kickstart pages of a course and using templates in it. Everybody else sees the student view |
 
 ## Privacy

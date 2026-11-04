@@ -35,7 +35,7 @@ the template is chosen when the course is opened with editing rights.
 
 ## Requirements
 
-Moodle 4.5 to 5.2.
+Moodle 5.0 to 5.2. For Moodle 4.5, use Kickstart format 1.5.
 
 If you use Kickstart Pro, always install the same release of both plugins.
 

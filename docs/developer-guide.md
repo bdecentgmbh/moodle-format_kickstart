@@ -18,7 +18,7 @@ other formats reach the same pages through a secondary navigation node
 | Kickstart pages | `format.php`, `list.php`, `classes/output/kickstartHandler.php`, `classes/output/kickstart_page.php` | `get_<nav>_content()` per page. With Kickstart Pro, its handler adds the Pro pages |
 | Menu | `format_kickstart_get_all_pages()`, `format_kickstart_get_ordered_pages()`, `classes/output/general_action_bar.php` | The pages and their order from the `pageorder_<page>` settings; 0 hides a page |
 | Template list | `classes/output/course_template_list.php`, `templates/course_template_list.mustache`, `amd/src/formatkickstart.js` | Templates the user may use, with search and the tile or list view through fragments |
-| Access | `format_kickstart_can_use_template()` | The one check for listing and importing: visible, enabled and, for the Pro restrictions, cohort, category, user and role |
+| Access | `format_kickstart_can_use_template()` | The one check for listing and importing: visible, enabled and, for the Pro restrictions, cohort, category, user and role. Holders of `manage_templates` bypass the restrictions unless `applyrestrictionstomanagers` is on (`format_kickstart_template_restrictions_bypassed()`) |
 | Import | `classes/course_importer.php`, `classes/external.php`, `import.php` | `import_from_template()` restores a backup or switches the course format, then triggers `course_imported`. The web service `format_kickstart_import_template` is what the list calls |
 | Managing templates | `templates.php`, `template.php`, `classes/template_table.php`, `classes/form/template_form.php` | The list of templates, creating, editing and deleting |
 | Course format templates | `format_kickstart_import_courseformat_template()`, `format_kickstart_check_format_template()`, `classes/observer.php` | One template per course format, kept in step at runtime (cache `templates`) and when a format is enabled or disabled |
@@ -53,7 +53,7 @@ This plugin calls functions and classes of Kickstart Pro directly, so the two mu
 - PHPUnit: `tests/format_kickstart_test.php`, including imports with locked restore defaults, with both import
   targets, and the template access checks.
 - Behat: `tests/behat/`.
-- CI: `.github/workflows/moodle-ci.yml` runs `moodle-plugin-ci` on Moodle 4.5, 5.0, 5.1 and 5.2. It runs on pull requests and on pushes to `main`, and can be started by hand.
+- CI: `.github/workflows/moodle-ci.yml` runs `moodle-plugin-ci` on Moodle 5.0, 5.1 and 5.2. It runs on pull requests and on pushes to `main`, and can be started by hand.
 
 ## Releases
 
@@ -62,7 +62,7 @@ tagged commit. CI does not run on other commits, so tag the head of a pull reque
 
 | | Pre-release ("Set as a pre-release") | Release |
 |---|---|---|
-| Tag | `v<release>` or `v<release>-<suffix>` (`v1.5-rc1`), any branch | `v<release>` or `v<release>-r<n>` (`v1.5-r8`), on `main` |
+| Tag | `v<release>` or `v<release>-<suffix>` (`v1.6-rc1`), any branch | `v<release>` (`v1.6`) or `v<release>-r<n>`, on `main` |
 | Needs | | A section `## <release> (<version>)` in `CHANGES.md` |
 | ZIP on the GitHub release | Yes | Yes |
 | Moodle Marketplace | No | Yes |

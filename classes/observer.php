@@ -39,9 +39,9 @@ class observer {
         require_once($CFG->dirroot . '/course/format/kickstart/lib.php');
 
         $data = $event->get_data();
-        $plugin = $data['other']['plugin'];
+        $plugin = $data['other']['plugin'] ?? '';
         $name = isset($data['other']['name']) ? $data['other']['name'] : '';
-        if (preg_match("/^format_/", $plugin ?? '') && $name == 'disabled') {
+        if (str_starts_with($plugin, 'format_') && $name == 'disabled') {
             $templates = format_kickstart_get_templates();
             $disable = ($data['other']['value'] == 1) ? true : false;
             $format = substr($plugin, 7);

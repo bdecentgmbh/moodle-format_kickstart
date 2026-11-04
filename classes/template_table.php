@@ -24,6 +24,9 @@
 
 namespace format_kickstart;
 
+use core\context\system as context_system;
+use core\url as moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/tablelib.php');
@@ -115,7 +118,7 @@ class template_table extends \table_sql {
      * @return mixed
      */
     public function col_description($data) {
-        $context = \context_system::instance();
+        $context = context_system::instance();
         return format_text(file_rewrite_pluginfile_urls(
             $data->description,
             'pluginfile.php',
@@ -146,7 +149,7 @@ class template_table extends \table_sql {
      */
     public function col_status($data) {
         global $OUTPUT;
-        $templateurl = new \moodle_url('/course/format/kickstart/templates.php');
+        $templateurl = new moodle_url('/course/format/kickstart/templates.php');
         $status = '';
         if ($data->status) {
             $status .= \html_writer::link(
@@ -179,7 +182,7 @@ class template_table extends \table_sql {
      */
     public function col_updown($data) {
         global $OUTPUT;
-        $templateurl = new \moodle_url('/course/format/kickstart/templates.php');
+        $templateurl = new moodle_url('/course/format/kickstart/templates.php');
         $updown = '';
         $strup = get_string('up');
         $strdown = get_string('down');
@@ -230,13 +233,13 @@ class template_table extends \table_sql {
     public function col_actions($data) {
         global $OUTPUT;
         $output = $OUTPUT->single_button(
-            new \moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]),
+            new moodle_url('/course/format/kickstart/template.php', ['action' => 'edit', 'id' => $data->id]),
             get_string('edit', 'format_kickstart'),
             'get'
         );
         if (!($data->courseformat)) {
             $output .= $OUTPUT->single_button(
-                new \moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
+                new moodle_url('/course/format/kickstart/template.php', ['action' => 'delete', 'id' => $data->id]),
                 get_string('delete', 'format_kickstart'),
                 'get'
             );

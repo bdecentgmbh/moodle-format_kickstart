@@ -24,9 +24,11 @@
 
 namespace format_kickstart;
 
-defined('MOODLE_INTERNAL') || die();
-
+use core\context\course as context_course;
+use core\context\system as context_system;
 use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/format/kickstart/lib.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -54,7 +56,7 @@ class course_importer {
     public static function import_from_template($templateid, $courseid) {
         global $CFG, $DB, $PAGE, $USER;
         require_once($CFG->dirroot . "/course/lib.php");
-        $PAGE->set_context(\context_course::instance($courseid));
+        $PAGE->set_context(context_course::instance($courseid));
         $template = $DB->get_record('format_kickstart_template', ['id' => $templateid], '*', MUST_EXIST);
 
         // Before import, verify that user has access.
@@ -65,7 +67,7 @@ class course_importer {
         if (!$template->courseformat) {
             $fs = get_file_storage();
             $files = $fs->get_area_files(
-                \context_system::instance()->id,
+                context_system::instance()->id,
                 'format_kickstart',
                 'course_backups',
                 $template->id,
@@ -114,7 +116,7 @@ class course_importer {
         $event = \format_kickstart\event\course_imported::create([
             'objectid' => $courseid,
             'userid' => $USER->id,
-            'context' => \context_course::instance($courseid),
+            'context' => context_course::instance($courseid),
         ]);
         $event->trigger();
     }
@@ -130,7 +132,7 @@ class course_importer {
      * @throws \restore_controller_exception
      */
     public static function import($backuptempdir, $courseid) {
-        global $USER, $DB;
+        global $CFG, $USER, $DB;
 
         $course = $DB->get_record('course', ['id' => $courseid]);
         $details = \backup_general_helper::get_backup_information($backuptempdir);
@@ -190,10 +192,26 @@ class course_importer {
             $rc->execute_precheck();
             $rc->execute_plan();
             $rc->destroy();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if ($rc) {
-                \core\notification::error(get_string('restorefailed', 'format_kickstart', $rc->get_status()));
+                // Drop restore temp tables left behind by a failed restore, the
+                // same cleanup core applies when restore prechecks fail.
+                try {
+                    $dbman = $DB->get_manager();
+                    if ($dbman->table_exists('backup_ids_temp') && $dbman->table_exists('backup_files_temp')) {
+                        \restore_controller_dbops::drop_restore_temp_tables($rc->get_restoreid());
+                    }
+                } catch (\Throwable $cleanuperror) {
+                    debugging('Kickstart restore cleanup failed: ' . $cleanuperror->getMessage(), DEBUG_DEVELOPER);
+                }
+
+                \core\notification::error(
+                    get_string('restorefailed', 'format_kickstart', $rc->get_status()) . ' - ' . $e->getMessage()
+                );
             }
+
+            $trace = strtr($e->getTraceAsString(), [$CFG->dirroot . '/' => '']);
+            debugging('Kickstart restore failed: ' . $e->getMessage() . "\n" . $trace, DEBUG_DEVELOPER);
             throw $e;
         } finally {
             // Reset some settings.

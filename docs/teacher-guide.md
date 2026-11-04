@@ -85,5 +85,5 @@ the [administrator guide](admin-guide.md).
   page was loaded. Reload the page and choose another one.
 - **"Template has no course backup set."**: the template's backup file is missing. Please tell your
   administrator.
-- **"Restore failed with status …"**: the backup could not be restored into your course. Please tell your
-  administrator which template you used.
+- **"Restore failed with status …"**: the backup could not be restored into your course. The message ends with
+  the reason. Please tell your administrator which template you used, and what the message says.

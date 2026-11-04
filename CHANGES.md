@@ -1,5 +1,12 @@
 # Changes
 
+## 1.6 (2026110201)
+
+- Moodle 5.0 to 5.2; sites on 4.5 stay on 1.5.
+- New Pro setting *Apply template access restrictions to managers*, plus a *Restricted* badge.
+- Failed imports now show the reason.
+- Bootstrap 5 throughout; JavaScript no longer uses jQuery.
+
 ## 1.5 (2026110200)
 
 - Moodle 4.5 to 5.2.
