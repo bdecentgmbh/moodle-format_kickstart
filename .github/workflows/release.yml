@@ -5,7 +5,7 @@ name: Release
 #
 #   Pre-release (tick "Set as a pre-release"), tag v<release> or v<release>-<suffix>, e.g. v1.1-rc1, from any branch:
 #     ZIP attached to the GitHub release, then staging.bdecent.de only (the shop products of the repo).
-#   Release, tag v<release> or v<release>-r<n>, on main, with a "## <release> (<version>)" section in CHANGES.md:
+#   Release, tag v<release> or v<release>-r<n>, on main or a MOODLE_<nnn>_STABLE branch (fixes for older releases), with a "## <release> (<version>)" section in CHANGES.md:
 #     ZIP attached, Moodle Marketplace, then bdecent.de and staging:
 #     the ZIP goes to every product whose GitHub tab names the repo, and a draft release note is created
 #     (bdecent-core, includes/release-webhook.php). Promoting a pre-release to a release runs the release steps.
@@ -96,16 +96,24 @@ jobs:
             [[ "${TAG}" == "v${RELEASE}" || "${TAG}" == "v${RELEASE}-"* ]] || {
               echo "::error::Pre-release tag ${TAG} does not start with v${RELEASE} (\$plugin->release in version.php)."; exit 1; }
           else
-            # Release: v<release> or v<release>-r<n>, on main.
+            # Release: v<release> or v<release>-r<n>, on main or a MOODLE_<nnn>_STABLE branch (fixes for older releases).
             if [[ "${TAG}" =~ ^v(.+)-r[0-9]+$ ]]; then TAGRELEASE="${BASH_REMATCH[1]}"; else TAGRELEASE="${TAG#v}"; fi
             if [ "${TAG:0:1}" != "v" ] || [ "${TAGRELEASE}" != "${RELEASE}" ]; then
               echo "::error::Tag ${TAG} does not match \$plugin->release '${RELEASE}' (expected v${RELEASE} or v${RELEASE}-r<n>). Tick 'Set as a pre-release' for test builds."
               exit 1
             fi
-            if ! git merge-base --is-ancestor "${TAG}^{commit}" origin/main; then
-              echo "::error::${TAG} is not on main. Merge dev into main and tag the merge commit, or publish it as a pre-release."
+            ONBRANCH=""
+            for BRANCH in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin | grep -E '^origin/(main|MOODLE_[0-9]+_STABLE)$'); do
+              if git merge-base --is-ancestor "${TAG}^{commit}" "${BRANCH}"; then
+                ONBRANCH="${BRANCH#origin/}"
+                break
+              fi
+            done
+            if [ -z "${ONBRANCH}" ]; then
+              echo "::error::${TAG} is not on main or a MOODLE_<nnn>_STABLE branch. Merge dev into main (or the fix into the stable branch) and tag the merge commit, or publish it as a pre-release."
               exit 1
             fi
+            echo "${TAG} is on ${ONBRANCH}."
           fi
           echo "Releasing ${COMPONENT} ${RELEASE} (${VERSION}) from $(git rev-parse --short "${TAG}^{commit}")."
           {
