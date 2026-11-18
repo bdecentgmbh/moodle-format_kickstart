@@ -194,6 +194,7 @@ $string['pluginname'] = 'Kickstart format';
 $string['previewurl'] = 'Preview URL';
 $string['previewurl_help'] = 'If provided a button will display on the template that will open this URL in a new tab';
 $string['privacy:metadata:template_table_pagesize'] = 'The number of templates displayed per page on the manage templates page.';
+$string['prooutdated'] = 'Kickstart Pro is outdated and has been switched off until it is updated. Please update Kickstart Pro to {$a} or later (Site administration > Plugins > Install plugins).';
 $string['restorefailed'] = 'Restore failed with status: {$a}';
 $string['restoretoexistingcourseadding'] = 'Merge Kickstart templates into courses';
 $string['restoretoexistingcoursedeleting'] = 'Delete existing content when importing Kickstart templates';
