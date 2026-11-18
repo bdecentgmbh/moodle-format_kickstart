@@ -1310,7 +1310,13 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     $cm = $modinfo->get_cm($newcmid);
     $targetsection = $modinfo->get_section_info_by_id($args['sectionid'], MUST_EXIST);
 
-    moveto_module($cm, $targetsection);
+    $cmactions = \core_courseformat\formatactions::cm($maincourserecord);
+    if (method_exists($cmactions, 'move_end_section')) {
+        $cmactions->move_end_section($cm->id, $targetsection->id);
+    } else {
+        // Moodle 5.0 and 5.1; moveto_module() is deprecated since 5.2.
+        moveto_module($cm, $targetsection);
+    }
     // Any state action mark the state cache as dirty.
     core_courseformat\base::session_cache_reset($maincourserecord);
     $viewurl = new moodle_url("/mod/{$cm->modname}/view.php", ['id' => $newcmid]);

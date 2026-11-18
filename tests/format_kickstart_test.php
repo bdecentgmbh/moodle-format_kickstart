@@ -532,6 +532,38 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
+     * Importing an activity from the course library puts it at the end of the chosen section,
+     * without deprecation warnings (moveto_module() is deprecated since Moodle 5.2).
+     * @covers ::format_kickstart_output_fragment_import_activity_courselib
+     */
+    public function test_import_activity_courselib(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $source = $generator->create_course();
+        $page = $generator->create_module('page', ['course' => $source->id, 'name' => 'Library page']);
+        $target = $generator->create_course(['numsections' => 2], ['createsections' => true]);
+        $generator->create_module('label', ['course' => $target->id, 'section' => 2]);
+        $section = get_fast_modinfo($target)->get_section_info(2);
+
+        $url = format_kickstart_output_fragment_import_activity_courselib([
+            'maincourse' => $target->id,
+            'cmid' => $page->cmid,
+            'sectionid' => $section->id,
+        ]);
+
+        $this->assertDebuggingNotCalled();
+        $modinfo = get_fast_modinfo($target->id);
+        $sequence = $modinfo->get_section_info(2)->sequence;
+        $cms = explode(',', $sequence);
+        $newcm = $modinfo->get_cm(end($cms));
+        $this->assertSame('page', $newcm->modname);
+        $this->assertSame('Library page', $newcm->name);
+        $this->assertCount(2, $cms);
+        $this->assertStringContainsString('/mod/page/view.php?id=' . $newcm->id, $url);
+    }
+
+    /**
      * Case to check that admins and template managers bypass template access
      * restrictions while applyrestrictionstomanagers is disabled (default).
      * @covers ::format_kickstart_can_use_template
