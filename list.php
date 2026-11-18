@@ -74,12 +74,7 @@ echo html_writer::start_div('kickstart-page');
 
 echo $renderer->render_action_bar($actionbar);
 
-if (file_exists($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php')) {
-    require_once($CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php');
-    $kickstartpage = new \local_kickstart_pro\output\kickstartHandlerWithPropage($course, $nav);
-} else {
-    $kickstartpage = new format_kickstart\output\kickstartHandler($course, $nav);
-}
+$kickstartpage = format_kickstart_get_kickstart_handler($course, $nav);
 
 echo $renderer->render_kickstart_page($kickstartpage);
 

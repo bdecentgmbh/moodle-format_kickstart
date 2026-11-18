@@ -1,7 +1,9 @@
 # Changes
 
-## 1.5 (2026110200)
+## 1.5 (2026110200.01)
 
+- Updating only the format no longer breaks Site administration and Kickstart courses when Kickstart Pro
+  is older than 1.5 R8. The format ignores an outdated Pro until it is updated and shows site admins a notice. (R9)
 - Moodle 4.5 to 5.2.
 - Security: template access is also checked on import, not only in the list.
 - Importing a template no longer fails when the site's restore defaults are locked.

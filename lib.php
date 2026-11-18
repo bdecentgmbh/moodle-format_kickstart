@@ -26,6 +26,19 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/format/lib.php');
 
+/**
+ * Oldest Kickstart Pro version this format works with.
+ *
+ * Raise it whenever the format starts to use a Pro function, class, template or data format
+ * that older Pro releases don't have. With an older Pro, the format acts as if Pro were not installed.
+ */
+const FORMAT_KICKSTART_MIN_PRO_VERSION = 2026110200;
+
+/**
+ * Release name of the minimum Kickstart Pro version, shown in the "Pro is outdated" notice.
+ */
+const FORMAT_KICKSTART_MIN_PRO_RELEASE = '1.5 R8';
+
 
 use format_kickstart\output\course_template_list;
 
@@ -318,7 +331,11 @@ class format_kickstart extends core_courseformat\base {
 }
 
 /**
- * Check if Kickstart Pro is installed.
+ * Check if a usable Kickstart Pro is installed.
+ *
+ * Pro only counts as installed when its installed version is at least FORMAT_KICKSTART_MIN_PRO_VERSION.
+ * An older Pro (for example when only the format was updated) is ignored, so that Site administration
+ * and Kickstart courses keep working until Pro is updated too.
  *
  * @return bool
  */
@@ -328,7 +345,31 @@ function format_kickstart_has_pro() {
     if (isset($CFG->kickstart_pro)) {
         return $CFG->kickstart_pro;
     }
+    return format_kickstart_pro_present() && !format_kickstart_pro_outdated();
+}
+
+/**
+ * Check if the Kickstart Pro code is present, regardless of its version.
+ *
+ * @return bool
+ */
+function format_kickstart_pro_present() {
     return array_key_exists('kickstart_pro', core_component::get_plugin_list('local'));
+}
+
+/**
+ * Check if Kickstart Pro is present but older than the version this format needs.
+ *
+ * Uses the installed (database) version, so a Pro whose new code is not upgraded yet also counts as outdated.
+ *
+ * @return bool
+ */
+function format_kickstart_pro_outdated() {
+    if (!format_kickstart_pro_present()) {
+        return false;
+    }
+    $version = get_config('local_kickstart_pro', 'version');
+    return !$version || (int) $version < FORMAT_KICKSTART_MIN_PRO_VERSION;
 }
 
 /**
@@ -841,7 +882,12 @@ function format_kickstart_get_all_pages() {
 
     if (format_kickstart_has_pro()) {
         require_once($CFG->dirroot . "/local/kickstart_pro/lib.php");
-        $pages += local_kickstart_pro_get_breadcump_menus();
+        if (function_exists('local_kickstart_pro_get_breadcump_menus')) {
+            $pages += local_kickstart_pro_get_breadcump_menus();
+        } else if (function_exists('local_kickstart_pro_get_breadcrumb_menus')) {
+            // Name used from Pro 1.6.
+            $pages += local_kickstart_pro_get_breadcrumb_menus();
+        }
     }
     return $pages;
 }
@@ -1218,4 +1264,23 @@ function format_kickstart_output_fragment_import_activity_courselib($args) {
     }
 
     return $viewurl->out(false);
+}
+
+/**
+ * Get the Kickstart page handler, using the Pro implementation when available.
+ *
+ * @param \stdClass $course Course record.
+ * @param string $nav The active Kickstart navigation page.
+ * @return \format_kickstart\output\kickstartHandler
+ */
+function format_kickstart_get_kickstart_handler($course, $nav) {
+    global $CFG;
+    $profile = $CFG->dirroot . '/local/kickstart_pro/classes/output/kickstartProHandler.php';
+    if (format_kickstart_has_pro() && file_exists($profile)) {
+        require_once($profile);
+        if (class_exists('\local_kickstart_pro\output\kickstartHandlerWithPropage', false)) {
+            return new \local_kickstart_pro\output\kickstartHandlerWithPropage($course, $nav);
+        }
+    }
+    return new format_kickstart\output\kickstartHandler($course, $nav);
 }
