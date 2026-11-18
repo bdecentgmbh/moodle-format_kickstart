@@ -1,12 +1,9 @@
 # Changes
 
-## 1.6 R2 (2026110202)
+## 1.6 (2026110202)
 
 - Updating only the format no longer breaks Site administration and Kickstart courses when Kickstart Pro
-  is older than 1.6. The format ignores an outdated Pro until it is updated and shows site admins a notice.
-
-## 1.6 (2026110201)
-
+  is older than 1.6. The format ignores an outdated Pro until it is updated and shows site admins a notice. (R2)
 - Moodle 5.0 to 5.2; sites on 4.5 stay on 1.5.
 - New Pro setting *Apply template access restrictions to managers*, plus a *Restricted* badge.
 - Failed imports now show the reason.
