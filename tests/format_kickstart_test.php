@@ -266,17 +266,42 @@ final class format_kickstart_test extends \advanced_testcase {
     }
 
     /**
-     * Case to check the availablity of kickstart pro.
+     * Pro only counts as installed when it is present and new enough.
      * @covers ::format_kickstart_has_pro
+     * @covers ::format_kickstart_pro_outdated
      */
     public function test_check_kickstart_has_pro(): void {
-        $pluginman = \core_plugin_manager::instance();
-        $plugininfo = $pluginman->get_plugin_info('local_kickstart_pro');
-        $pluginstatus = false;
-        if (!empty($plugininfo)) {
-            $pluginstatus = true;
+        $present = array_key_exists('kickstart_pro', \core_component::get_plugin_list('local'));
+        $this->assertSame($present, format_kickstart_pro_present());
+        if (!$present) {
+            $this->assertFalse(format_kickstart_has_pro());
+            $this->assertFalse(format_kickstart_pro_outdated());
+            return;
         }
-        $this->assertEquals(format_kickstart_has_pro(), $pluginstatus);
+        $this->resetAfterTest();
+        set_config('version', FORMAT_KICKSTART_MIN_PRO_VERSION, 'local_kickstart_pro');
+        $this->assertTrue(format_kickstart_has_pro());
+        $this->assertFalse(format_kickstart_pro_outdated());
+    }
+
+    /**
+     * An outdated Pro is ignored, so the format keeps working (KICK-336).
+     * @covers ::format_kickstart_has_pro
+     * @covers ::format_kickstart_pro_outdated
+     * @covers ::format_kickstart_get_all_pages
+     */
+    public function test_outdated_pro_is_ignored(): void {
+        if (!format_kickstart_pro_present()) {
+            $this->markTestSkipped('Kickstart Pro is not installed.');
+        }
+        $this->resetAfterTest();
+        // Pro 1.5 R6.
+        set_config('version', 2026061500, 'local_kickstart_pro');
+        $this->assertTrue(format_kickstart_pro_outdated());
+        $this->assertFalse(format_kickstart_has_pro());
+        $this->assertSame(['coursetemplate', 'studentview', 'help'], array_keys(format_kickstart_get_all_pages()));
+        $handler = format_kickstart_get_kickstart_handler(get_course(SITEID), 'coursetemplate');
+        $this->assertSame(\format_kickstart\output\kickstartHandler::class, get_class($handler));
     }
 
     /**

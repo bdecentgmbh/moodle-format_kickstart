@@ -73,7 +73,7 @@ trait kickstart_page {
                 $content .= $OUTPUT->notification(get_string('teacherstudentview', 'format_kickstart'), 'info');
             }
 
-            if (format_kickstart_has_pro()) {
+            if (format_kickstart_has_pro() && class_exists('\\local_kickstart_pro\\output\\default_view')) {
                 $prorenderer = $PAGE->get_renderer('local_kickstart_pro');
                 $content .= $prorenderer->render(new \local_kickstart_pro\output\default_view($this->course));
             } else {

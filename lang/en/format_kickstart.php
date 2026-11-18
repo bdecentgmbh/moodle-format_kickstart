@@ -188,6 +188,7 @@ $string['pageordersettings'] = 'Navigation page order';
 $string['pageordersettings_desc'] = 'Control the order of the pages in the Kickstart navigation dropdown. The page with the lowest order is shown by default; set a page to 0 to hide it from the dropdown.';
 $string['plugin_description'] = 'Create courses faster and make them more consistent across your organization using course templates.';
 $string['pluginname'] = 'Kickstart format';
+$string['prooutdated'] = 'Kickstart Pro is outdated and has been switched off until it is updated. Please update Kickstart Pro to {$a} or later (Site administration > Plugins > Install plugins).';
 $string['previewurl'] = 'Preview URL';
 $string['previewurl_help'] = 'If provided a button will display on the template that will open this URL in a new tab';
 $string['privacy:metadata:template_table_pagesize'] = 'The number of templates displayed per page on the manage templates page.';
