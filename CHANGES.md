@@ -1,6 +1,6 @@
 # Changes
 
-## 1.6 (2026110202)
+## 1.6 (2026110203)
 
 - Updating only the format no longer breaks Site administration and Kickstart courses when Kickstart Pro
   is older than 1.6. The format ignores an outdated Pro until it is updated and shows site admins a notice. (R2)
